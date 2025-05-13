@@ -16,10 +16,11 @@ import "react-toastify/dist/ReactToastify.css";
 import Profile from "./components/profile";
 import { useState } from "react";
 import { auth } from "./components/firebase";
-import './index.css';
+import "./index.css";
+import { User } from "firebase/auth";
 
 function App() {
-  const [user, setUser] = useState();
+  const [user, setUser] = useState<User | null>();
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       setUser(user);

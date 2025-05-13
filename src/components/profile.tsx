@@ -3,9 +3,16 @@ import { auth, db } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
+type UserDetails = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+};
+
 function Profile() {
   const navigate = useNavigate();
-  const [userDetails, setUserDetails] = useState(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -15,11 +22,11 @@ function Profile() {
           const docRef = doc(db, "Users", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setUserDetails(docSnap.data());
+            setUserDetails(docSnap.data() as UserDetails);
           } else {
             console.log("User document does not exist.");
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
       } else {
@@ -36,7 +43,7 @@ function Profile() {
     try {
       await auth.signOut();
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error logging out:", error.message);
     }
   };
@@ -72,7 +79,6 @@ function Profile() {
 }
 
 export default Profile;
-
 
 // import React, { useEffect, useState } from "react";
 // import { auth, db } from "./firebase";
@@ -135,7 +141,6 @@ export default Profile;
 //     }
 //   }
 
-
 //   return (
 //     <div>
 //       {userDetails ? (
@@ -162,7 +167,6 @@ export default Profile;
 //       )}
 //     </div>
 //   );
-
 
 // }
 // export default Profile;
