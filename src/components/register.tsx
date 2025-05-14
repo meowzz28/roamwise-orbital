@@ -9,11 +9,19 @@ function Register() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [conPassWord, setConPassword] = useState("");
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setConPassword;
+    if (password != conPassWord) {
+      toast.error("Passwords do not match!", {
+        position: "bottom-center",
+      });
+      return;
+    }
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
@@ -82,6 +90,17 @@ function Register() {
           className="form-control"
           placeholder="Enter password"
           onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="mb-3">
+        <label>Confirm Password</label>
+        <input
+          type="password"
+          className="form-control"
+          placeholder="Re-enter password"
+          onChange={(e) => setConPassword(e.target.value)}
           required
         />
       </div>
