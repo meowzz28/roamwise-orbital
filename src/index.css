@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Fira+Sans:400,500,600,700,800");
-
+@import "tailwindcss";
 * {
   box-sizing: border-box;
 }
@@ -88,4 +88,11 @@ html,
     font-weight: 600;
     margin-top: 1rem;
     text-align: center;
+}
+
+
+.page-wrapper {
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
