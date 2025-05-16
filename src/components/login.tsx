@@ -22,7 +22,7 @@ function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("User logged in Successfully");
-      navigate("/profile");
+      navigate("/");
       toast.success("User logged in Successfully", {
         position: "top-center",
       });
@@ -46,7 +46,7 @@ function Login() {
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <h1>RoamWise</h1> {/* Your page title outside the form */}
+      <h1>RoamWise</h1>
       <form onSubmit={handleSubmit}>
         <h3>Login</h3>
 
@@ -62,7 +62,7 @@ function Login() {
         </div>
 
         <div className="mb-3">
-          <label>Password</label>
+          <label className="block text-left">Password</label>
           <input
             type="password"
             className="form-control"

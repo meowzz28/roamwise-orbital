@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import NavigationBar from "./navigationbar";
 
 type UserDetails = {
   email: string;
@@ -72,15 +73,9 @@ function Profile() {
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <img
-          src={userDetails.photo}
-          width={"40%"}
-          style={{ borderRadius: "50%" }}
-        />
-      </div>
-      <h3>Welcome to RoamWise</h3>
+    <div className="container mt-4 bg-gray-200">
+      <h1> Profile Page </h1>
+      <h3 className="text-center my-3">Welcome to RoamWise</h3>
       <div>
         <p>Email: {userDetails.email}</p>
         <p>First Name: {userDetails.firstName}</p>
