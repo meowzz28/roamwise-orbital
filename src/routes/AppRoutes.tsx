@@ -5,9 +5,11 @@ import SignUp from "../components/register";
 import Profile from "../components/profile";
 import Navbar from "../components/navigationbar";
 import Home from "../components/home";
+import ChatPage from "../components/chatPage";
+import { User } from "firebase/auth";
 
 type Props = {
-  user: any;
+  user: User | null;
 };
 
 function AppRoutes({ user }: Props) {
@@ -24,7 +26,14 @@ function AppRoutes({ user }: Props) {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<SignUp />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/profile"
+              element={user ? <Profile /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/chatbot"
+              element={user ? <ChatPage /> : <Navigate to="/login" />}
+            />
           </Routes>
         </div>
       </div>

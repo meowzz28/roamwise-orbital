@@ -25,7 +25,7 @@ function SignInwithGoogle() {
         toast.success("User logged in Successfully", {
           position: "top-center",
         });
-        navigate("/profile");
+        navigate("/");
       }
     } catch (error: any) {
       console.log(error.message);
