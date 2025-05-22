@@ -104,7 +104,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
         New Chat{" "}
       </button>
       <div className="overflow-y-auto h-96 bg-gray-600">
-        {chats.map((chat) => (
+        {chats.map((chat, index) => (
           <div
             key={chat.id}
             onClick={() => setSelectedChatID(chat.id)}
@@ -112,7 +112,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
               selectedChatID === chat.id ? "border-2 border-white" : ""
             }`}
           >
-            Chat - {chat.message.slice(0, 5)}
+            Chat - {index + 1}
             <button
               onClick={(e) => deleteChat(chat.id, e)}
               className="text-red-500 hover:text-red-700 text-align-right float-right"
