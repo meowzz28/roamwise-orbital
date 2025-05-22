@@ -1,5 +1,8 @@
 import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Forum from "../components/forum";
+import ViewPost from "../components/viewPost";
+import CreatePost from "../components/createPost";
 import Login from "../components/login";
 import SignUp from "../components/register";
 import Profile from "../components/profile";
@@ -25,6 +28,8 @@ function AppRoutes({ user }: Props) {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/createPost" element={<CreatePost />} />
+            <Route path="/forum" element={<Forum />} />
             <Route path="/register" element={<SignUp />} />
             <Route
               path="/profile"
@@ -34,6 +39,7 @@ function AppRoutes({ user }: Props) {
               path="/chatbot"
               element={user ? <ChatPage /> : <Navigate to="/login" />}
             />
+            <Route path="/viewPost/:postId" element={<ViewPost />} />
           </Routes>
         </div>
       </div>
