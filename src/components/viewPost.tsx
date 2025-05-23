@@ -23,6 +23,7 @@ type UserDetails = {
 
 type ForumPost = {
   id: string;
+  UID: string;
   User: string;
   Topic: string;
   Message: string;
@@ -34,6 +35,7 @@ type ForumPost = {
 
 type Comment = {
   id: string;
+  UID: string;
   User: string;
   Message: string;
   PostId: string;
@@ -48,6 +50,7 @@ function ViewPost() {
   const { postId } = useParams<{ postId: string }>();
   const [post, setPost] = useState<ForumPost | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [UID, setUID] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState("");
@@ -61,6 +64,7 @@ function ViewPost() {
           if (user) {
             try {
               const userDocRef = doc(db, "Users", user.uid);
+              setUID(user.uid);
               const userDocSnap = await getDoc(userDocRef);
               if (userDocSnap.exists()) {
                 setUserDetails(userDocSnap.data() as UserDetails);
@@ -76,6 +80,7 @@ function ViewPost() {
                   const data = postDocSnap.data();
                   setPost({
                     id: postId,
+                    UID: data.UID,
                     User: data.User || "",
                     Topic: data.Topic || "",
                     Message: data.Message || "",
@@ -127,6 +132,7 @@ function ViewPost() {
         const data = doc.data();
         return {
           id: doc.id,
+          UID: data.UID,
           User: data.User || "",
           Message: data.Message || "",
           PostId: data.PostId || "",
@@ -201,6 +207,7 @@ function ViewPost() {
       if (user && userDetails && postId) {
         await addDoc(collection(db, "ForumComment"), {
           User: userDetails.firstName,
+          UID: user.uid,
           Message: comment,
           PostId: postId,
           Time: serverTimestamp(),
@@ -297,7 +304,7 @@ function ViewPost() {
         </div>
       </div>
 
-      {userDetails?.firstName === post.User && (
+      {UID === post.UID && (
         <div className="mb-4">
           <button className="btn btn-danger" onClick={handleDelete}>
             Delete Post
@@ -342,7 +349,7 @@ function ViewPost() {
                         : "N/A"}
                     </p>
                   </div>
-                  {userDetails?.firstName === comment.User && (
+                  {UID === comment.UID && (
                     <button
                       className="text-red-500 text-sm"
                       onClick={() => handleDeleteComment(comment.id)}
