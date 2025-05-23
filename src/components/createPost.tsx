@@ -87,6 +87,7 @@ function CreatePost() {
 
         await addDoc(collection(db, "Forum"), {
           User: userDetails.firstName,
+          UID: user.uid,
           Message: context,
           Topic: topic,
           Time: serverTimestamp(),
