@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
+import fetchChats from "../hooks/fetchChats";
 
 type ChatMessage = {
   message: string;
@@ -20,27 +21,6 @@ type ChatMessage = {
 
 const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
   const [chats, setChats] = useState<any[]>([]);
-
-  const fetchChats = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-      const q = query(
-        collection(db, "Users", user.uid, "chats"),
-        orderBy("createdAt", "desc")
-      );
-      const querySnapshot = await getDocs(q);
-      const chats = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        message: doc.data().messages[0].message,
-        createdAt: doc.data().createdAt,
-      }));
-
-      setChats(chats);
-    } catch (error) {
-      console.error("Error fetching chats: ", error);
-    }
-  };
 
   const initializeChat = async () => {
     const user = auth.currentUser;
@@ -61,7 +41,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
         createdAt: serverTimestamp(),
       });
 
-      await fetchChats();
+      await fetchChats(setChats);
 
       setSelectedChatID(docRef.id);
 
@@ -91,7 +71,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
   };
 
   useEffect(() => {
-    fetchChats();
+    fetchChats(setChats);
   }, []);
 
   return (
