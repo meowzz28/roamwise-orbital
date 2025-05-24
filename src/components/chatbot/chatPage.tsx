@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SideBar from "./chatbotSidebar";
 import ChatBot from "./chatbot";
-import fetchChats from "../hooks/fetchChats";
+import fetchChats from "../../hooks/fetchChats";
 
 const chatPage = () => {
   const [selectedChatID, setSelectedChatID] = useState<string | null>(null);

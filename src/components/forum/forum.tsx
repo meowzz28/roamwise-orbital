@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "./firebase";
+import { auth, db } from "../firebase";
 import { doc, collection, getDoc, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import NavigationBar from "./navigationbar";
+import NavigationBar from "../navigationbar";
 
 type UserDetails = {
   email: string;

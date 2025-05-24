@@ -9,9 +9,9 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { auth, db } from "../firebase";
 import { toast } from "react-toastify";
-import fetchChats from "../hooks/fetchChats";
+import fetchChats from "../../hooks/fetchChats";
 
 type ChatMessage = {
   message: string;
