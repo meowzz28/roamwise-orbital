@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import UploadForm from "./gallery/uploadForm";
 import NavigationBar from "./navigationbar";
+import ImageGrid from "./gallery/imageGrid";
+import PopUp from "./gallery/popUp";
 
 type UserDetails = {
   email: string;
@@ -15,6 +18,7 @@ function Profile() {
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [selectedImg, setSelectedImg] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -75,7 +79,7 @@ function Profile() {
   return (
     <div className="container mt-4 bg-gray-200">
       <h1> Profile Page </h1>
-      <h3 className="text-center my-3">Welcome to RoamWise</h3>
+      <h2 className="text-center my-3">Welcome to RoamWise</h2>
       <div>
         <p>Email: {userDetails.email}</p>
         <p>First Name: {userDetails.firstName}</p>
@@ -90,6 +94,14 @@ function Profile() {
         <button className="btn btn-danger" onClick={handleDelete}>
           Delete Account
         </button>
+      </div>
+      <div className="mt-4">
+        <h3 className="text-center">Your Memories</h3>
+        <UploadForm />
+        <ImageGrid setSelectedImg={setSelectedImg} />
+        {selectedImg && (
+          <PopUp selectedImg={selectedImg} setSelectedImg={setSelectedImg} />
+        )}
       </div>
     </div>
   );

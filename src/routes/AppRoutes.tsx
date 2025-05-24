@@ -1,14 +1,14 @@
 import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Forum from "../components/forum";
-import ViewPost from "../components/viewPost";
-import CreatePost from "../components/createPost";
+import Forum from "../components/forum/forum";
+import ViewPost from "../components/forum/viewPost";
+import CreatePost from "../components/forum/createPost";
 import Login from "../components/login";
 import SignUp from "../components/register";
 import Profile from "../components/profile";
 import Navbar from "../components/navigationbar";
 import Home from "../components/home";
-import ChatPage from "../components/chatPage";
+import ChatPage from "../components/chatbot/chatPage";
 import { User } from "firebase/auth";
 
 type Props = {
