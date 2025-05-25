@@ -6,12 +6,14 @@ import UploadForm from "./gallery/uploadForm";
 import NavigationBar from "./navigationbar";
 import ImageGrid from "./gallery/imageGrid";
 import PopUp from "./gallery/popUp";
+import { ref, deleteObject, listAll } from "firebase/storage";
+import { storage } from "./firebase";
 
 type UserDetails = {
   email: string;
   firstName: string;
   lastName: string;
-  photo: string;
+  pic: string;
 };
 
 function Profile() {
@@ -57,6 +59,12 @@ function Profile() {
     try {
       const user = auth.currentUser;
       if (user) {
+        const folderRef = ref(storage, `images/${user.uid}`);
+        const listResult = await listAll(folderRef);
+        const deletePromises = listResult.items.map((fileRef) =>
+          deleteObject(fileRef)
+        );
+        await Promise.all(deletePromises);
         await deleteDoc(doc(db, "Users", user.uid));
         await user.delete();
         navigate("/login");
@@ -79,11 +87,19 @@ function Profile() {
   return (
     <div className="container mt-4 bg-gray-200">
       <h1> Profile Page </h1>
-      <h2 className="text-center my-3">Welcome to RoamWise</h2>
+
       <div>
+        {userDetails.pic && (
+          <img
+            src={userDetails.pic}
+            alt="User Profile"
+            className="rounded-circle mb-3"
+            style={{ width: "50px", height: "50px" }}
+          />
+        )}
         <p>Email: {userDetails.email}</p>
         <p>First Name: {userDetails.firstName}</p>
-        {/* <p>Last Name: {userDetails.lastName}</p> */}
+        {userDetails.lastName && <p>Last Name: {userDetails.lastName}</p>}
       </div>
       <div className="mb-2">
         <button className="btn btn-primary" onClick={handleLogout}>
