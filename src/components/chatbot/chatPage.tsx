@@ -1,12 +1,48 @@
 import React, { useState, useEffect } from "react";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import SideBar from "./chatbotSidebar";
 import ChatBot from "./chatbot";
 import fetchChats from "../../hooks/fetchChats";
 
-const chatPage = () => {
+type UserDetails = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  pic: string;
+};
+
+const ChatPage = () => {
+  const navigate = useNavigate();
   const [selectedChatID, setSelectedChatID] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setPageLoading(true);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const docRef = doc(db, "Users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserDetails(docSnap.data() as UserDetails);
+          } else {
+            console.log("User document does not exist.");
+          }
+        } catch (err: any) {
+          console.error("Error fetching user data:", err.message);
+        }
+      } else {
+        setUserDetails(null);
+      }
+      setPageLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleChatChange = (chatId: string | null) => {
     if (selectedChatID !== chatId) {
@@ -21,13 +57,13 @@ const chatPage = () => {
     }
   };
 
-  useEffect(() => {
-    setPageLoading(true);
-    setTimeout(() => {
-      setPageLoading(false);
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // useEffect(() => {
+  //   setPageLoading(true);
+  //   setTimeout(() => {
+  //     setPageLoading(false);
+  //     setLoading(false);
+  //   }, 1500);
+  // }, []);
 
   if (pageLoading) {
     return (
@@ -40,8 +76,25 @@ const chatPage = () => {
     );
   }
 
+  if (!userDetails) {
+    return (
+      <div className="container text-center p-5">
+        <p className="text-danger">User not logged in or user data missing.</p>
+        <button
+          className="btn btn-primary mt-3"
+          onClick={() => navigate("/login")}
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="container bg-gray-200 p-b-4 p-5  rounded shadow-lg">
+      <div className="flex justify-between items-center mb-4 border-dark border-bottom">
+        <h1 className="text-2xl font-bold ">AI Assistance</h1>
+      </div>
       <div className="flex flex-row">
         <div className="w-1/4">
           <SideBar
@@ -63,4 +116,4 @@ const chatPage = () => {
   );
 };
 
-export default chatPage;
+export default ChatPage;

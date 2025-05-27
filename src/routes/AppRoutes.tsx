@@ -31,14 +31,16 @@ function AppRoutes({ user }: Props) {
             <Route path="/createPost" element={<CreatePost />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/register" element={<SignUp />} />
-            <Route
+            <Route path="/profile" element={<Profile />} />
+            {/* <Route
               path="/profile"
               element={user ? <Profile /> : <Navigate to="/login" />}
-            />
-            <Route
+            /> */}
+            <Route path="/chatbot" element={<ChatPage />} />
+            {/* <Route
               path="/chatbot"
               element={user ? <ChatPage /> : <Navigate to="/login" />}
-            />
+            /> */}
             <Route path="/viewPost/:postId" element={<ViewPost />} />
           </Routes>
         </div>
