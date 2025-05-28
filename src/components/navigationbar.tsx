@@ -69,9 +69,11 @@ const Navigationbar = () => {
                   Login
                 </a>
               )}
-              <button className="btn btn-danger" onClick={forceLogout}>
-                Logout
-              </button>
+              {isLoggedIn && (
+                <button className="btn btn-danger" onClick={forceLogout}>
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         </div>
