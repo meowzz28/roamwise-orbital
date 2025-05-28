@@ -4,6 +4,7 @@ import Forum from "../components/forum/forum";
 import ViewPost from "../components/forum/viewPost";
 import CreatePost from "../components/forum/createPost";
 import Login from "../components/login";
+import ResetPassword from "../components/resetPassword";
 import SignUp from "../components/register";
 import Profile from "../components/profile";
 import Navbar from "../components/navigationbar";
@@ -28,6 +29,7 @@ function AppRoutes({ user }: Props) {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/resetPassword" element={<ResetPassword />} />
             <Route path="/createPost" element={<CreatePost />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/register" element={<SignUp />} />
