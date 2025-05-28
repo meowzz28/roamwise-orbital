@@ -93,7 +93,7 @@ const ChatPage = () => {
   return (
     <div className="container bg-gray-200 p-b-4 p-5  rounded shadow-lg">
       <div className="flex justify-between items-center mb-4 border-dark border-bottom">
-        <h1 className="text-2xl font-bold ">AI Assistance</h1>
+        <h1 className="text-2xl font-bold ">AI Assistant</h1>
       </div>
       <div className="flex flex-row">
         <div className="w-1/4">
