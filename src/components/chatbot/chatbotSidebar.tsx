@@ -32,7 +32,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
         messages: [
           {
             message:
-              "RoamWise your travel planning assistant. Please state where you want to go and how many days you want to travel.",
+              "RoamWise your travel planning assistant. Please state where you want to go, the date and how many days you want to travel.",
             sender: "assistant",
             direction: "incoming",
           },
