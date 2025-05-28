@@ -44,7 +44,7 @@ function Register() {
       });
 
       await auth.signOut();
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.log(error.message);
       toast.error(error.message, {
