@@ -23,6 +23,7 @@ function Register() {
       return;
     }
     try {
+      const loadingToastId = toast.loading("Creating your user...");
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
       console.log(user);
@@ -34,11 +35,16 @@ function Register() {
         });
       }
       console.log("User Registered Successfully!!");
-      toast.success("User Registered Successfully!!", {
+      toast.update(loadingToastId, {
+        render: "User created successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "top-center",
       });
+
       await auth.signOut();
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       console.log(error.message);
       toast.error(error.message, {
