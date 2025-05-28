@@ -9,7 +9,7 @@ type UserDetails = {
   email: string;
   firstName: string;
   lastName: string;
-  photo: string;
+  pic: string;
 };
 
 type ForumPost = {
@@ -89,7 +89,7 @@ function Forum() {
   if (!userDetails) {
     return (
       <div className="container text-center p-5">
-        <p className="text-danger">User not logged in.</p>
+        <p className="text-danger">User not logged in or user data missing.</p>
         <button
           className="btn btn-primary mt-3"
           onClick={() => navigate("/login")}
@@ -119,8 +119,8 @@ function Forum() {
 
   return (
     <div className="container bg-gray-200 p-5 rounded shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Community Forum</h1>
+      <div className="flex justify-between items-center mb-4  border-dark border-bottom">
+        <h1 className="text-2xl font-bold ">Community Forum</h1>
         <button className="btn btn-outline-success" onClick={handleCreate}>
           Create Post
         </button>

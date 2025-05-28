@@ -15,10 +15,7 @@ const home = () => {
     }
   };
   return (
-    <div>
-      <button className="btn btn-warning" onClick={forceLogout}>
-        Force Logout
-      </button>
+    <div className="container bg-gray-200 p-5 rounded shadow-lg ">
       <h1 className="text-3xl font-bold underline">Welcome to RoamWise</h1>
       <p className="mt-4 text-lg">
         Your one-stop solution for travel planning and community engagement.

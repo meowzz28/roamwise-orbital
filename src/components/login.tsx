@@ -37,7 +37,7 @@ function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/profile");
+        navigate("/");
       }
     });
 
