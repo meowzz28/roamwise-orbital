@@ -134,7 +134,7 @@ function Forum() {
                 <tr>
                   <th className="col-md-2">Posted by</th>
                   <th className="col-md-7">Topic</th>
-                  <th className="col-md-3">Time</th>
+                  <th className="col-md-3">Last update</th>
                 </tr>
               </thead>
               <tbody>
