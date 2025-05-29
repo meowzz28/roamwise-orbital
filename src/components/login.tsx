@@ -77,9 +77,18 @@ function Login() {
             Submit
           </button>
         </div>
-        <p className="forgot-password text-right">
-          New user <a href="/register">Register Here</a>
-        </p>
+        <div className="row">
+          <a
+            className="col-5 forgot-password text-primary"
+            href="/resetPassword"
+          >
+            Forgot Password
+          </a>
+
+          <p className="col forgot-password text-right">
+            New user <a href="/register">Register Here</a>
+          </p>
+        </div>
         <SignInwithGoogle />
       </form>
     </div>
