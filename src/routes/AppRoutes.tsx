@@ -11,6 +11,7 @@ import Navbar from "../components/navigationbar";
 import Home from "../components/home";
 import ChatPage from "../components/chatbot/chatPage";
 import { User } from "firebase/auth";
+import EditPost from "../components/forum/editPost";
 
 type Props = {
   user: User | null;
@@ -31,18 +32,11 @@ function AppRoutes({ user }: Props) {
             <Route path="/login" element={<Login />} />
             <Route path="/resetPassword" element={<ResetPassword />} />
             <Route path="/createPost" element={<CreatePost />} />
+            <Route path="/editPost/:postId" element={<EditPost />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/register" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
-            {/* <Route
-              path="/profile"
-              element={user ? <Profile /> : <Navigate to="/login" />}
-            /> */}
             <Route path="/chatbot" element={<ChatPage />} />
-            {/* <Route
-              path="/chatbot"
-              element={user ? <ChatPage /> : <Navigate to="/login" />}
-            /> */}
             <Route path="/viewPost/:postId" element={<ViewPost />} />
           </Routes>
         </div>

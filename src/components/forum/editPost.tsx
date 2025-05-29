@@ -3,13 +3,13 @@ import { auth, db } from "../firebase";
 import {
   doc,
   collection,
-  addDoc,
   serverTimestamp,
   getDoc,
   deleteDoc,
   query,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -45,7 +45,7 @@ type Comment = {
   };
 };
 
-function ViewPost() {
+function EditPost() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
   const [post, setPost] = useState<ForumPost | null>(null);
@@ -53,9 +53,9 @@ function ViewPost() {
   const [UID, setUID] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [context, setContext] = useState("");
+  const [topic, setTopic] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,8 +86,8 @@ function ViewPost() {
                     Message: data.Message || "",
                     Time: data.Time,
                   });
-
-                  await fetchComments();
+                  setTopic(data.Topic || "");
+                  setContext(data.Message || "");
                 } else {
                   setError("Post not found.");
                 }
@@ -116,44 +116,6 @@ function ViewPost() {
 
     fetchData();
   }, [postId, navigate]);
-
-  const fetchComments = async () => {
-    if (!postId) return;
-
-    try {
-      setCommentsLoading(true);
-      const commentsQuery = query(
-        collection(db, "ForumComment"),
-        where("PostId", "==", postId)
-      );
-
-      const querySnapshot = await getDocs(commentsQuery);
-      const commentsData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          UID: data.UID,
-          User: data.User || "",
-          Message: data.Message || "",
-          PostId: data.PostId || "",
-          Time: data.Time,
-        } as Comment;
-      });
-
-      commentsData.sort((a, b) => {
-        const timeA = a.Time?.seconds || 0;
-        const timeB = b.Time?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setComments(commentsData);
-    } catch (err: any) {
-      console.error("Error fetching comments:", err);
-      toast.error(`Error loading comments: ${err.message}`);
-    } finally {
-      setCommentsLoading(false);
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -195,62 +157,71 @@ function ViewPost() {
     }
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!comment.trim()) {
-      toast.error("Comment cannot be empty");
+
+    if (!topic.trim()) {
+      toast.error("Topic cannot be empty", {
+        position: "top-center",
+      });
       return;
     }
 
+    if (!context.trim()) {
+      toast.error("Content cannot be empty", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    if (!postId) {
+      toast.error("Post ID is missing", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
-        await addDoc(collection(db, "ForumComment"), {
+        const loadingToastId = toast.loading("Editing your post...");
+        await updateDoc(doc(db, "Forum", postId), {
           User: userDetails.firstName,
           UID: user.uid,
-          Message: comment,
-          PostId: postId,
+          Message: context,
+          Topic: topic,
           Time: serverTimestamp(),
         });
 
-        toast.success("Comment posted successfully!", {
+        toast.update(loadingToastId, {
+          render: "Post updated successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
           position: "top-center",
         });
 
-        setComment("");
-        fetchComments();
+        navigate(`/viewPost/${postId}`);
       } else {
         toast.error("Something went wrong. Please try again.");
       }
     } catch (error: any) {
-      console.error("Error posting comment:", error);
+      console.error("Error creating post:", error);
       toast.error(error.message, {
         position: "bottom-center",
       });
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await deleteDoc(doc(db, "ForumComment", commentId));
-      toast.success("Comment deleted successfully!", {
-        position: "top-center",
-      });
-      fetchComments();
-    } catch (error: any) {
-      console.error("Error deleting comment:", error);
-      toast.error(error.message, {
-        position: "bottom-center",
-      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleBack = () => {
-    navigate("/forum");
+    navigate(`/forum`);
   };
 
-  const handleEdit = (postId: string) => {
-    navigate(`/editPost/${postId}`);
+  const handleView = (postId: string) => {
+    navigate(`/viewPost/${postId}`);
   };
 
   if (loading) {
@@ -265,8 +236,8 @@ function ViewPost() {
     return (
       <div className="container text-center p-5">
         <p className="text-red-500">{error}</p>
-        <button className="btn btn-primary mt-3" onClick={handleBack}>
-          Back to Forum
+        <button className="btn btn-primary mt-3" onClick={() => handleBack}>
+          Back to Post
         </button>
       </div>
     );
@@ -286,103 +257,64 @@ function ViewPost() {
   return (
     <div className="container bg-gray-200 p-5 rounded shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Forum Post Details</h1>
+        <h1 className="text-2xl font-bold">Edit Post</h1>
         <button className="btn btn-outline-primary" onClick={handleBack}>
           Back to Forum
         </button>
       </div>
 
       <div className="bg-white p-4 rounded shadow-md mb-4">
-        <div>
-          <div className="flex justify-between mb-2">
-            <h2 className="text-xl font-semibold mb-2">{post.Topic}</h2>
+        <form onSubmit={handlePost}>
+          <div className="mb-3">
+            <label className="block mb-1 font-medium">Topic</label>
+            <input
+              type="text"
+              className="form-control w-full p-2 border rounded"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              required
+            />
           </div>
-          <div className="flex justify-between text-gray-600 text-sm mb-3">
-            <span>Posted by: {post.User}</span>
-            <span>
-              Last update:{" "}
-              {post.Time?.seconds
-                ? new Date(post.Time.seconds * 1000).toLocaleString()
-                : "N/A"}
-            </span>
-          </div>
-          <hr className="mb-3" />
-          <div className="post-content whitespace-pre-wrap">{post.Message}</div>
-        </div>
-      </div>
 
-      {UID === post.UID && (
-        <div className="mb-4 flex gap-3 justify-content-end">
+          <div className="mb-3">
+            <label className="block mb-1 font-medium">Context</label>
+            <textarea
+              className="form-control w-full p-2 border rounded"
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              required
+            />
+          </div>
+
           <button
-            className="btn btn-info text-white "
-            onClick={() => handleEdit(post.id)}
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSubmitting}
           >
-            Edit Post
+            {isSubmitting ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Updating Post...
+              </>
+            ) : (
+              "Update Post"
+            )}
           </button>
-          <button className="btn btn-danger" onClick={handleDelete}>
-            Delete Post
-          </button>
-        </div>
-      )}
-
-      <div className="bg-white p-4 rounded shadow-md mb-4">
-        <h3 className="text-lg font-semibold mb-3">Comments</h3>
-
-        <div className="space-y-3 mb-4">
-          <form onSubmit={handleCommentSubmit}>
-            <div className="mb-3">
-              <label className="block mb-1 font-medium">Add a comment</label>
-              <textarea
-                className="form-control w-full p-2 border rounded"
-                placeholder="Write your comment here..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!comment.trim()}
-            >
-              Post Comment
-            </button>
-          </form>
-          {commentsLoading ? (
-            <p>Loading comments...</p>
-          ) : comments.length > 0 ? (
-            comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-100 p-3 rounded">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{comment.User}</p>
-                    <p className="text-gray-500 text-xs">
-                      {comment.Time?.seconds
-                        ? new Date(comment.Time.seconds * 1000).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </div>
-                  {UID === comment.UID && (
-                    <button
-                      className="text-red-500 text-sm"
-                      onClick={() => handleDeleteComment(comment.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-                <p className="mt-2">{comment.Message}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500">
-              No comments yet. Be the first to comment!
-            </p>
-          )}
-        </div>
+        </form>
       </div>
+
+      <button
+        className="btn btn-outline-secondary"
+        onClick={() => handleView(post.id)}
+      >
+        Cancel
+      </button>
     </div>
   );
 }
 
-export default ViewPost;
+export default EditPost;
