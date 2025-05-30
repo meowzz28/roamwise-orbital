@@ -115,9 +115,6 @@ function Profile() {
     <div className="container bg-gray-200 p-5 rounded shadow-lg ">
       <div className="flex justify-between items-center mb-4 border-dark border-bottom">
         <h1 className="text-2xl font-bold">Profile Page</h1>
-        <button className="btn btn-primary" onClick={handleLogout}>
-          Logout
-        </button>
       </div>
       <div className="row">
         <div className=" col-1 d-flex flex-column align-items-center me-4 border-end pe-3">
