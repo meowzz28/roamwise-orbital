@@ -65,7 +65,15 @@ function Forum() {
             Time: data.Time,
           } as ForumPost;
         });
-        setPosts(forumData);
+        const sortedPosts = forumData.sort((a, b) => {
+          if (!a.Time?.seconds && !b.Time?.seconds) return 0;
+          if (!a.Time?.seconds) return 1;
+          if (!b.Time?.seconds) return -1;
+
+          return b.Time.seconds - a.Time.seconds; // Descending order
+        });
+
+        setPosts(sortedPosts);
       } catch (err) {
         console.error("Error fetching forum data:", err);
       }
