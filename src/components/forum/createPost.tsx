@@ -90,6 +90,8 @@ function CreatePost() {
           UID: user.uid,
           Message: context,
           Topic: topic,
+          Likes: 0,
+          LikedBy: [],
           Time: serverTimestamp(),
         });
 

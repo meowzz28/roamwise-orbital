@@ -26,6 +26,8 @@ type ForumPost = {
   UID: string;
   User: string;
   Topic: string;
+  Likes: number;
+  LikedBy: string[];
   Message: string;
   Time?: {
     seconds: number;
@@ -91,6 +93,8 @@ function EditPost() {
                     User: data.User || "",
                     Topic: data.Topic || "",
                     Message: data.Message || "",
+                    LikedBy: data.LikedBy || [],
+                    Likes: data.Likes || 0,
                     Time: data.Time,
                   });
                   setTopic(data.Topic || "");

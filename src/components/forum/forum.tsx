@@ -17,6 +17,8 @@ type ForumPost = {
   index: number;
   User: string;
   Topic: string;
+  Likes: number;
+  LikedBy: string[];
   Message: string;
   Time?: {
     seconds: number;
@@ -61,6 +63,7 @@ function Forum() {
             id: doc.id,
             User: data.User || "",
             Topic: data.Topic || "",
+            Likes: data.Likes || 0,
             Message: data.Message || "",
             Time: data.Time,
           } as ForumPost;
@@ -141,7 +144,8 @@ function Forum() {
               <thead className="table-light">
                 <tr>
                   <th className="col-md-2">Posted by</th>
-                  <th className="col-md-7">Topic</th>
+                  <th className="col-md-5">Topic</th>
+                  <th className="col-md-2">Likes</th>
                   <th className="col-md-3">Last update</th>
                 </tr>
               </thead>
@@ -162,6 +166,9 @@ function Forum() {
                       </div>
                     </td>
                     <td className="font-semibold">{post.Topic}</td>
+                    <td>
+                      <span>{post.Likes}</span>
+                    </td>
                     <td>
                       {post.Time?.seconds ? (
                         <span className="text-gray-600 text-sm">
