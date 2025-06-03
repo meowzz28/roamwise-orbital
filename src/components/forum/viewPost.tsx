@@ -10,6 +10,7 @@ import {
   query,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -27,6 +28,8 @@ type ForumPost = {
   User: string;
   Topic: string;
   Message: string;
+  Likes: number;
+  LikedBy: string[];
   Time?: {
     seconds: number;
     nanoseconds: number;
@@ -56,6 +59,7 @@ function ViewPost() {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,9 +88,11 @@ function ViewPost() {
                     User: data.User || "",
                     Topic: data.Topic || "",
                     Message: data.Message || "",
+                    Likes: data.Likes || 0,
+                    LikedBy: data.LikedBy || [],
                     Time: data.Time,
                   });
-
+                  setIsLiked(data.LikedBy?.includes(user.uid) || false);
                   await fetchComments();
                 } else {
                   setError("Post not found.");
@@ -253,6 +259,31 @@ function ViewPost() {
     navigate(`/editPost/${postId}`);
   };
 
+  const handleLike = async () => {
+    try {
+      if (postId && post && UID) {
+        const likedBy = post.LikedBy || [];
+        const isCurrentlyLiked = likedBy.includes(UID);
+        const newLikes = isCurrentlyLiked ? post.Likes - 1 : post.Likes + 1;
+        const updatedLikedBy = isCurrentlyLiked
+          ? likedBy.filter((id) => id !== UID)
+          : [...likedBy, UID];
+        await updateDoc(doc(db, "Forum", postId), {
+          Likes: newLikes,
+          LikedBy: updatedLikedBy,
+        });
+        setPost({ ...post, Likes: newLikes, LikedBy: updatedLikedBy });
+        setIsLiked(!isCurrentlyLiked);
+      } else {
+        console.error("Post ID is undefined.");
+      }
+    } catch (error: any) {
+      toast.error(`Error liking post: ${error.message}`, {
+        position: "bottom-center",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container text-center p-5">
@@ -296,9 +327,6 @@ function ViewPost() {
         <div>
           <div className="flex justify-between mb-2">
             <h2 className="text-xl font-semibold mb-2">{post.Topic}</h2>
-          </div>
-          <div className="flex justify-between text-gray-600 text-sm mb-3">
-            <span>Posted by: {post.User}</span>
             <span>
               Last update:{" "}
               {post.Time?.seconds
@@ -306,6 +334,20 @@ function ViewPost() {
                 : "N/A"}
             </span>
           </div>
+          <div className="flex justify-between text-gray-600 text-sm mb-3">
+            <span>Posted by: {post.User}</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleLike}
+                className={`btn ${
+                  isLiked ? "btn-primary" : "btn-outline-primary"
+                }`}
+              >
+                {isLiked ? "Likes: " + post.Likes : "Likes: " + post.Likes}
+              </button>
+            </div>
+          </div>
+
           <hr className="mb-3" />
           <div className="post-content whitespace-pre-wrap">{post.Message}</div>
         </div>
