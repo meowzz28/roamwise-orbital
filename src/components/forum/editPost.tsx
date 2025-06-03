@@ -78,6 +78,13 @@ function EditPost() {
 
                 if (postDocSnap.exists()) {
                   const data = postDocSnap.data();
+                  if (data.UID !== user.uid) {
+                    toast.error("You are not authorized to edit this post.", {
+                      position: "top-center",
+                    });
+                    navigate("/forum");
+                    return;
+                  }
                   setPost({
                     id: postId,
                     UID: data.UID,
@@ -116,46 +123,6 @@ function EditPost() {
 
     fetchData();
   }, [postId, navigate]);
-
-  const handleDelete = async () => {
-    try {
-      if (!postId) {
-        toast.error("Post ID is missing.");
-        return;
-      }
-
-      const loadingToastId = toast.loading("Deleting post and comments...");
-
-      const commentsQuery = query(
-        collection(db, "ForumComment"),
-        where("PostId", "==", postId)
-      );
-      const commentsSnapshot = await getDocs(commentsQuery);
-
-      const commentDeletionPromises = commentsSnapshot.docs.map((doc) =>
-        deleteDoc(doc.ref)
-      );
-
-      await Promise.all(commentDeletionPromises);
-
-      await deleteDoc(doc(db, "Forum", postId));
-
-      toast.update(loadingToastId, {
-        render: `Post deleted successfully!`,
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-        position: "top-center",
-      });
-
-      navigate("/forum");
-    } catch (error: any) {
-      console.error("Error deleting post:", error);
-      toast.error(`Error: ${error.message}`, {
-        position: "bottom-center",
-      });
-    }
-  };
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
