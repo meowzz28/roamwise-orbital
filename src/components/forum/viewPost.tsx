@@ -11,6 +11,7 @@ import {
   where,
   getDocs,
   updateDoc,
+  runTransaction,
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -260,28 +261,68 @@ function ViewPost() {
   };
 
   const handleLike = async () => {
+    if (!postId || !UID) {
+      return;
+    }
+    const postRef = doc(db, "Forum", postId);
     try {
-      if (postId && post && UID) {
-        const likedBy = post.LikedBy || [];
+      await runTransaction(db, async (transaction) => {
+        const postDoc = await transaction.get(postRef);
+        if (!postDoc.exists()) {
+          throw new Error("Post does not exist.");
+        }
+
+        const likedBy = postDoc.data().LikedBy || [];
+
         const isCurrentlyLiked = likedBy.includes(UID);
-        const newLikes = isCurrentlyLiked ? post.Likes - 1 : post.Likes + 1;
+
+        const newLikes = isCurrentlyLiked
+          ? postDoc.data().Likes - 1
+          : postDoc.data().Likes + 1;
+
         const updatedLikedBy = isCurrentlyLiked
-          ? likedBy.filter((id) => id !== UID)
+          ? likedBy.filter((id: string) => id !== UID)
           : [...likedBy, UID];
-        await updateDoc(doc(db, "Forum", postId), {
+
+        transaction.update(postRef, {
           Likes: newLikes,
           LikedBy: updatedLikedBy,
         });
-        setPost({ ...post, Likes: newLikes, LikedBy: updatedLikedBy });
+        setPost({
+          ...(post as ForumPost),
+          Likes: newLikes,
+          LikedBy: updatedLikedBy,
+        });
         setIsLiked(!isCurrentlyLiked);
-      } else {
-        console.error("Post ID is undefined.");
-      }
+      });
     } catch (error: any) {
       toast.error(`Error liking post: ${error.message}`, {
         position: "bottom-center",
       });
     }
+
+    // try {
+    //   if (postId && post && UID) {
+    //     const likedBy = post.LikedBy || [];
+    //     const isCurrentlyLiked = likedBy.includes(UID);
+    //     const newLikes = isCurrentlyLiked ? post.Likes - 1 : post.Likes + 1;
+    //     const updatedLikedBy = isCurrentlyLiked
+    //       ? likedBy.filter((id) => id !== UID)
+    //       : [...likedBy, UID];
+    //     await updateDoc(doc(db, "Forum", postId), {
+    //       Likes: newLikes,
+    //       LikedBy: updatedLikedBy,
+    //     });
+    //     setPost({ ...post, Likes: newLikes, LikedBy: updatedLikedBy });
+    //     setIsLiked(!isCurrentlyLiked);
+    //   } else {
+    //     console.error("Post ID is undefined.");
+    //   }
+    // } catch (error: any) {
+    //   toast.error(`Error liking post: ${error.message}`, {
+    //     position: "bottom-center",
+    //   });
+    // }
   };
 
   if (loading) {
