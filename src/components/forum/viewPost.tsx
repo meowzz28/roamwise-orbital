@@ -10,7 +10,6 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
   runTransaction,
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
