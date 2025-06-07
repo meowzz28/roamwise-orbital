@@ -12,6 +12,8 @@ import Home from "../components/home";
 import ChatPage from "../components/chatbot/chatPage";
 import { User } from "firebase/auth";
 import EditPost from "../components/forum/editPost";
+import Templates from "../components/template/templatesPage";
+import Template from "../components/template/template";
 
 type Props = {
   user: User | null;
@@ -38,6 +40,8 @@ function AppRoutes({ user }: Props) {
             <Route path="/profile" element={<Profile />} />
             <Route path="/chatbot" element={<ChatPage />} />
             <Route path="/viewPost/:postId" element={<ViewPost />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/:templateID" element={<Template />} />
           </Routes>
         </div>
       </div>
