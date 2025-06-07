@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
 import DateSection from "./DateSection";
 import DailyPlan from "./DailyPlan";
+import AddNewMember from "./AddNewMember";
 
 type Template = {
   id: string;
@@ -28,9 +29,10 @@ const template = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
   const [userUID, setUserUID] = useState("");
-
+  const [showModal, setShowModal] = useState(false);
   const [template, setTemplate] = useState<Template | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isAddingMember, setIsAddingMember] = useState(false);
   const { templateID } = useParams();
 
   useEffect(() => {
@@ -70,6 +72,8 @@ const template = () => {
                 return;
               }
               setTemplate(docSnap.data() as Template);
+            } else {
+              navigate("/templates");
             }
           });
         }
@@ -109,9 +113,7 @@ const template = () => {
         toast.success("Template deleted successfully!");
         navigate("/templates");
       } catch (error: any) {
-        toast.error("Failed to delete template", {
-          position: "bottom-center",
-        });
+        console.log("Failed to delete template");
       }
     }
   };
@@ -142,6 +144,16 @@ const template = () => {
       </div>
     );
   }
+  if (isAddingMember) {
+    return (
+      <div className="container text-center p-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Adding New Member...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -157,8 +169,15 @@ const template = () => {
             </button>
             <button
               type="button"
+              className="text-white hover:text-white border bg-blue-500 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
+              onClick={() => setShowModal(true)}
+            >
+              Add member
+            </button>
+            <button
+              type="button"
               className="text-white hover:text-white border bg-red-500 border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
-              onClick={handleDelete} // You need to implement this handler
+              onClick={handleDelete}
             >
               Delete
             </button>
@@ -171,6 +190,13 @@ const template = () => {
               : "None"}
           </h5>
         </div>
+        {showModal && (
+          <AddNewMember
+            onClose={() => setShowModal(false)}
+            templateID={templateID}
+            setIsAddingMember={setIsAddingMember}
+          />
+        )}
         <div className="flex justify-center">
           <div className="flex items-center gap-4">
             <h1 className="text-5xl font-extrabold ">{template.topic}</h1>
