@@ -55,6 +55,13 @@ const Navigationbar = () => {
                 AI Assistant
               </a>
               <a
+                href="/templates"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                style={{ textDecoration: "none" }}
+              >
+                Templates
+              </a>
+              <a
                 href="/profile"
                 className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
                 style={{ textDecoration: "none" }}
