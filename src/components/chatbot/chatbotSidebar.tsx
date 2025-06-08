@@ -12,6 +12,7 @@ import {
 import { auth, db } from "../firebase";
 import { toast } from "react-toastify";
 import fetchChats from "../../hooks/fetchChats";
+import ChatNameModal from "./ChatNameModal";
 
 type ChatMessage = {
   message: string;
@@ -19,15 +20,24 @@ type ChatMessage = {
   direction?: "incoming" | "outgoing";
 };
 
-const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
+const chatbotSidebar = ({
+  selectedChatID,
+  setSelectedChatID,
+  setPageLoading,
+}) => {
   const [chats, setChats] = useState<any[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState("");
+  const openModal = () => {
+    setName("");
+    setShowModal(true);
+  };
 
-  const initializeChat = async () => {
+  const handleCreateChat = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user || !name.trim()) return;
+    setPageLoading(true);
     try {
-      setSelectedChatID(null);
-
       const docRef = await addDoc(collection(db, "Users", user.uid, "chats"), {
         messages: [
           {
@@ -39,17 +49,17 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
         ],
         userID: user.uid,
         createdAt: serverTimestamp(),
+        chatName: name,
       });
 
       await fetchChats(setChats);
-
       setSelectedChatID(docRef.id);
-
-      toast.success("New chat initialized", {
-        position: "top-center",
-      });
+      toast.success("New chat initialized", { position: "top-center" });
     } catch (error) {
       console.error("Error initializing chat: ", error);
+    } finally {
+      setShowModal(false);
+      setPageLoading(false);
     }
   };
 
@@ -75,15 +85,29 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
   }, []);
 
   return (
-    <div className="mb-2 p-4 bg-gray-800 rounded-lg">
+    <div
+      className="mb-2 p-4 bg-gray-800 rounded-lg "
+      style={{ height: "500px" }}
+    >
       <button
         className="text-white bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
-        onClick={initializeChat}
+        onClick={openModal}
       >
         {" "}
         New Chat{" "}
       </button>
-      <div className="overflow-y-auto h-96 bg-gray-600">
+      {showModal && (
+        <ChatNameModal
+          onClose={() => setShowModal(false)}
+          setName={setName}
+          name={name}
+          handleCreateChat={handleCreateChat}
+        />
+      )}
+      <div
+        className="overflow-y-auto h-96 bg-gray-600"
+        style={{ height: "calc(100% - 50px)" }}
+      >
         {chats.map((chat, index) => (
           <div
             key={chat.id}
@@ -92,7 +116,7 @@ const chatbotSidebar = ({ selectedChatID, setSelectedChatID }) => {
               selectedChatID === chat.id ? "border-2 border-white" : ""
             }`}
           >
-            Chat - {index + 1}
+            {chat.chatName}
             <button
               onClick={(e) => deleteChat(chat.id, e)}
               className="text-red-500 hover:text-red-700 text-align-right float-right"
