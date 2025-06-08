@@ -27,6 +27,7 @@ const fetchChats = async (setChats) => {
         id: doc.id,
         message: doc.data().messages[0].message,
         createdAt: doc.data().createdAt,
+        chatName: doc.data().chatName
       }));
 
       setChats(chats);

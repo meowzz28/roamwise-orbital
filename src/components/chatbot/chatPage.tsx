@@ -100,6 +100,7 @@ const ChatPage = () => {
           <SideBar
             selectedChatID={selectedChatID}
             setSelectedChatID={handleChatChange}
+            setPageLoading={setPageLoading}
           />
         </div>
         <div className="w-3/4">
