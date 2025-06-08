@@ -29,6 +29,7 @@ const AddNewMember = ({ onClose, templateID, setIsAddingMember }) => {
       );
       if (querySnapshot.empty) {
         toast.error("User not found");
+        setIsAddingMember(false);
         return;
       }
       const userDoc = querySnapshot.docs[0];
