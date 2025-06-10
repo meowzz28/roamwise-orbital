@@ -22,7 +22,7 @@ const Card = ({ topic, templateID, imageURL }) => {
             href={`/templates/${templateID}`}
             className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600"
           >
-            Edit Template
+            Edit Trip
           </a>
         </div>
       </div>
