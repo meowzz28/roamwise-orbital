@@ -168,7 +168,7 @@ const templatesPage = () => {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-        <p className="mt-3">Creating New Template...</p>
+        <p className="mt-3">Creating New Trip...</p>
       </div>
     );
   }
@@ -188,15 +188,20 @@ const templatesPage = () => {
 
   return (
     <div>
-      <button
-        onClick={() => setShowModal(true)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-      >
-        Create New Template +
-      </button>
+      <div className="relative flex items-center justify-end mb-6">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-center">
+          Trips 🗓️
+        </h1>
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+        >
+          Create New Trip +
+        </button>
+      </div>
 
       {templates.length === 0 ? (
-        <p className="text-gray-600">No templates found.</p>
+        <p className="text-gray-600">No trips found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {templates.map((template) => (
