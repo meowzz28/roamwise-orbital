@@ -2,7 +2,7 @@ import React from "react";
 
 const Card = ({ topic, templateID, imageURL }) => {
   return (
-    <div className="w-80 h-80 flex-shrink-0 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-80 h-84 flex-shrink-0 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
       <img
         className="w-full h-40 object-cover rounded-t-lg"
         src={imageURL}
@@ -13,8 +13,8 @@ const Card = ({ topic, templateID, imageURL }) => {
         }}
       />
       <div className="h-[1px] bg-black mx-4" />
-      <div className="p-4 flex flex-col justify-between h-40">
-        <h1 className="text-xl font-bold text-center text-gray-900 truncate">
+      <div className="p-4 flex flex-col justify-between h-44">
+        <h1 className="text-xl font-bold text-center text-gray-900  leading-relaxed truncate py-1">
           {topic}
         </h1>
         <div className="flex justify-center mt-4">

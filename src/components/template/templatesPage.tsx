@@ -9,6 +9,7 @@ import {
   where,
   addDoc,
   serverTimestamp,
+  orderBy,
 } from "firebase/firestore";
 import Card from "./card";
 import { useNavigate } from "react-router-dom";
@@ -48,8 +49,8 @@ const templatesPage = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const [startDate, setStartDate] = useState("");
+  // const [endDate, setEndDate] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -80,7 +81,8 @@ const templatesPage = () => {
         const querySnapshot = await getDocs(
           query(
             collection(db, "Templates"),
-            where("userUIDs", "array-contains", UID)
+            where("userUIDs", "array-contains", UID),
+            orderBy("time", "desc")
           )
         );
         const templateData = querySnapshot.docs.map((doc) => ({
@@ -96,7 +98,11 @@ const templatesPage = () => {
     fetchData();
   }, [UID]);
 
-  const handleCreate = async (templateName: string) => {
+  const handleCreate = async (
+    templateName: string,
+    start: string,
+    end: string
+  ) => {
     setIsCreating(true);
     try {
       const user = auth.currentUser;
@@ -118,8 +124,8 @@ const templatesPage = () => {
           userUIDs: [user.uid],
           users: [userDetails.firstName],
           topic: templateName,
-          startDate: startDate,
-          endDate: endDate,
+          startDate: start,
+          endDate: end,
           imageURL: uploadedImageURL,
           time: serverTimestamp(),
         });
@@ -131,8 +137,8 @@ const templatesPage = () => {
             userUIDs: [user.uid],
             users: [userDetails.firstName],
             topic: templateName,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: start,
+            endDate: end,
             imageURL: uploadedImageURL,
             time: serverTimestamp(),
           },
@@ -226,8 +232,6 @@ const templatesPage = () => {
           show={showModal}
           onClose={() => setShowModal(false)}
           onCreate={handleCreate}
-          setStartDate={setStartDate}
-          setEndDate={setEndDate}
           setImage={setImage}
         />
       )}
