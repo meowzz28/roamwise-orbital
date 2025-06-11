@@ -57,7 +57,7 @@ const allCurrencies = [
   { code: "XAF", name: "Central African CFA Franc", symbol: "FCFA" },
 ];
 
-const ExpenseModal = ({ setIsCreating, onClose }) => {
+const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
@@ -77,12 +77,19 @@ const ExpenseModal = ({ setIsCreating, onClose }) => {
       });
       return;
     }
+    if (!tripId) {
+      toast.error("Please select a trip before adding expenses.", {
+        position: "bottom-center",
+      });
+      return;
+    }
 
     setIsCreating(true);
 
     try {
       await addDoc(collection(db, "Expenses"), {
         userId: user.uid,
+        tripId: tripId,
         category: category,
         description: description,
         date: date,
