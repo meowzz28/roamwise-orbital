@@ -162,6 +162,7 @@ const template = () => {
           <div className="flex gap-2">
             <button
               type="button"
+              style={{ borderRadius: "8px" }}
               className="text-white hover:text-white border bg-blue-500 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
               onClick={handleBack}
             >
@@ -169,6 +170,7 @@ const template = () => {
             </button>
             <button
               type="button"
+              style={{ borderRadius: "8px" }}
               className="text-white hover:text-white border bg-blue-500 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
               onClick={() => setShowModal(true)}
             >
@@ -176,6 +178,7 @@ const template = () => {
             </button>
             <button
               type="button"
+              style={{ borderRadius: "8px" }}
               className="text-white hover:text-white border bg-red-500 border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
               onClick={handleDelete}
             >

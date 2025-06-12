@@ -9,6 +9,7 @@ import {
   where,
   addDoc,
   serverTimestamp,
+  orderBy,
 } from "firebase/firestore";
 import Card from "./card";
 import { useNavigate } from "react-router-dom";
@@ -48,8 +49,8 @@ const templatesPage = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const [startDate, setStartDate] = useState("");
+  // const [endDate, setEndDate] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -80,7 +81,8 @@ const templatesPage = () => {
         const querySnapshot = await getDocs(
           query(
             collection(db, "Templates"),
-            where("userUIDs", "array-contains", UID)
+            where("userUIDs", "array-contains", UID),
+            orderBy("time", "desc")
           )
         );
         const templateData = querySnapshot.docs.map((doc) => ({
@@ -96,7 +98,11 @@ const templatesPage = () => {
     fetchData();
   }, [UID]);
 
-  const handleCreate = async (templateName: string) => {
+  const handleCreate = async (
+    templateName: string,
+    start: string,
+    end: string
+  ) => {
     setIsCreating(true);
     try {
       const user = auth.currentUser;
@@ -118,8 +124,8 @@ const templatesPage = () => {
           userUIDs: [user.uid],
           users: [userDetails.firstName],
           topic: templateName,
-          startDate: startDate,
-          endDate: endDate,
+          startDate: start,
+          endDate: end,
           imageURL: uploadedImageURL,
           time: serverTimestamp(),
         });
@@ -131,8 +137,8 @@ const templatesPage = () => {
             userUIDs: [user.uid],
             users: [userDetails.firstName],
             topic: templateName,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: start,
+            endDate: end,
             imageURL: uploadedImageURL,
             time: serverTimestamp(),
           },
@@ -168,7 +174,7 @@ const templatesPage = () => {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-        <p className="mt-3">Creating New Template...</p>
+        <p className="mt-3">Creating New Trip...</p>
       </div>
     );
   }
@@ -188,15 +194,20 @@ const templatesPage = () => {
 
   return (
     <div>
-      <button
-        onClick={() => setShowModal(true)}
-        className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-      >
-        Create New Template +
-      </button>
+      <div className="relative flex items-center justify-end mb-6">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-center">
+          Trips 🗓️
+        </h1>
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+        >
+          Create New Trip +
+        </button>
+      </div>
 
       {templates.length === 0 ? (
-        <p className="text-gray-600">No templates found.</p>
+        <p className="text-gray-600">No trips found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {templates.map((template) => (
@@ -221,8 +232,6 @@ const templatesPage = () => {
           show={showModal}
           onClose={() => setShowModal(false)}
           onCreate={handleCreate}
-          setStartDate={setStartDate}
-          setEndDate={setEndDate}
           setImage={setImage}
         />
       )}
