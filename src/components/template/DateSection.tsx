@@ -9,6 +9,12 @@ const DateSection = ({ id, template }) => {
   const [loading, setLoading] = useState(false);
 
   const handleUpdate = async () => {
+    if (new Date(startDate) > new Date(endDate)) {
+      toast.error("Start date cannot be after end date.", {
+        position: "bottom-center",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const templateRef = doc(db, "Templates", id);

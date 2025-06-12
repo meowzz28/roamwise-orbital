@@ -14,6 +14,7 @@ import { User } from "firebase/auth";
 import EditPost from "../components/forum/editPost";
 import Templates from "../components/template/templatesPage";
 import Template from "../components/template/template";
+import Tracker from "../components/budgetTracker/BudgetMainPage";
 
 type Props = {
   user: User | null;
@@ -42,6 +43,7 @@ function AppRoutes({ user }: Props) {
             <Route path="/viewPost/:postId" element={<ViewPost />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/:templateID" element={<Template />} />
+            <Route path="/expenses" element={<Tracker />} />
           </Routes>
         </div>
       </div>

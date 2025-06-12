@@ -1,23 +1,26 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
-const CreateNewTemplate = ({
-  show,
-  onClose,
-  onCreate,
-  setStartDate,
-  setEndDate,
-  setImage,
-}) => {
+const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
   const [templateName, setTemplateName] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (templateName.trim()) {
-      onCreate(templateName.trim());
-      setTemplateName("");
-      onClose();
+    if (!templateName.trim()) return;
+
+    if (!start || !end || new Date(start) > new Date(end)) {
+      toast.error("Start date must be before or equal to end date.", {
+        position: "bottom-center",
+      });
+      return;
     }
+
+    onCreate(templateName.trim(), start, end);
+    setTemplateName("");
+    onClose();
   };
 
   if (!show) return null;
@@ -97,9 +100,10 @@ const CreateNewTemplate = ({
                   type="date"
                   name="start-date"
                   id="start-date"
+                  value={start}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder=""
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => setStart(e.target.value)}
                   required
                 />
               </div>
@@ -112,9 +116,10 @@ const CreateNewTemplate = ({
                   type="date"
                   name="end-date"
                   id="end-date"
+                  value={end}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder=""
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => setEnd(e.target.value)}
                   required
                 />
               </div>
