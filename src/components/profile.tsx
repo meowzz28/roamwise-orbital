@@ -3,7 +3,6 @@ import { auth, db } from "./firebase";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import UploadForm from "./gallery/uploadForm";
-import NavigationBar from "./navigationbar";
 import ImageGrid from "./gallery/imageGrid";
 import PopUp from "./gallery/popUp";
 import { ref, deleteObject, listAll } from "firebase/storage";

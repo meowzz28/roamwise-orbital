@@ -15,6 +15,7 @@ import EditPost from "../components/forum/editPost";
 import Templates from "../components/template/templatesPage";
 import Template from "../components/template/template";
 import Tracker from "../components/budgetTracker/BudgetMainPage";
+import FloatingAIWidget from "../components/FloatingAIWidget";
 
 type Props = {
   user: User | null;
@@ -27,6 +28,7 @@ function AppRoutes({ user }: Props) {
   return (
     <div className="App">
       <Navbar />
+      {user && <FloatingAIWidget />}
 
       <div className={isAuthPage ? "auth-wrapper" : "page-wrapper"}>
         <div className={isAuthPage ? "auth-inner" : ""}>
