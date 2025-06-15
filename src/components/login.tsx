@@ -6,6 +6,7 @@ import SignInwithGoogle from "./signInWithGoogle";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import { Link } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ function Login() {
           </a>
 
           <p className="col forgot-password text-right">
-            New user <a href="/register">Register Here</a>
+            New user? <Link to="/register">Register Here</Link>
           </p>
         </div>
         <SignInwithGoogle />
