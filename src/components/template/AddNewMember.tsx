@@ -12,7 +12,6 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { User } from "firebase/auth";
 
 type Users = {
   email: string;

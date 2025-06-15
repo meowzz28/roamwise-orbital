@@ -42,24 +42,31 @@ const Navigationbar = () => {
             <div className="flex space-x-4">
               <a
                 href="/forum"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
                 style={{ textDecoration: "none" }}
               >
                 Community Forum
               </a>
               <a
                 href="/chatbot"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
                 style={{ textDecoration: "none" }}
               >
                 AI Assistant
               </a>
               <a
                 href="/templates"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
                 style={{ textDecoration: "none" }}
               >
-                Templates
+                Trips
+              </a>
+              <a
+                href="/expenses"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+                style={{ textDecoration: "none" }}
+              >
+                Expenses
               </a>
               <a
                 href="/team"
@@ -70,15 +77,16 @@ const Navigationbar = () => {
               </a>
               <a
                 href="/profile"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
                 style={{ textDecoration: "none" }}
               >
                 Profile
               </a>
+
               {!isLoggedIn && (
                 <a
                   href="/login"
-                  className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700 hover:text-white"
                   style={{ textDecoration: "none" }}
                 >
                   Login
