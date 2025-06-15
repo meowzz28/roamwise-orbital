@@ -1,108 +1,98 @@
-import React, { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import React from "react";
 import { auth } from "./firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { User } from "firebase/auth";
 
-const Navigationbar = () => {
+type Props = {
+  user: User | null;
+};
+
+const Navigationbar = ({ user }: Props) => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
   const forceLogout = async () => {
     try {
-      await auth.signOut(); // Sign out from Firebase Authentication
-      localStorage.clear(); // Clear local storage (if used)
-      sessionStorage.clear(); // Clear session storage (if used)
-      navigate("/login"); // Redirect to login page
+      await auth.signOut();
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate("/login");
     } catch (error) {
       console.error("Error forcefully logging out:", error.message);
     }
   };
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoggedIn(!!user);
-    });
-    return () => unsubscribe();
-  }, []);
-  return (
-    <div>
-      <nav className="bg-indigo-800 border-gray-200">
-        <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-          <a
-            href="/"
-            className="rounded-md px-3 py-2 flex items-center hover:bg-gray-700"
-            style={{ textDecoration: "none" }}
-          >
-            <span
-              className="self-center text-4xl font-semibold text-white"
-              style={{ fontFamily: "Brush Script MT" }}
-            >
-              RoamWise
-            </span>
-          </a>
-          <div className="hidden sm:ml-6 sm:block">
-            <div className="flex space-x-4">
-              <a
-                href="/forum"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                Community Forum
-              </a>
-              <a
-                href="/chatbot"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                AI Assistant
-              </a>
-              <a
-                href="/templates"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                Trips
-              </a>
-              <a
-                href="/expenses"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                Expenses
-              </a>
-              <a
-                href="/team"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                Team
-              </a>
-              <a
-                href="/profile"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
-                style={{ textDecoration: "none" }}
-              >
-                Profile
-              </a>
 
-              {!isLoggedIn && (
-                <a
-                  href="/login"
-                  className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700 hover:text-white"
-                  style={{ textDecoration: "none" }}
-                >
-                  Login
-                </a>
-              )}
-              {isLoggedIn && (
-                <button className="btn btn-danger" onClick={forceLogout}>
-                  Logout
-                </button>
-              )}
-            </div>
+  return (
+    <nav className="bg-indigo-800 border-gray-200">
+      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <Link
+          to="/"
+          className="rounded-md px-3 py-2 flex items-center hover:bg-gray-700"
+          style={{ textDecoration: "none" }}
+        >
+          <span
+            className="self-center text-4xl font-semibold text-white"
+            style={{ fontFamily: "Brush Script MT" }}
+          >
+            RoamWise
+          </span>
+        </Link>
+        <div className="hidden sm:ml-6 sm:block">
+          <div className="flex space-x-4">
+            <Link
+              to="/forum"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              Community Forum
+            </Link>
+            <Link
+              to="/chatbot"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              AI Assistant
+            </Link>
+            <Link
+              to="/templates"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              Trips
+            </Link>
+            <Link
+              to="/expenses"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              Expenses
+            </Link>
+            <Link
+              to="/team"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              Team
+            </Link>
+            <Link
+              to="/profile"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+            >
+              Profile
+            </Link>
+
+            {!user && (
+              <Link
+                to="/login"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+              >
+                Login
+              </Link>
+            )}
+            {user && (
+              <button className="btn btn-danger" onClick={forceLogout}>
+                Logout
+              </button>
+            )}
           </div>
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 };
 
-export default Navigationbar;
+export default React.memo(Navigationbar);

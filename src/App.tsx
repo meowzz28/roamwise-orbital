@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router } from "react-router-dom";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
@@ -8,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import { auth } from "./components/firebase";
 import { User } from "firebase/auth";
 import AppRoutes from "./routes/AppRoutes";
+import Navbar from "./components/navigationbar"; // <-- Moved here
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,14 +22,22 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="container text-center p-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <Router>
+    <>
+      <Navbar user={user} /> {/* ✅ Rendered outside routes */}
       <AppRoutes user={user} />
       <ToastContainer />
-    </Router>
+    </>
   );
 }
 
