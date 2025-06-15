@@ -7,7 +7,6 @@ import Login from "../components/login";
 import ResetPassword from "../components/resetPassword";
 import SignUp from "../components/register";
 import Profile from "../components/profile";
-import Navbar from "../components/navigationbar";
 import Team from "../components/team/index";
 import Home from "../components/home";
 import ChatPage from "../components/chatbot/chatPage";
@@ -19,7 +18,6 @@ import ViewTeam from "../components/team/viewTeam";
 import Tracker from "../components/budgetTracker/BudgetMainPage";
 import FloatingAIWidget from "../components/FloatingAIWidget";
 
-
 type Props = {
   user: User | null;
 };
@@ -30,7 +28,6 @@ function AppRoutes({ user }: Props) {
 
   return (
     <div className="App">
-      <Navbar />
       {user && <FloatingAIWidget />}
 
       <div className={isAuthPage ? "auth-wrapper" : "page-wrapper"}>
