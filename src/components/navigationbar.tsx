@@ -69,6 +69,13 @@ const Navigationbar = () => {
                 Expenses
               </a>
               <a
+                href="/team"
+                className="rounded-md px-3 py-2 text-white text-lg font-medium text-gray-300 hover:bg-gray-700"
+                style={{ textDecoration: "none" }}
+              >
+                Team
+              </a>
+              <a
                 href="/profile"
                 className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
                 style={{ textDecoration: "none" }}

@@ -8,14 +8,17 @@ import ResetPassword from "../components/resetPassword";
 import SignUp from "../components/register";
 import Profile from "../components/profile";
 import Navbar from "../components/navigationbar";
+import Team from "../components/team/index";
 import Home from "../components/home";
 import ChatPage from "../components/chatbot/chatPage";
 import { User } from "firebase/auth";
 import EditPost from "../components/forum/editPost";
 import Templates from "../components/template/templatesPage";
 import Template from "../components/template/template";
+import ViewTeam from "../components/team/viewTeam";
 import Tracker from "../components/budgetTracker/BudgetMainPage";
 import FloatingAIWidget from "../components/FloatingAIWidget";
+
 
 type Props = {
   user: User | null;
@@ -39,6 +42,8 @@ function AppRoutes({ user }: Props) {
             <Route path="/createPost" element={<CreatePost />} />
             <Route path="/editPost/:postId" element={<EditPost />} />
             <Route path="/forum" element={<Forum />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/viewTeam/:teamID" element={<ViewTeam />} />
             <Route path="/register" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/chatbot" element={<ChatPage />} />
