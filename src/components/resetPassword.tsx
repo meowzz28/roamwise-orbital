@@ -3,6 +3,7 @@ import React, { FormEvent, useState } from "react";
 import { auth } from "./firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ function ResetPassword() {
             </button>
           </div>
           <p className="forgot-password text-right">
-            <a href="/login">Back to login</a>
+            <Link to="/login">Back to login</Link>
           </p>
         </form>
       </div>
