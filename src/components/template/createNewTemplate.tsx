@@ -2,23 +2,22 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
-const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
+const CreateNewTemplate = ({ show, onClose, onCreate, setImage, teams }) => {
   const [templateName, setTemplateName] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!templateName.trim()) return;
-
     if (!start || !end || new Date(start) > new Date(end)) {
       toast.error("Start date must be before or equal to end date.", {
         position: "bottom-center",
       });
       return;
     }
-
-    onCreate(templateName.trim(), start, end);
+    onCreate(templateName.trim(), start, end, selectedTeam);
     setTemplateName("");
     onClose();
   };
@@ -62,7 +61,7 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
             </div>
 
             <form className="p-4" onSubmit={handleSubmit}>
-              <div className="mb-4">
+              <div className="mb-2">
                 <label
                   htmlFor="template-name"
                   className="block mb-2 text-sm font-medium text-gray-900 "
@@ -79,7 +78,7 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
                   required
                 />
               </div>
-              <div className="col-span-2 sm:col-span-1 mb-4">
+              <div className="col-span-2 sm:col-span-1 mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   Template Image (optional)
                 </label>
@@ -92,7 +91,27 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
                   }
                 />
               </div>
-              <div className="col-span-2 sm:col-span-1 mb-4">
+
+              <div className="col-span-2 sm:col-span-1 mb-2">
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Select Team (optional)
+                </label>
+                <select
+                  id="teams"
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                >
+                  <option value="">Choose a team</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.Name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-span-2 sm:col-span-1 mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900 ">
                   Start Date
                 </label>
@@ -108,7 +127,7 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage }) => {
                 />
               </div>
 
-              <div className="col-span-2 sm:col-span-1 mb-6">
+              <div className="col-span-2 sm:col-span-1 mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   End Date
                 </label>

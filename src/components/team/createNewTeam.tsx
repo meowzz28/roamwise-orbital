@@ -54,18 +54,18 @@ const CreateNewTeam = ({ show, onClose, onCreate }) => {
             <form className="p-4" onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label
-                  htmlFor="template-name"
+                  htmlFor="team-name"
                   className="block mb-2 text-sm font-medium text-gray-900 "
                 >
                   Team Name
                 </label>
                 <input
                   type="text"
-                  id="template-name"
+                  id="team-name"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   className="w-full p-2.5 text-sm rounded-lg border border-gray-300  "
-                  placeholder="e.g. Team Japan"
+                  placeholder="eg. Power Rangers"
                   required
                 />
               </div>

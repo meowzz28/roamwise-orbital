@@ -3,15 +3,9 @@ import { auth, db } from "../firebase";
 import {
   doc,
   collection,
-  getDoc,
   getDocs,
-  addDoc,
   query,
   where,
-  onSnapshot,
-  orderBy,
-  serverTimestamp,
-  limit,
   arrayUnion,
   runTransaction,
 } from "firebase/firestore";
@@ -90,20 +84,32 @@ const AddTeamMember = ({
         setIsAddingMember(false);
         return;
       }
+
+      const templatesQuery = query(
+        collection(db, "Templates"),
+        where("teamID", "==", teamID)
+      );
+      const templatesSnapshot = await getDocs(templatesQuery);
+      const templateRefs = templatesSnapshot.docs.map((doc) => doc.ref);
       const teamRef = doc(db, "Team", teamID);
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(teamRef);
-
         if (!docSnap.exists()) {
           toast.error("Team not found");
           return;
         }
-
         transaction.update(teamRef, {
           user_email: arrayUnion(userDocData.email),
           user_uid: arrayUnion(uid),
           user_name: arrayUnion(`${userDocData.firstName}`.trim()),
         });
+        for (const templateRef of templateRefs) {
+          transaction.update(templateRef, {
+            userEmails: arrayUnion(userDocData.email),
+            userUIDs: arrayUnion(uid),
+            users: arrayUnion(`${userDocData.firstName}`.trim()),
+          });
+        }
       });
 
       toast.success("Member added successfully!");
