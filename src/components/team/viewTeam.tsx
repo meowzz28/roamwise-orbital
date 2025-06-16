@@ -1,21 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
-import TeamCard from "./card";
-import CreateNewTeam from "./createNewTeam";
-import {
-  doc,
-  collection,
-  getDoc,
-  getDocs,
-  addDoc,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import NavigationBar from "../navigationbar";
-import { motion } from "framer-motion";
 import Chat from "./chat";
 import TeamProfile from "./teamProfile";
 

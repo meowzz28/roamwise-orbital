@@ -7,8 +7,8 @@ import {
   doc,
   getDocs,
   arrayUnion,
-  onSnapshot,
   runTransaction,
+  getDoc,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -35,6 +35,18 @@ const AddNewMember = ({ onClose, templateID, setIsAddingMember }) => {
       const uid = userDoc.id;
       const userDocData = userDoc.data() as Users;
       const templateRef = doc(db, "Templates", templateID);
+      const templateDoc = await getDoc(templateRef);
+      if (!templateDoc.exists()) {
+        toast.error("Template not found");
+        setIsAddingMember(false);
+        return;
+      }
+      const templateData = templateDoc.data();
+      if (templateData.userUIDs && templateData.userUIDs.includes(uid)) {
+        toast.error("User is already a member");
+        setIsAddingMember(false);
+        return;
+      }
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(templateRef);
         if (docSnap.exists()) {

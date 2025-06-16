@@ -16,19 +16,6 @@ type Team = {
   user_name: string[];
 };
 
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
-
-type Users = {
-  email: string;
-  firstName: string;
-  lastName: string;
-};
-
 // Add Admin Modal Component
 
 function TeamProfile({

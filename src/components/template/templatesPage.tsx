@@ -130,7 +130,6 @@ const templatesPage = () => {
           time: serverTimestamp(),
         });
         setTemplates((prev) => [
-          ...prev,
           {
             id: newDocRef.id,
             userEmails: [userDetails.email],
@@ -142,6 +141,7 @@ const templatesPage = () => {
             imageURL: uploadedImageURL,
             time: serverTimestamp(),
           },
+          ...prev,
         ]);
       } else {
         toast.error("Failed to create new template. Please try again.");

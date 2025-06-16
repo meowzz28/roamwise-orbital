@@ -10,10 +10,10 @@ import {
   addDoc,
   query,
   where,
+  orderBy,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import NavigationBar from "../navigationbar";
 import { motion } from "framer-motion";
 
 type UserDetails = {
@@ -40,7 +40,6 @@ function Team() {
   const [list, setList] = useState<Team[]>([]);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [timestamp, setTimestamp] = useState(Date.now());
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -73,7 +72,8 @@ function Team() {
         const querySnapshot = await getDocs(
           query(
             collection(db, "Team"),
-            where("user_uid", "array-contains", uid)
+            where("user_uid", "array-contains", uid),
+            orderBy("created_at", "desc")
           )
         );
         const teamData = querySnapshot.docs.map((doc) => {
@@ -112,7 +112,6 @@ function Team() {
           created_by: user.uid,
         });
 
-        // Update local state immediately
         const newTeam: Team = {
           id: newDocRef.id,
           Name: teamName,
@@ -123,7 +122,7 @@ function Team() {
           user_name: [userDetails.firstName],
         };
 
-        setList((prev) => [...prev, newTeam]);
+        setList((prev) => [newTeam, ...prev]);
         toast.success("Team created successfully!");
       } else {
         toast.error("Failed to create new template. Please try again.");
@@ -161,6 +160,17 @@ function Team() {
         >
           Go to Login
         </button>
+      </div>
+    );
+  }
+
+  if (isCreating) {
+    return (
+      <div className="container text-center p-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Creating New Trip...</p>
       </div>
     );
   }

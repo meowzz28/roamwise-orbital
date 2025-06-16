@@ -7,7 +7,7 @@ import { ToastContainer } from "react-toastify";
 import { auth } from "./components/firebase";
 import { User } from "firebase/auth";
 import AppRoutes from "./routes/AppRoutes";
-import Navbar from "./components/navigationbar"; // <-- Moved here
+import Navbar from "./components/navigationbar";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -34,7 +34,7 @@ function App() {
 
   return (
     <>
-      <Navbar user={user} /> {/* ✅ Rendered outside routes */}
+      <Navbar user={user} />
       <AppRoutes user={user} />
       <ToastContainer />
     </>
