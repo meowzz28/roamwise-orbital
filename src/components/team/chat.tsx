@@ -40,6 +40,7 @@ function Chat({ teamID }: { teamID: string }) {
   const [authChecked, setAuthChecked] = useState(false);
   const [formValue, setFormValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -101,6 +102,7 @@ function Chat({ teamID }: { teamID: string }) {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSending(true);
     const { uid } = auth.currentUser || {};
 
     if (!uid || !teamID) return;
@@ -116,6 +118,7 @@ function Chat({ teamID }: { teamID: string }) {
     });
 
     setFormValue("");
+    setIsSending(false);
     dummy.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -135,9 +138,10 @@ function Chat({ teamID }: { teamID: string }) {
           placeholder="Type a message..."
           className="flex-1 p-2 border rounded-l focus:outline-none"
         />
+
         <button
           type="submit"
-          disabled={!formValue}
+          disabled={!formValue || isSending}
           className="bg-blue-500 text-white px-4 rounded-r hover:bg-blue-600 disabled:bg-gray-300"
         >
           Send
