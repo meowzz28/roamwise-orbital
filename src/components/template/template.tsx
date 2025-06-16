@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth, db, storage } from "../firebase";
-import { doc, onSnapshot, getDoc, deleteDoc } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  getDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
 import DateSection from "./DateSection";
 import DailyPlan from "./DailyPlan";
-import AddNewMember from "./AddNewMember";
 
 type Template = {
   id: string;
@@ -18,6 +26,7 @@ type Template = {
   startDate: string;
   endDate: string;
   imageURL: string;
+  teamID?: string;
   Time?: {
     seconds: number;
     nanoseconds: number;
@@ -29,11 +38,36 @@ const template = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
   const [userUID, setUserUID] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [template, setTemplate] = useState<Template | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  // const [isAddingMember, setIsAddingMember] = useState(false);
   const { templateID } = useParams();
+
+  useEffect(() => {
+    const checkDeletePermission = async () => {
+      if (!template || !userUID) return;
+
+      if (!template.teamID) {
+        setCanDelete(true);
+        return;
+      }
+
+      try {
+        const teamRef = doc(db, "Team", template.teamID);
+        const teamSnap = await getDoc(teamRef);
+        if (teamSnap.exists()) {
+          const teamData = teamSnap.data();
+          setCanDelete(teamData.admin?.includes(userUID) || false);
+        }
+      } catch (error) {
+        console.error("Error checking delete permission:", error);
+        setCanDelete(false);
+      }
+    };
+
+    checkDeletePermission();
+  }, [template?.teamID, userUID]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -144,16 +178,17 @@ const template = () => {
       </div>
     );
   }
-  if (isAddingMember) {
-    return (
-      <div className="container text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Adding New Member...</p>
-      </div>
-    );
-  }
+
+  // if (isAddingMember) {
+  //   return (
+  //     <div className="container text-center p-5">
+  //       <div className="spinner-border text-primary" role="status">
+  //         <span className="visually-hidden">Loading...</span>
+  //       </div>
+  //       <p className="mt-3">Adding New Member...</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-4">
@@ -168,22 +203,24 @@ const template = () => {
             >
               Back to Template
             </button>
-            <button
+            {/* <button
               type="button"
               style={{ borderRadius: "8px" }}
               className="text-white hover:text-white border bg-blue-500 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
               onClick={() => setShowModal(true)}
             >
               Add member
-            </button>
-            <button
-              type="button"
-              style={{ borderRadius: "8px" }}
-              className="text-white hover:text-white border bg-red-500 border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
+            </button> */}
+            {canDelete && (
+              <button
+                type="button"
+                style={{ borderRadius: "8px" }}
+                className="text-white hover:text-white border bg-red-500 border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
+            )}
           </div>
           <h5>
             Members:{" "}
@@ -193,13 +230,13 @@ const template = () => {
               : "None"}
           </h5>
         </div>
-        {showModal && (
+        {/* {showModal && (
           <AddNewMember
             onClose={() => setShowModal(false)}
             templateID={templateID}
             setIsAddingMember={setIsAddingMember}
           />
-        )}
+        )} */}
         <div className="flex justify-center">
           <div className="flex items-center gap-4">
             <h1 className="text-5xl font-extrabold ">{template.topic}</h1>

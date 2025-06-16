@@ -1,8 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import { db } from "../firebase";
-import { doc, runTransaction } from "firebase/firestore";
+import {
+  doc,
+  runTransaction,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
 import AddTeamMember from "./addTeamMember";
 import AddTeamAdmin from "./addAdmin";
 
@@ -57,13 +63,21 @@ function TeamProfile({
     setIsQuiting(true);
 
     try {
+      const templatesQuery = query(
+        collection(db, "Templates"),
+        where("teamID", "==", teamID)
+      );
+      const templatesSnapshot = await getDocs(templatesQuery);
+      const templateRefs = templatesSnapshot.docs.map((doc) => doc.ref);
       const teamRef = doc(db, "Team", teamID);
       await runTransaction(db, async (transaction) => {
         const teamDoc = await transaction.get(teamRef);
         if (!teamDoc.exists()) {
           throw new Error("Team does not exist");
         }
-
+        const templateDocs = await Promise.all(
+          templateRefs.map((ref) => transaction.get(ref))
+        );
         const teamData = teamDoc.data() as Team;
 
         // Get index of user in user_uid array
@@ -72,23 +86,23 @@ function TeamProfile({
           throw new Error("You are not a member of this team");
         }
 
+        const userEmail = teamData.user_email[userIndex];
+        const userName = teamData.user_name[userIndex];
+
         // Remove from all arrays
-        const updated_user_uid = [...teamData.user_uid];
-        const updated_user_email = [...teamData.user_email];
-        const updated_user_name = [...teamData.user_name];
-
-        updated_user_uid.splice(userIndex, 1);
-        updated_user_email.splice(userIndex, 1);
-        updated_user_name.splice(userIndex, 1);
-
-        // Also remove from admin arrays if user is an admin
-        const adminIndex = teamData.admin.indexOf(uid);
-        const updated_admin = [...teamData.admin];
-        const updated_admin_name = [...teamData.admin_name];
-        if (adminIndex !== -1) {
-          updated_admin.splice(adminIndex, 1);
-          updated_admin_name.splice(adminIndex, 1);
-        }
+        const updated_user_uid = teamData.user_uid.filter((id) => id !== uid);
+        const updated_user_email = teamData.user_email.filter(
+          (email) => email !== userEmail
+        );
+        const updated_user_name = teamData.user_name.filter(
+          (name) => name !== userName
+        );
+        const updated_admin = teamData.admin.filter((id) => id !== uid);
+        const updated_admin_name = teamData.admin_name.filter(
+          (name) =>
+            teamData.admin.indexOf(uid) === -1 ||
+            teamData.admin.indexOf(uid) !== teamData.admin_name.indexOf(name)
+        );
 
         // Apply update
         transaction.update(teamRef, {
@@ -97,6 +111,22 @@ function TeamProfile({
           user_name: updated_user_name,
           admin: updated_admin,
           admin_name: updated_admin_name,
+        });
+        templateDocs.forEach((templateDoc, index) => {
+          if (templateDoc.exists()) {
+            const templateData = templateDoc.data();
+            transaction.update(templateRefs[index], {
+              userUIDs: templateData.userUIDs.filter(
+                (id: string) => id !== uid
+              ),
+              userEmails: templateData.userEmails.filter(
+                (email: string) => email !== userEmail
+              ),
+              users: templateData.users.filter(
+                (name: string) => name !== userName
+              ),
+            });
+          }
         });
       });
 
@@ -131,31 +161,33 @@ function TeamProfile({
           </p>
         </div>
 
-        {team?.admin?.includes(uid) && (
-          <div className="flex space-x-2 pt-2">
-            <button
-              className="btn btn-primary me-2"
-              onClick={handleAddNewMember}
-              disabled={isAddingMember}
-            >
-              {isAddingMember ? "Adding..." : "Add Member"}
-            </button>
-            <button
-              className="btn btn-warning me-2"
-              onClick={handleAddNewAdmin}
-              disabled={isAddingAdmin}
-            >
-              {isAddingAdmin ? "Adding..." : "Add Admin"}
-            </button>
-            <button
-              className="btn btn-danger me-2"
-              onClick={handleQuit}
-              disabled={isQuiting}
-            >
-              {isQuiting ? "Quiting" : "Quit Team"}
-            </button>
-          </div>
-        )}
+        <div className="flex space-x-2 pt-2">
+          {team?.admin?.includes(uid) && (
+            <>
+              <button
+                className="btn btn-primary me-2"
+                onClick={handleAddNewMember}
+                disabled={isAddingMember}
+              >
+                {isAddingMember ? "Adding..." : "Add Member"}
+              </button>
+              <button
+                className="btn btn-warning me-2"
+                onClick={handleAddNewAdmin}
+                disabled={isAddingAdmin}
+              >
+                {isAddingAdmin ? "Adding..." : "Add Admin"}
+              </button>
+            </>
+          )}
+          <button
+            className="btn btn-danger me-2"
+            onClick={handleQuit}
+            disabled={isQuiting}
+          >
+            {isQuiting ? "Quiting" : "Quit Team"}
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
