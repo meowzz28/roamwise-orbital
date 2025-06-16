@@ -4,17 +4,12 @@ import {
   doc,
   collection,
   getDoc,
-  getDocs,
   addDoc,
   query,
   where,
   onSnapshot,
-  orderBy,
   serverTimestamp,
-  limit,
 } from "firebase/firestore";
-import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
 
 type Message = {
   id: string;
