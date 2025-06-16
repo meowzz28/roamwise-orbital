@@ -13,6 +13,7 @@ import ExpenseModal from "./ExpenseModal";
 import { useNavigate } from "react-router-dom";
 import DonutChart from "./DonutChart";
 import ExpensesList from "./ExpensesList";
+import CurrencyConverter from "./CurrencyConverter";
 
 type UserDetails = {
   email: string;
@@ -167,55 +168,70 @@ const BudgetMainPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-8 ">
-      <div className="w-full max-w-4xl mx-auto mb-6">
-        <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6 text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800">
-            Budget & Expense Tracker 💵
-          </h1>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium text-gray-700">
-              Select a Trip:
-            </label>
-            <select
-              value={selectedTripId}
-              onChange={(e) => setSelectedTripId(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 w-full"
-            >
-              <option value="">-- Choose a trip --</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.topic}
-                </option>
-              ))}
-            </select>
+    <div className="min-h-screen px-4 py-8">
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+        {/* Left Column */}
+        <div className="flex-1 space-y-6">
+          {/* Trip selector + Add Expense */}
+          <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
+              Budget & Expense Tracker 💵
+            </h1>
+            <div className="mb-4">
+              <label className="block mb-2 font-medium text-gray-700">
+                Select a Trip:
+              </label>
+              <select
+                value={selectedTripId}
+                onChange={(e) => setSelectedTripId(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+              >
+                <option value="">-- Choose a trip --</option>
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.topic}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedTripId && (
+              <button
+                className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
+                onClick={() => setShowModal(true)}
+              >
+                + Add Expense
+              </button>
+            )}
           </div>
+
+          {/* Donut Chart + Currency Exchange side by side */}
           {selectedTripId && (
-            <button
-              style={{ borderRadius: "8px" }}
-              disabled={!selectedTripId}
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
-              onClick={() => setShowModal(true)}
-            >
-              + Add Expense
-            </button>
+            <div className="flex-1 bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+              <DonutChart expenses={expenses} />
+            </div>
           )}
         </div>
+
+        {/* Right Column: Expenses List */}
+        {selectedTripId && (
+          <div className="flex-1 space-y-6">
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+              <CurrencyConverter />
+            </div>
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+              <ExpensesList expenses={expenses} />
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Modal */}
       {showModal && selectedTripId && (
         <ExpenseModal
           setIsCreating={setIsCreating}
           onClose={() => setShowModal(false)}
           tripId={selectedTripId}
         />
-      )}
-
-      {selectedTripId && (
-        <div className="w-full max-w-4xl mx-auto space-y-6">
-          <DonutChart expenses={expenses} />
-          <ExpensesList expenses={expenses} />
-        </div>
       )}
     </div>
   );

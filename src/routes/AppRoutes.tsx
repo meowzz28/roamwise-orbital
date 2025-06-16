@@ -17,6 +17,7 @@ import Template from "../components/template/template";
 import ViewTeam from "../components/team/viewTeam";
 import Tracker from "../components/budgetTracker/BudgetMainPage";
 import FloatingAIWidget from "../components/FloatingAIWidget";
+import CurrencyConverter from "../components/budgetTracker/CurrencyConverter";
 
 type Props = {
   user: User | null;
@@ -40,6 +41,8 @@ function AppRoutes({ user }: Props) {
             <Route path="/editPost/:postId" element={<EditPost />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/team" element={<Team />} />
+
+            <Route path="/currency" element={<CurrencyConverter />} />
             <Route path="/viewTeam/:teamID" element={<ViewTeam />} />
             <Route path="/register" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
