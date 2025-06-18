@@ -76,7 +76,8 @@ const DailyPlan = ({ templateID, date }) => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded-full hover:bg-blue-600 transition disabled:opacity-70"
+              style={{ borderRadius: "8px" }}
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:opacity-70"
             >
               {saving ? (
                 <span className="flex items-center gap-2">
