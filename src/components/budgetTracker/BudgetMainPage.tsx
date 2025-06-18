@@ -196,6 +196,7 @@ const BudgetMainPage = () => {
             </div>
             {selectedTripId && (
               <button
+                style={{ borderRadius: "8px" }}
                 className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
                 onClick={() => setShowModal(true)}
               >
