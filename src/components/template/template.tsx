@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth, db, storage } from "../firebase";
-import {
-  doc,
-  onSnapshot,
-  getDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { doc, onSnapshot, getDoc, deleteDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
 import DateSection from "./DateSection";
 import DailyPlan from "./DailyPlan";
+import BudgetEstimation from "./BudgetEstimate";
 
 type Template = {
   id: string;
@@ -41,7 +33,7 @@ const template = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
-  // const [isAddingMember, setIsAddingMember] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const { templateID } = useParams();
 
   useEffect(() => {
@@ -135,21 +127,22 @@ const template = () => {
     navigate("/templates");
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     if (!templateID) return;
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this template?"
-    );
-    if (confirmed) {
-      try {
-        await deleteDoc(doc(db, "Templates", templateID));
-        await deleteObject(ref(storage, template?.imageURL));
-        toast.success("Template deleted successfully!");
-        navigate("/templates");
-      } catch (error: any) {
-        console.log("Failed to delete template");
-      }
+    try {
+      await deleteDoc(doc(db, "BudgetEstimates", templateID));
+      await deleteDoc(doc(db, "Templates", templateID));
+      await deleteObject(ref(storage, template?.imageURL));
+      toast.success("Template deleted successfully!");
+      navigate("/templates");
+    } catch (error: any) {
+      console.log("Failed to delete template");
     }
+    setIsDeleteConfirmOpen(false);
   };
 
   const days = template ? getDays(template.startDate, template.endDate) : [];
@@ -179,17 +172,6 @@ const template = () => {
     );
   }
 
-  // if (isAddingMember) {
-  //   return (
-  //     <div className="container text-center p-5">
-  //       <div className="spinner-border text-primary" role="status">
-  //         <span className="visually-hidden">Loading...</span>
-  //       </div>
-  //       <p className="mt-3">Adding New Member...</p>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="p-4">
       <div className="mb-6">
@@ -203,14 +185,6 @@ const template = () => {
             >
               Back to Template
             </button>
-            {/* <button
-              type="button"
-              style={{ borderRadius: "8px" }}
-              className="text-white hover:text-white border bg-blue-500 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-2"
-              onClick={() => setShowModal(true)}
-            >
-              Add member
-            </button> */}
             {canDelete && (
               <button
                 type="button"
@@ -230,13 +204,6 @@ const template = () => {
               : "None"}
           </h5>
         </div>
-        {/* {showModal && (
-          <AddNewMember
-            onClose={() => setShowModal(false)}
-            templateID={templateID}
-            setIsAddingMember={setIsAddingMember}
-          />
-        )} */}
         <div className="flex justify-center">
           <div className="flex items-center gap-4">
             <h1 className="text-5xl font-extrabold ">{template.topic}</h1>
@@ -244,7 +211,6 @@ const template = () => {
           </div>
         </div>
       </div>
-
       <DateSection id={templateID} template={template} />
       <div className="mt-10">
         <h3 className="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">
@@ -260,6 +226,38 @@ const template = () => {
           ))}
         </div>
       </div>
+      <BudgetEstimation template={template} templateID={templateID!} />
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsDeleteConfirmOpen(false)}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Delete Template?</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this template? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                style={{ borderRadius: "8px" }}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{ borderRadius: "8px" }}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              >
+                Delete Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
