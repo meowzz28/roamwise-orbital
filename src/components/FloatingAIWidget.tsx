@@ -5,8 +5,8 @@ const FloatingAIWidget = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [position, setPosition] = useState({
-    x: window.innerWidth - 350,
-    y: window.innerHeight - 450,
+    x: window.innerWidth - 120,
+    y: window.innerHeight - 120,
   });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -77,7 +77,10 @@ const FloatingAIWidget = () => {
   return (
     <div
       className="fixed z-50"
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      style={{
+        left: open ? `${position.x - 320 + 56}px` : `${position.x}px`,
+        top: open ? `${position.y - 384 + 56}px` : `${position.y}px`,
+      }}
     >
       {open ? (
         <div className="w-80 h-96 bg-white shadow-lg rounded-lg flex flex-col border border-gray-300">
