@@ -1,19 +1,17 @@
-
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const { logger } = require('firebase-functions');
-const admin = require('firebase-admin');
-const OpenAI = require('openai');
-const dotenv = require('dotenv');
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
+import admin from 'firebase-admin';
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
 
 dotenv.config();
 admin.initializeApp();
-
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-exports.estimateBudget = onCall(  async (request) => {
+export const estimateBudget = onCall(  async (request) => {
   try {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
