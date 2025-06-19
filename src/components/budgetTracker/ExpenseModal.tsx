@@ -213,24 +213,6 @@ const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
 
             <div className="mb-4">
               <label
-                htmlFor="date"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
-                Date
-              </label>
-              <input
-                type="date"
-                id="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full p-2.5 text-sm rounded-lg border border-gray-300"
-                placeholder="e.g. Airplane Ticket"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
                 htmlFor="spending"
                 className="block mb-2 text-sm font-medium text-gray-900"
               >
@@ -297,6 +279,24 @@ const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
                   required
                 />
               </div>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="date"
+                className="block mb-2 text-sm font-medium text-gray-900"
+              >
+                Date
+              </label>
+              <input
+                type="date"
+                id="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full p-2.5 text-sm rounded-lg border border-gray-300"
+                placeholder="e.g. Airplane Ticket"
+                required
+              />
             </div>
 
             <button
