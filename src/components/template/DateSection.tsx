@@ -7,6 +7,7 @@ const DateSection = ({ id, template }) => {
   const [startDate, setStartDate] = useState(template.startDate);
   const [endDate, setEndDate] = useState(template.endDate);
   const [loading, setLoading] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleUpdate = async () => {
     if (new Date(startDate) > new Date(endDate)) {
@@ -15,6 +16,11 @@ const DateSection = ({ id, template }) => {
       });
       return;
     }
+    setIsConfirmOpen(true);
+  };
+
+  const confirmUpdate = async () => {
+    setIsConfirmOpen(false);
     setLoading(true);
     try {
       const templateRef = doc(db, "Templates", id);
@@ -24,6 +30,9 @@ const DateSection = ({ id, template }) => {
           transaction.update(templateRef, {
             startDate: startDate,
             endDate: endDate,
+          });
+          toast.success("Dates updated successfully!", {
+            position: "bottom-center",
           });
         } else {
           toast.error("Failed to update", {
@@ -75,11 +84,47 @@ const DateSection = ({ id, template }) => {
         <button
           onClick={handleUpdate}
           disabled={loading}
-          className="text-sm px-3 py-1 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-100 transition duration-150 disabled:opacity-50"
+          style={{ borderRadius: "8px" }}
+          className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:opacity-70"
         >
           {loading ? "Updating..." : "Update Dates"}
         </button>
       </div>
+      {isConfirmOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsConfirmOpen(false)}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Update Travel Dates?</h3>
+            <p className="text-gray-600 mb-4">
+              Changing the dates might affect your existing plans. Are you sure
+              you want to proceed?
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              New dates: {new Date(startDate).toLocaleDateString()} -{" "}
+              {new Date(endDate).toLocaleDateString()}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsConfirmOpen(false)}
+                style={{ borderRadius: "8px" }}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUpdate}
+                style={{ borderRadius: "8px" }}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Update Dates
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
