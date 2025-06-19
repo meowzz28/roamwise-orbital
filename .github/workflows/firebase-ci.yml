@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -19,21 +17,17 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Install Firebase Function dependencies
-        run: npm install
-        working-directory: functions
-
-      - name: Run Tests (placeholder)
-        run: echo "No tests written yet"
+      - name: Set up functions env
+        run: |
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > functions/.env
 
       - name: Build Vite React app
         run: npm run build
 
       - name: Deploy to Firebase (Hosting + Functions)
-        if: github.ref == 'refs/heads/main'
         uses: w9jds/firebase-action@v13.1.0
         with:
           args: deploy

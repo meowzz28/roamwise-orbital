@@ -8,11 +8,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 admin.initializeApp();
 
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-exports.estimateBudget = onCall(async (request) => {
+exports.estimateBudget = onCall(  async (request) => {
   try {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
