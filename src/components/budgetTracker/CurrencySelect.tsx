@@ -155,7 +155,6 @@ const currencyCodes = [
   "WST",
   "XAF",
   "XCD",
-  "XCG",
   "XDR",
   "XOF",
   "XPF",

@@ -75,6 +75,30 @@ const Navigationbar = ({ user }: Props) => {
               Profile
             </Link>
 
+            <div className="nav-item dropdown">
+              <a
+                className="hover:bg-gray-700 text-lg font-medium rounded-md  sunderline nav-link dropdown-toggle text-white text-lg"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <u>Toolkit</u>
+              </a>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link className="dropdown-item" to="/weather">
+                    Weather ☁️
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/currency">
+                    Currency 💲
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
             {!user && (
               <Link
                 to="/login"
