@@ -216,12 +216,9 @@ const BudgetMainPage = () => {
         {/* Right Column: Expenses List */}
         {selectedTripId && (
           <div className="flex-1 space-y-6">
-            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
-              <CurrencyConverter />
-            </div>
-            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
-              <ExpensesList expenses={expenses} />
-            </div>
+            <CurrencyConverter />
+
+            <ExpensesList expenses={expenses} />
           </div>
         )}
       </div>
