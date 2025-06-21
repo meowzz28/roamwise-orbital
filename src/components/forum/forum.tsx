@@ -3,7 +3,6 @@ import { auth, db } from "../firebase";
 import { doc, collection, getDoc, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import NavigationBar from "../navigationbar";
 
 type UserDetails = {
   email: string;
@@ -31,7 +30,8 @@ function Forum() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [timestamp, setTimestamp] = useState(Date.now());
+  const [filter, setFilter] = useState("recent");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -54,6 +54,10 @@ function Forum() {
       setAuthChecked(true);
     });
 
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "Forum"));
@@ -68,23 +72,31 @@ function Forum() {
             Time: data.Time,
           } as ForumPost;
         });
-        const sortedPosts = forumData.sort((a, b) => {
+
+        const recent = (a, b) => {
           if (!a.Time?.seconds && !b.Time?.seconds) return 0;
           if (!a.Time?.seconds) return 1;
           if (!b.Time?.seconds) return -1;
 
-          return b.Time.seconds - a.Time.seconds; // Descending order
-        });
+          return b.Time.seconds - a.Time.seconds;
+        };
 
-        setPosts(sortedPosts);
+        const like = (a, b) => {
+          return b.likes - a.likes;
+        };
+
+        const sortedPosts = forumData.sort(filter == "recent" ? recent : like);
+        const filteredList = sortedPosts.filter((post) =>
+          post.Topic.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setPosts(filteredList);
       } catch (err) {
         console.error("Error fetching forum data:", err);
       }
     };
 
     fetchData();
-    return () => unsubscribe();
-  }, []);
+  }, [filter, searchTerm]);
 
   if (!authChecked) {
     return (
@@ -136,7 +148,29 @@ function Forum() {
           Create Post
         </button>
       </div>
-
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <label htmlFor="filter" className="me-2 fw-bold">
+            Filter by:
+          </label>
+          <select
+            id="filter"
+            className="form-select d-inline-block w-auto"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="recent">Most Recent</option>
+            <option value="likes">Most Liked</option>
+          </select>
+        </div>
+        <input
+          className="form-control w-50"
+          type="text"
+          placeholder="Search by topic..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
       {posts.length > 0 ? (
         <div className="bg-white p-4 rounded shadow-md mb-4">
           <div className="table-responsive">

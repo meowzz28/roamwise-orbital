@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import ViewTrip from "./ForumViewTrip";
 
 type UserDetails = {
   email: string;
@@ -34,6 +35,8 @@ type ForumPost = {
     seconds: number;
     nanoseconds: number;
   };
+
+  TemplateID: string;
 };
 
 type Comment = {
@@ -91,6 +94,7 @@ function ViewPost() {
                     Likes: data.Likes || 0,
                     LikedBy: data.LikedBy || [],
                     Time: data.Time,
+                    TemplateID: data.TemplateID,
                   });
                   setIsLiked(data.LikedBy?.includes(user.uid) || false);
                   await fetchComments();
@@ -299,29 +303,6 @@ function ViewPost() {
         position: "bottom-center",
       });
     }
-
-    // try {
-    //   if (postId && post && UID) {
-    //     const likedBy = post.LikedBy || [];
-    //     const isCurrentlyLiked = likedBy.includes(UID);
-    //     const newLikes = isCurrentlyLiked ? post.Likes - 1 : post.Likes + 1;
-    //     const updatedLikedBy = isCurrentlyLiked
-    //       ? likedBy.filter((id) => id !== UID)
-    //       : [...likedBy, UID];
-    //     await updateDoc(doc(db, "Forum", postId), {
-    //       Likes: newLikes,
-    //       LikedBy: updatedLikedBy,
-    //     });
-    //     setPost({ ...post, Likes: newLikes, LikedBy: updatedLikedBy });
-    //     setIsLiked(!isCurrentlyLiked);
-    //   } else {
-    //     console.error("Post ID is undefined.");
-    //   }
-    // } catch (error: any) {
-    //   toast.error(`Error liking post: ${error.message}`, {
-    //     position: "bottom-center",
-    //   });
-    // }
   };
 
   if (loading) {
@@ -388,7 +369,12 @@ function ViewPost() {
             </div>
           </div>
 
-          <hr className="mb-3" />
+          {post.TemplateID ? (
+            <div className="mb-4">
+              <ViewTrip templateID={post.TemplateID} />
+            </div>
+          ) : null}
+
           <div className="post-content whitespace-pre-wrap">{post.Message}</div>
         </div>
       </div>

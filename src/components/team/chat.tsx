@@ -115,15 +115,19 @@ function Chat({ teamID }: { teamID: string }) {
 
     setFormValue("");
     setIsSending(false);
-    dummy.current?.scrollIntoView({ behavior: "smooth" });
+    dummy.current?.scrollIntoView({ behavior: "auto" });
   };
 
   return (
-    <div className="flex flex-col h-[500px] border rounded-lg shadow-md bg-white">
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
+    <div className="flex flex-col h-full border rounded-lg shadow-md bg-white">
+      <div className="flex-1 overflow-auto p-4 space-y-2">
+        {messages.length == 0 ? (
+          <div className="text-center text-gray-400 mt-10">
+            No chat to preview
+          </div>
+        ) : (
+          messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)
+        )}
         <div ref={dummy}></div>
       </div>
 

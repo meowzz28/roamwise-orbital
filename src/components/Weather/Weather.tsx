@@ -33,7 +33,7 @@ function Weather() {
       const API_URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${loc}`;
       const response = await fetch(API_URL);
       const data = await response.json();
-      console.log(data);
+      //console.log(data);
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -47,8 +47,9 @@ function Weather() {
       setTemp(data.current.temp_c);
       setResult(data.current.condition.text);
       setIcon(data.current.condition.icon);
-      console.log(icon);
-      console.log(result);
+      setCity(data.location.name);
+      // console.log(icon);
+      // console.log(result);
     } catch (error) {
       setResult("");
     } finally {
@@ -107,12 +108,17 @@ function Weather() {
       </form>
 
       {result ? (
-        <div className="d-flex flex-column align-items-center text-center">
-          <h5>{city}</h5>
-          <img src={icon} alt="Weather Icon" />
-          <p className="fs-5">
-            {temp}°C - {result}
-          </p>
+        <div>
+          <h3>Result: </h3>
+          <div className="border container">
+            <div className=" p-2 d-flex flex-column align-items-center text-center">
+              <h5>{city}</h5>
+              <img src={icon} alt="Weather Icon" />
+              <p className="fs-5">
+                {temp}°C - {result}
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
         !isSearching && (
