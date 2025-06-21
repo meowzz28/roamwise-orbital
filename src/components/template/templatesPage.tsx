@@ -212,7 +212,9 @@ const templatesPage = () => {
           ...prev,
         ]);
       } else {
-        toast.error("Failed to create new template. Please try again.");
+        toast.error("Failed to create new template. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (err: any) {
       toast.error(`Error creating template: ${err.message}`, {

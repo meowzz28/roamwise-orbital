@@ -81,14 +81,14 @@ function CreatePost() {
 
     if (!topic.trim()) {
       toast.error("Topic cannot be empty", {
-        position: "top-center",
+        position: "bottom-center",
       });
       return;
     }
 
     if (!context.trim()) {
       toast.error("Content cannot be empty", {
-        position: "top-center",
+        position: "bottom-center",
       });
       return;
     }
@@ -97,7 +97,9 @@ function CreatePost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails) {
-        const loadingToastId = toast.loading("Creating your post...");
+        const loadingToastId = toast.loading("Creating your post...", {
+          position: "bottom-center",
+        });
 
         await addDoc(collection(db, "Forum"), {
           User: userDetails.firstName,
@@ -115,12 +117,14 @@ function CreatePost() {
           type: "success",
           isLoading: false,
           autoClose: 3000,
-          position: "top-center",
+          position: "bottom-center",
         });
 
         navigate("/forum");
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (error: any) {
       console.error("Error creating post:", error);

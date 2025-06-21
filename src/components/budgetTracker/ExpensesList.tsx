@@ -30,7 +30,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
 
     try {
       await deleteDoc(doc(db, "Expenses", expenseToDelete));
-      toast.success("Expense deleted successfully");
+      toast.success("Expense deleted successfully", {
+        position: "bottom-center",
+      });
     } catch (error) {
       toast.error("Error deleting expense:" + error, {
         position: "bottom-center",

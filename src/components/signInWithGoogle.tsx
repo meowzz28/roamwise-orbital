@@ -24,7 +24,7 @@ function SignInwithGoogle() {
           pic: user.photoURL,
         });
         toast.success("User logged in Successfully", {
-          position: "top-center",
+          position: "bottom-center",
         });
         navigate("/");
       }

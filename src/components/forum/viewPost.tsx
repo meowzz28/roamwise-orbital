@@ -159,7 +159,9 @@ function ViewPost() {
       setComments(commentsData);
     } catch (err: any) {
       console.error("Error fetching comments:", err);
-      toast.error(`Error loading comments: ${err.message}`);
+      toast.error(`Error loading comments: ${err.message}`, {
+        position: "bottom-center",
+      });
     } finally {
       setCommentsLoading(false);
     }
@@ -168,16 +170,20 @@ function ViewPost() {
   const handleDelete = async () => {
     try {
       if (!postId) {
-        toast.error("Post ID is missing.");
+        toast.error("Post ID is missing.", {
+          position: "bottom-center",
+        });
         return;
       }
 
-      const loadingToastId = toast.loading("Deleting post and comments...");
-
+      const loadingToastId = toast.loading("Deleting post and comments...", {
+        position: "bottom-center",
+      });
       const commentsQuery = query(
         collection(db, "ForumComment"),
         where("PostId", "==", postId)
       );
+
       const commentsSnapshot = await getDocs(commentsQuery);
 
       const commentDeletionPromises = commentsSnapshot.docs.map((doc) =>
@@ -193,7 +199,7 @@ function ViewPost() {
         type: "success",
         isLoading: false,
         autoClose: 3000,
-        position: "top-center",
+        position: "bottom-center",
       });
 
       navigate("/forum");
@@ -208,7 +214,9 @@ function ViewPost() {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) {
-      toast.error("Comment cannot be empty");
+      toast.error("Comment cannot be empty", {
+        position: "bottom-center",
+      });
       return;
     }
 
@@ -224,13 +232,15 @@ function ViewPost() {
         });
 
         toast.success("Comment posted successfully!", {
-          position: "top-center",
+          position: "bottom-center",
         });
 
         setComment("");
         fetchComments();
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (error: any) {
       console.error("Error posting comment:", error);
@@ -244,7 +254,7 @@ function ViewPost() {
     try {
       await deleteDoc(doc(db, "ForumComment", commentId));
       toast.success("Comment deleted successfully!", {
-        position: "top-center",
+        position: "bottom-center",
       });
       fetchComments();
     } catch (error: any) {

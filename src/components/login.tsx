@@ -25,7 +25,7 @@ function Login() {
       console.log("User logged in Successfully");
       navigate("/");
       toast.success("User logged in Successfully", {
-        position: "top-center",
+        position: "bottom-center",
       });
     } catch (error: any) {
       console.log(error.message);

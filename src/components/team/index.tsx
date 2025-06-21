@@ -16,7 +16,6 @@ import {
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
 
 type UserDetails = {
   email: string;
@@ -137,9 +136,13 @@ function Team() {
 
         setList((prev) => [newTeam, ...prev]);
 
-        toast.success("Team created successfully!");
+        toast.success("Team created successfully!", {
+          position: "bottom-center",
+        });
       } else {
-        toast.error("Failed to create new template. Please try again.");
+        toast.error("Failed to create new template. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (err: any) {
       toast.error(`Error creating template: ${err.message}`, {

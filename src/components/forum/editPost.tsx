@@ -75,7 +75,7 @@ function EditPost() {
                   const data = postDocSnap.data();
                   if (data.UID !== user.uid) {
                     toast.error("You are not authorized to edit this post.", {
-                      position: "top-center",
+                      position: "bottom-center",
                     });
                     navigate("/forum");
                     return;
@@ -138,21 +138,21 @@ function EditPost() {
 
     if (!topic.trim()) {
       toast.error("Topic cannot be empty", {
-        position: "top-center",
+        position: "bottom-center",
       });
       return;
     }
 
     if (!context.trim()) {
       toast.error("Content cannot be empty", {
-        position: "top-center",
+        position: "bottom-center",
       });
       return;
     }
 
     if (!postId) {
       toast.error("Post ID is missing", {
-        position: "top-center",
+        position: "bottom-center",
       });
       return;
     }
@@ -161,7 +161,9 @@ function EditPost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
-        const loadingToastId = toast.loading("Editing your post...");
+        const loadingToastId = toast.loading("Editing your post...", {
+          position: "bottom-center",
+        });
         await updateDoc(doc(db, "Forum", postId), {
           User: userDetails.firstName,
           UID: user.uid,
@@ -176,12 +178,14 @@ function EditPost() {
           type: "success",
           isLoading: false,
           autoClose: 3000,
-          position: "top-center",
+          position: "bottom-center",
         });
 
         navigate(`/viewPost/${postId}`);
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (error: any) {
       console.error("Error creating post:", error);

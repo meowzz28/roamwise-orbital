@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { doc, onSnapshot, runTransaction } from "firebase/firestore";
 import { db } from "../firebase";
-import { toast } from "react-toastify";
 
 const ForumDailyPlan = ({ templateID, date }) => {
   const [text, setText] = useState("");
