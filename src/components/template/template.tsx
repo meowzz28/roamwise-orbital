@@ -92,7 +92,7 @@ const template = () => {
             if (docSnap.exists()) {
               if (!docSnap.data().userUIDs.includes(user?.uid)) {
                 toast.error("You are not authorized to edit this post.", {
-                  position: "top-center",
+                  position: "bottom-center",
                 });
                 navigate("/templates");
                 return;
@@ -137,7 +137,9 @@ const template = () => {
       await deleteDoc(doc(db, "BudgetEstimates", templateID));
       await deleteDoc(doc(db, "Templates", templateID));
       await deleteObject(ref(storage, template?.imageURL));
-      toast.success("Template deleted successfully!");
+      toast.success("Template deleted successfully!", {
+        position: "bottom-center",
+      });
       navigate("/templates");
     } catch (error: any) {
       console.log("Failed to delete template");

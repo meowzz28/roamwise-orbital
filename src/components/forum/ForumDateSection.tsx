@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import { doc, runTransaction } from "firebase/firestore";
-import { db } from "../firebase";
-import { toast } from "react-toastify";
 
 const ForumDateSection = ({ id, template }) => {
   const [startDate, setStartDate] = useState(template.startDate);

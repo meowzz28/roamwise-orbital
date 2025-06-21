@@ -66,7 +66,7 @@ function ViewTeam() {
             if (docSnap.exists()) {
               if (!docSnap.data().user_uid.includes(user?.uid)) {
                 toast.error("You are not authorized to edit this post.", {
-                  position: "top-center",
+                  position: "bottom-center",
                 });
                 navigate("/team");
                 return;

@@ -84,7 +84,12 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
 
   const handleEstimateBudget = async () => {
     if (!preferences.homeCountry?.trim()) {
-      toast.error("Please provide your Home Country to estimate flight costs.");
+      toast.error(
+        "Please provide your Home Country to estimate flight costs.",
+        {
+          position: "bottom-center",
+        }
+      );
       return;
     }
     setIsLoading(true);
@@ -105,10 +110,14 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
       });
 
       setBudgetData(result.data as BudgetData);
-      toast.success("Budget estimated successfully!");
+      toast.success("Budget estimated successfully!", {
+        position: "bottom-center",
+      });
     } catch (error: any) {
       console.error("Error estimating budget:", error);
-      toast.error("Failed to estimate budget. Please try again.");
+      toast.error("Failed to estimate budget. Please try again.", {
+        position: "bottom-center",
+      });
     } finally {
       setIsLoading(false);
     }

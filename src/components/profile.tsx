@@ -47,18 +47,11 @@ function Profile() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      navigate("/login");
-    } catch (error: any) {
-      console.error("Error logging out:", error.message);
-    }
-  };
-
   const handleDelete = async () => {
     try {
-      const loadingToastId = toast.loading("Deleting user's data...");
+      const loadingToastId = toast.loading("Deleting user's data...", {
+        position: "bottom-center",
+      });
       const user = auth.currentUser;
       if (user) {
         const folderRef = ref(storage, `images/${user.uid}`);
@@ -74,7 +67,7 @@ function Profile() {
           type: "success",
           isLoading: false,
           autoClose: 3000,
-          position: "top-center",
+          position: "bottom-center",
         });
         navigate("/login");
       } else {

@@ -1,17 +1,11 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState } from "react";
 import { auth, db } from "../firebase";
 import {
   doc,
   collection,
-  getDoc,
   getDocs,
-  addDoc,
   query,
   where,
-  onSnapshot,
-  orderBy,
-  serverTimestamp,
-  limit,
   arrayUnion,
   runTransaction,
 } from "firebase/firestore";
@@ -53,7 +47,9 @@ const AddTeamAdmin = ({
     try {
       //   Check if the email belongs to an existing team member
       if (!team.user_email?.includes(email)) {
-        toast.error("User must be a team member first");
+        toast.error("User must be a team member first", {
+          position: "bottom-center",
+        });
         setIsAddingAdmin(false);
         return;
       }
@@ -63,7 +59,9 @@ const AddTeamAdmin = ({
         const userUID = team.user_uid?.[userIndex];
 
         if (team.admin?.includes(userUID)) {
-          toast.error("User is already an admin");
+          toast.error("User is already an admin", {
+            position: "bottom-center",
+          });
           setIsAddingAdmin(false);
           return;
         }
@@ -74,7 +72,9 @@ const AddTeamAdmin = ({
       );
 
       if (querySnapshot.empty) {
-        toast.error("User not found");
+        toast.error("User not found", {
+          position: "bottom-center",
+        });
         setIsAddingAdmin(false);
         return;
       }
@@ -83,7 +83,9 @@ const AddTeamAdmin = ({
         const userUID = team.user_email?.[userIndex];
 
         if (userUID && team.admin?.includes(userUID)) {
-          toast.error("User is already an admin");
+          toast.error("User is already an admin", {
+            position: "bottom-center",
+          });
           setIsAddingAdmin(false);
           return;
         }
@@ -102,16 +104,22 @@ const AddTeamAdmin = ({
             admin_name: arrayUnion(`${userDocData.firstName}`.trim()),
           });
         } else {
-          toast.error("Team not found");
+          toast.error("Team not found", {
+            position: "bottom-center",
+          });
         }
       });
 
-      toast.success("Admin added successfully!");
+      toast.success("Admin added successfully!", {
+        position: "bottom-center",
+      });
       setIsAddingAdmin(false);
       onClose();
     } catch (error: any) {
       console.error("Error adding admin:", error);
-      toast.error("Failed to add admin");
+      toast.error("Failed to add admin", {
+        position: "bottom-center",
+      });
       setIsAddingAdmin(false);
     }
   };

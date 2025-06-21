@@ -24,7 +24,9 @@ function Register() {
       return;
     }
     try {
-      const loadingToastId = toast.loading("Creating your user...");
+      const loadingToastId = toast.loading("Creating your user...", {
+        position: "bottom-center",
+      });
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
       console.log(user);
@@ -41,7 +43,7 @@ function Register() {
         type: "success",
         isLoading: false,
         autoClose: 3000,
-        position: "top-center",
+        position: "bottom-center",
       });
 
       await auth.signOut();
