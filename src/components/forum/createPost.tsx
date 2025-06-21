@@ -5,6 +5,7 @@ import {
   collection,
   addDoc,
   getDoc,
+  getDocs,
   serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,10 @@ function CreatePost() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [templates, setTemplates] = useState<{ id: string; topic: string }[]>(
+    []
+  );
+  const [selectedTemplateID, setSelectedTemplateID] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +44,15 @@ function CreatePost() {
               } else {
                 setError("User document does not exist.");
               }
+
+              const snapshot = await getDocs(collection(db, "Templates"));
+              const filtered = snapshot.docs
+                .filter((doc) => doc.data().userUIDs?.includes(user.uid))
+                .map((doc) => ({
+                  id: doc.id,
+                  topic: doc.data().topic || "Untitled",
+                }));
+              setTemplates(filtered);
             } catch (err: any) {
               setError(`Error fetching user data: ${err.message}`);
               console.error("Error:", err);
@@ -90,6 +104,7 @@ function CreatePost() {
           UID: user.uid,
           Message: context,
           Topic: topic,
+          TemplateID: selectedTemplateID || null,
           Likes: 0,
           LikedBy: [],
           Time: serverTimestamp(),
@@ -164,6 +179,24 @@ function CreatePost() {
             <p className="text-gray-500 text-sm mt-1">
               Choose a clear, specific topic for your post
             </p>
+          </div>
+
+          <div className="mb-3">
+            <label className="block mb-1 font-medium">
+              Trip Template (optional)
+            </label>
+            <select
+              className="form-control w-full p-2 border rounded"
+              value={selectedTemplateID}
+              onChange={(e) => setSelectedTemplateID(e.target.value)}
+            >
+              <option value="">-- Select a template --</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.topic}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-3">
