@@ -33,11 +33,12 @@ function Weather() {
       const API_URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${loc}`;
       const response = await fetch(API_URL);
       const data = await response.json();
-      //console.log(data);
 
       if (!response.ok) {
         if (response.status === 400) {
-          toast.error("Please enter a valid location.");
+          toast.error("Please enter a valid location.", {
+            position: "bottom-center",
+          });
           throw new Error("Bad Request: Please enter a valid location.");
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -48,8 +49,6 @@ function Weather() {
       setResult(data.current.condition.text);
       setIcon(data.current.condition.icon);
       setCity(data.location.name);
-      // console.log(icon);
-      // console.log(result);
     } catch (error) {
       setResult("");
     } finally {

@@ -54,7 +54,7 @@ const chatbotSidebar = ({
 
       await fetchChats(setChats);
       setSelectedChatID(docRef.id);
-      toast.success("New chat initialized", { position: "top-center" });
+      toast.success("New chat initialized", { position: "bottom-center" });
     } catch (error) {
       console.error("Error initializing chat: ", error);
     } finally {

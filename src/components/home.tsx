@@ -6,16 +6,7 @@ import Weather from "./Weather/Weather";
 
 const home = () => {
   const navigate = useNavigate();
-  const forceLogout = async () => {
-    try {
-      await auth.signOut(); // Sign out from Firebase Authentication
-      localStorage.clear(); // Clear local storage (if used)
-      sessionStorage.clear(); // Clear session storage (if used)
-      navigate("/login"); // Redirect to login page
-    } catch (error) {
-      console.error("Error forcefully logging out:", error.message);
-    }
-  };
+
   return (
     <div className="container py-5">
       <div className="row gx-4 gy-4">

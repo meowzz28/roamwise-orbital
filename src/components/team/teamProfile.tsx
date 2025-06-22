@@ -128,11 +128,15 @@ function TeamProfile({
         });
       });
 
-      toast.success("You have quit the team successfully.");
+      toast.success("You have quit the team successfully.", {
+        position: "bottom-center",
+      });
       window.location.href = "/team"; // Or use navigate("/team") if you have access to navigate
     } catch (err: any) {
       console.error("Error quitting team:", err.message);
-      toast.error("Failed to quit the team. Try again.");
+      toast.error("Failed to quit the team. Try again.", {
+        position: "bottom-center",
+      });
     } finally {
       setIsQuiting(false);
     }
