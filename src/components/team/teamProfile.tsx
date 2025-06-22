@@ -22,8 +22,6 @@ type Team = {
   user_name: string[];
 };
 
-// Add Admin Modal Component
-
 function TeamProfile({
   teamID,
   team,
