@@ -15,6 +15,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ViewTrip from "./ForumViewTrip";
+import ForumSubComment from "./forumSubComment";
 
 type UserDetails = {
   email: string;
@@ -51,6 +52,19 @@ type Comment = {
   };
 };
 
+type SubComment = {
+  id: string;
+  UID: string;
+  User: string;
+  Message: string;
+  PostId: string;
+  ParentCommentId: string;
+  Time?: {
+    seconds: number;
+    nanoseconds: number;
+  };
+};
+
 function ViewPost() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
@@ -63,6 +77,8 @@ function ViewPost() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [subComments, setSubComments] = useState<SubComment[]>([]);
+  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -253,6 +269,16 @@ function ViewPost() {
   const handleDeleteComment = async (commentId: string) => {
     try {
       await deleteDoc(doc(db, "ForumComment", commentId));
+      const subCommentsQuery = query(
+        collection(db, "ForumSubComment"),
+        where("ParentCommentId", "==", commentId)
+      );
+      const subCommentsSnapshot = await getDocs(subCommentsQuery);
+      const subDeletePromises = subCommentsSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(subDeletePromises);
+
       toast.success("Comment deleted successfully!", {
         position: "bottom-center",
       });
@@ -286,9 +312,7 @@ function ViewPost() {
         }
 
         const likedBy = postDoc.data().LikedBy || [];
-
         const isCurrentlyLiked = likedBy.includes(UID);
-
         const newLikes = isCurrentlyLiked
           ? postDoc.data().Likes - 1
           : postDoc.data().Likes + 1;
@@ -450,6 +474,7 @@ function ViewPost() {
                   )}
                 </div>
                 <p className="mt-2">{comment.Message}</p>
+                <ForumSubComment postId={postId!} parentId={comment.id} />
               </div>
             ))
           ) : (
