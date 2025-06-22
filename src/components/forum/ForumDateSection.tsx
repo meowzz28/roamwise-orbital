@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { doc, runTransaction } from "firebase/firestore";
-import { db } from "../firebase";
-import { toast } from "react-toastify";
+import React, { useEffect, useState } from "react";
 
 const ForumDateSection = ({ id, template }) => {
   const [startDate, setStartDate] = useState(template.startDate);
   const [endDate, setEndDate] = useState(template.endDate);
+
+  useEffect(() => {
+    setStartDate(template.startDate);
+    setEndDate(template.endDate);
+  }, [template.startDate, template.endDate]);
 
   return (
     <div className="flex flex-col gap-6 bg-blue-50 rounded-xl p-6 shadow-sm border border-blue-200 mt-6">

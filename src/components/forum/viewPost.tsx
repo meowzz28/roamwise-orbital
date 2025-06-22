@@ -15,6 +15,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ViewTrip from "./ForumViewTrip";
+import ForumSubComment from "./forumSubComment";
 
 type UserDetails = {
   email: string;
@@ -51,6 +52,19 @@ type Comment = {
   };
 };
 
+type SubComment = {
+  id: string;
+  UID: string;
+  User: string;
+  Message: string;
+  PostId: string;
+  ParentCommentId: string;
+  Time?: {
+    seconds: number;
+    nanoseconds: number;
+  };
+};
+
 function ViewPost() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
@@ -63,6 +77,8 @@ function ViewPost() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [subComments, setSubComments] = useState<SubComment[]>([]);
+  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -159,7 +175,9 @@ function ViewPost() {
       setComments(commentsData);
     } catch (err: any) {
       console.error("Error fetching comments:", err);
-      toast.error(`Error loading comments: ${err.message}`);
+      toast.error(`Error loading comments: ${err.message}`, {
+        position: "bottom-center",
+      });
     } finally {
       setCommentsLoading(false);
     }
@@ -168,16 +186,20 @@ function ViewPost() {
   const handleDelete = async () => {
     try {
       if (!postId) {
-        toast.error("Post ID is missing.");
+        toast.error("Post ID is missing.", {
+          position: "bottom-center",
+        });
         return;
       }
 
-      const loadingToastId = toast.loading("Deleting post and comments...");
-
+      const loadingToastId = toast.loading("Deleting post and comments...", {
+        position: "bottom-center",
+      });
       const commentsQuery = query(
         collection(db, "ForumComment"),
         where("PostId", "==", postId)
       );
+
       const commentsSnapshot = await getDocs(commentsQuery);
 
       const commentDeletionPromises = commentsSnapshot.docs.map((doc) =>
@@ -193,7 +215,7 @@ function ViewPost() {
         type: "success",
         isLoading: false,
         autoClose: 3000,
-        position: "top-center",
+        position: "bottom-center",
       });
 
       navigate("/forum");
@@ -208,7 +230,9 @@ function ViewPost() {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) {
-      toast.error("Comment cannot be empty");
+      toast.error("Comment cannot be empty", {
+        position: "bottom-center",
+      });
       return;
     }
 
@@ -224,13 +248,15 @@ function ViewPost() {
         });
 
         toast.success("Comment posted successfully!", {
-          position: "top-center",
+          position: "bottom-center",
         });
 
         setComment("");
         fetchComments();
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.", {
+          position: "bottom-center",
+        });
       }
     } catch (error: any) {
       console.error("Error posting comment:", error);
@@ -243,8 +269,18 @@ function ViewPost() {
   const handleDeleteComment = async (commentId: string) => {
     try {
       await deleteDoc(doc(db, "ForumComment", commentId));
+      const subCommentsQuery = query(
+        collection(db, "ForumSubComment"),
+        where("ParentCommentId", "==", commentId)
+      );
+      const subCommentsSnapshot = await getDocs(subCommentsQuery);
+      const subDeletePromises = subCommentsSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(subDeletePromises);
+
       toast.success("Comment deleted successfully!", {
-        position: "top-center",
+        position: "bottom-center",
       });
       fetchComments();
     } catch (error: any) {
@@ -276,9 +312,7 @@ function ViewPost() {
         }
 
         const likedBy = postDoc.data().LikedBy || [];
-
         const isCurrentlyLiked = likedBy.includes(UID);
-
         const newLikes = isCurrentlyLiked
           ? postDoc.data().Likes - 1
           : postDoc.data().Likes + 1;
@@ -440,6 +474,7 @@ function ViewPost() {
                   )}
                 </div>
                 <p className="mt-2">{comment.Message}</p>
+                <ForumSubComment postId={postId!} parentId={comment.id} />
               </div>
             ))
           ) : (

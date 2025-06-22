@@ -18,7 +18,9 @@ function ResetPassword() {
 
     try {
       await sendPasswordResetEmail(auth, email).then((data) => {
-        toast.warn("Check you email");
+        toast.warn("Check you email", {
+          position: "bottom-center",
+        });
         navigate("/login");
       });
     } catch (error: any) {
