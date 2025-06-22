@@ -29,18 +29,7 @@ type ForumPost = {
   Likes: number;
   LikedBy: string[];
   Message: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
-
-type Comment = {
-  id: string;
-  UID: string;
-  User: string;
-  Message: string;
-  PostId: string;
+  TemplateID?: string;
   Time?: {
     seconds: number;
     nanoseconds: number;
@@ -58,6 +47,10 @@ function EditPost() {
   const [context, setContext] = useState("");
   const [topic, setTopic] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTemplateID, setSelectedTemplateID] = useState<string>("");
+  const [templates, setTemplates] = useState<{ id: string; topic: string }[]>(
+    []
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,9 +89,21 @@ function EditPost() {
                     LikedBy: data.LikedBy || [],
                     Likes: data.Likes || 0,
                     Time: data.Time,
+                    TemplateID: data.TemplateID || "",
                   });
+
                   setTopic(data.Topic || "");
                   setContext(data.Message || "");
+                  setSelectedTemplateID(data.TemplateID);
+
+                  const snapshot = await getDocs(collection(db, "Templates"));
+                  const filtered = snapshot.docs
+                    .filter((doc) => doc.data().userUIDs?.includes(user.uid))
+                    .map((doc) => ({
+                      id: doc.id,
+                      topic: doc.data().topic || "Untitled",
+                    }));
+                  setTemplates(filtered);
                 } else {
                   setError("Post not found.");
                 }
@@ -163,6 +168,7 @@ function EditPost() {
           Message: context,
           Topic: topic,
           Time: serverTimestamp(),
+          TemplateID: selectedTemplateID || null,
         });
 
         toast.update(loadingToastId, {
@@ -245,6 +251,23 @@ function EditPost() {
               onChange={(e) => setTopic(e.target.value)}
               required
             />
+          </div>
+          <div className="mb-3">
+            <label className="block font-semibold mb-1">
+              Trip Template (optional)
+            </label>
+            <select
+              className="form-control w-full p-2 border rounded"
+              value={selectedTemplateID}
+              onChange={(e) => setSelectedTemplateID(e.target.value)}
+            >
+              <option value="">-- Select a template --</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.topic}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-3">
