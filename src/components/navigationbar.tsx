@@ -42,37 +42,37 @@ const Navigationbar = ({ user }: Props) => {
               to="/forum"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              Community Forum
+              Forum
             </Link>
             <Link
               to="/chatbot"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              AI Assistant
+              Smart Planner
             </Link>
             <Link
               to="/templates"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              Trips
+              My Trips
             </Link>
             <Link
               to="/expenses"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              Expenses
+              Trip Expenses
             </Link>
             <Link
               to="/team"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              Team
+              Travel Buddies
             </Link>
             <Link
               to="/profile"
               className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
             >
-              Profile
+              My Profile
             </Link>
 
             <div className="nav-item dropdown">
@@ -109,7 +109,7 @@ const Navigationbar = ({ user }: Props) => {
             )}
             {user && (
               <button className="btn btn-danger" onClick={forceLogout}>
-                Logout
+                <span className=" text-lg">Logout</span>
               </button>
             )}
           </div>

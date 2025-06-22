@@ -64,7 +64,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
                 innerRadius={70}
                 outerRadius={100}
                 paddingAngle={3}
-                label
+                label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
               >
                 {data.map((_, index) => (
                   <Cell

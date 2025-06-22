@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { doc, onSnapshot, runTransaction } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 
 const ForumDailyPlan = ({ templateID, date }) => {
