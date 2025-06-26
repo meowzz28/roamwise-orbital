@@ -83,7 +83,7 @@ function Chat({ teamID }: { teamID: string }) {
           return a.createdAt.seconds - b.createdAt.seconds;
         });
 
-        console.log("Fetched messages:", msgs);
+        //console.log("Fetched messages:", msgs);
         setMessages(msgs);
       });
     }

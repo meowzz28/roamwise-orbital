@@ -139,6 +139,7 @@ function Team() {
         toast.success("Team created successfully!", {
           position: "bottom-center",
         });
+        setShowModal(false);
       } else {
         toast.error("Failed to create new template. Please try again.", {
           position: "bottom-center",
@@ -152,7 +153,6 @@ function Team() {
       });
     } finally {
       setIsCreating(false);
-      setShowModal(false);
     }
   };
 
@@ -181,17 +181,6 @@ function Team() {
     );
   }
 
-  if (isCreating) {
-    return (
-      <div className="container text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Creating New Trip...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container flex flex-col bg-white rounded-2xl shadow-sm border  p-4  h-[calc(100vh-80px)]">
       <div className="flex h-full h-0 border">
@@ -200,7 +189,7 @@ function Team() {
         <div className="w-1/3 border-r flex flex-col">
           <div className="p-4 border-b ">
             <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-800 text-center">
-              Team 👥
+              Travel Buddies 👥
             </h1>
             <div className="row">
               <input
@@ -212,7 +201,7 @@ function Team() {
               />
               <button
                 onClick={() => setShowModal(true)}
-                className="col-5 m-2 px-3 py-2 bg-green-600 text-white font-semibold rounded hover:bg-green-700"
+                className="col-5 m-2 px-3 py-2 btn btn-outline-success "
               >
                 Form New Team
               </button>
@@ -285,6 +274,7 @@ function Team() {
             show={showModal}
             onClose={() => setShowModal(false)}
             onCreate={handleCreate}
+            isCreating={isCreating}
           />
         )}
       </div>

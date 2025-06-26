@@ -174,8 +174,19 @@ const allCurrencies = [
   { code: "ZMW", name: "Zambian Kwacha", symbol: "ZK" },
   { code: "ZWL", name: "Zimbabwean Dollar", symbol: "Z$" },
 ];
+type Props = {
+  setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
+  isCreating: boolean;
+  onClose: () => void;
+  tripId: string;
+};
 
-const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
+const ExpenseModal: React.FC<Props> = ({
+  setIsCreating,
+  isCreating,
+  onClose,
+  tripId,
+}) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
@@ -213,6 +224,9 @@ const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
         date: date,
         currency: currency,
         totalSpending: totalSpending,
+      });
+      toast.success("Successfully added expenses", {
+        position: "bottom-center",
       });
     } catch (error: any) {
       toast.error(error, {
@@ -419,9 +433,17 @@ const ExpenseModal = ({ setIsCreating, onClose, tripId }) => {
 
             <button
               type="submit"
-              className="rounded-lg w-full px-5 py-2.5 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+              disabled={isCreating}
             >
-              Submit
+              {isCreating && (
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              )}
+              {isCreating ? "Adding..." : "Add Expenses"}
             </button>
           </form>
         </div>
