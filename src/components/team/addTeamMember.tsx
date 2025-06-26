@@ -40,10 +40,12 @@ const AddTeamMember = ({
   setIsAddingMember: (value: boolean) => void;
 }) => {
   const [email, setEmail] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingMember(true);
+    setIsAdding(true);
 
     try {
       const querySnapshot = await getDocs(
@@ -135,6 +137,7 @@ const AddTeamMember = ({
         position: "bottom-center",
       });
       setIsAddingMember(false);
+      setIsAdding(false);
     }
   };
 
@@ -193,9 +196,17 @@ const AddTeamMember = ({
             </div>
             <button
               type="submit"
-              className="rounded-lg w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+              disabled={isAdding}
             >
-              Add Member
+              {isAdding && (
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              )}
+              {isAdding ? "Adding..." : "Add Member"}
             </button>
           </form>
         </div>

@@ -7,6 +7,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import AddTeamMember from "./addTeamMember";
@@ -36,6 +37,8 @@ function TeamProfile({
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [isQuiting, setIsQuiting] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState<Team>(team);
+  const [quitConfirm, setQuitConfirm] = useState(false);
 
   const handleAddNewMember = () => {
     setShowAddMemberModal(true);
@@ -50,13 +53,10 @@ function TeamProfile({
     setShowAddAdminModal(false);
   };
 
-  const handleQuit = async () => {
-    if (!teamID || !uid) return;
+  const handleQuit = () => setQuitConfirm(true);
 
-    const confirmQuit = window.confirm(
-      "Are you sure you want to quit the team?"
-    );
-    if (!confirmQuit) return;
+  const confirmQuit = async () => {
+    if (!teamID || !uid) return;
 
     setIsQuiting(true);
 
@@ -97,9 +97,7 @@ function TeamProfile({
         );
         const updated_admin = teamData.admin.filter((id) => id !== uid);
         const updated_admin_name = teamData.admin_name.filter(
-          (name) =>
-            teamData.admin.indexOf(uid) === -1 ||
-            teamData.admin.indexOf(uid) !== teamData.admin_name.indexOf(name)
+          (name) => name !== userName
         );
 
         // Apply update
@@ -110,6 +108,7 @@ function TeamProfile({
           admin: updated_admin,
           admin_name: updated_admin_name,
         });
+
         templateDocs.forEach((templateDoc, index) => {
           if (templateDoc.exists()) {
             const templateData = templateDoc.data();
@@ -131,6 +130,8 @@ function TeamProfile({
       toast.success("You have quit the team successfully.", {
         position: "bottom-center",
       });
+      setQuitConfirm(false);
+
       window.location.href = "/team"; // Or use navigate("/team") if you have access to navigate
     } catch (err: any) {
       console.error("Error quitting team:", err.message);
@@ -142,29 +143,60 @@ function TeamProfile({
     }
   };
 
+  const fetchUpdatedTeam = async () => {
+    const teamRef = doc(db, "Team", teamID);
+    const docSnap = await getDoc(teamRef);
+    if (docSnap.exists()) {
+      const updatedTeam = docSnap.data() as Team;
+      setCurrentTeam(updatedTeam); // Use currentTeam as your local team state
+      console.log("Fetched updated team:", updatedTeam);
+    }
+  };
+
+  useEffect(() => {
+    if (!showAddMemberModal) {
+      fetchUpdatedTeam();
+    }
+  }, [showAddMemberModal]);
+
+  useEffect(() => {
+    if (!showAddAdminModal) {
+      fetchUpdatedTeam();
+    }
+  }, [showAddAdminModal]);
+
+  if (!currentTeam.admin_name || !currentTeam.user_name) {
+    return (
+      <div className="text-center p-4">
+        <div className="spinner-border text-primary" role="status"></div>
+        <p>Loading team profile...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col p-4 rounded-lg bg-white shadow-md space-y-3">
         <div>
           <p className="text-lg">
-            <strong>Team Name:</strong> {team?.Name}
+            <strong>Team Name:</strong> {currentTeam?.Name}
           </p>
         </div>
         <div>
           <p>
             <strong>Members:</strong>{" "}
-            {team?.user_name?.join(", ") || "No members"}
+            {currentTeam?.user_name?.join(", ") || "No members"}
           </p>
         </div>
         <div>
           <p>
             <strong>Admin:</strong>{" "}
-            {team?.admin_name?.join(", ") || "No admins"}
+            {currentTeam?.admin_name?.join(", ") || "No admins"}
           </p>
         </div>
 
         <div className="flex space-x-2 pt-2">
-          {team?.admin?.includes(uid) && (
+          {currentTeam?.admin?.includes(uid) && (
             <>
               <button
                 className="btn btn-primary me-2"
@@ -197,7 +229,7 @@ function TeamProfile({
         <AddTeamMember
           onClose={closeModals}
           teamID={teamID}
-          team={team}
+          team={currentTeam}
           setIsAddingMember={setIsAddingMember}
         />
       )}
@@ -206,9 +238,45 @@ function TeamProfile({
         <AddTeamAdmin
           onClose={closeModals}
           teamID={teamID}
-          team={team}
+          team={currentTeam}
           setIsAddingAdmin={setIsAddingAdmin}
         />
+      )}
+      {quitConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setQuitConfirm(false)}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Quit Team?</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to quit this team? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setQuitConfirm(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmQuit}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                {isQuiting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {isQuiting ? "Quitting..." : "Confirm Quit"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

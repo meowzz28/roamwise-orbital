@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-const CreateNewTeam = ({ show, onClose, onCreate }) => {
+const CreateNewTeam = ({
+  show,
+  onClose,
+  onCreate,
+  isCreating,
+}: {
+  show: boolean;
+  onClose: () => void;
+  onCreate: (teamName: string) => void;
+  isCreating: boolean;
+}) => {
   const [teamName, setTeamName] = useState("");
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
       onCreate(teamName.trim());
       setTeamName("");
-      onClose();
     }
   };
 
@@ -72,20 +80,17 @@ const CreateNewTeam = ({ show, onClose, onCreate }) => {
 
               <button
                 type="submit"
-                className="w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 "
+                className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+                disabled={isCreating}
               >
-                <svg
-                  className="mr-2 w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Create New Template
+                {isCreating && (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                )}
+                {isCreating ? "Creating..." : "Create New Team"}
               </button>
             </form>
           </div>

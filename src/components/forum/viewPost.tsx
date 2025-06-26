@@ -77,8 +77,9 @@ function ViewPost() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const [subComments, setSubComments] = useState<SubComment[]>([]);
-  const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeletCommentConfirm, setShowDeletCommentConfirm] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -370,7 +371,7 @@ function ViewPost() {
   }
 
   return (
-    <div className="container bg-gray-200 p-5 rounded shadow-lg">
+    <div className="container bg-gray-200 p-5 rounded-2xl shadow-lg">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Forum Post Details</h1>
         <button className="btn btn-outline-primary" onClick={handleBack}>
@@ -412,6 +413,34 @@ function ViewPost() {
           <div className="post-content whitespace-pre-wrap">{post.Message}</div>
         </div>
       </div>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setShowDeleteConfirm(false)}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-red-600">
+              Delete Post?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this post? This action is
+              irreversible and will also remove all related comments.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button onClick={handleDelete} className="btn btn-danger">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {UID === post.UID && (
         <div className="mb-4 flex gap-3 justify-content-end">
@@ -421,7 +450,10 @@ function ViewPost() {
           >
             Edit Post
           </button>
-          <button className="btn btn-danger" onClick={handleDelete}>
+          <button
+            className="btn btn-danger"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
             Delete Post
           </button>
         </div>
@@ -467,7 +499,10 @@ function ViewPost() {
                   {UID === comment.UID && (
                     <button
                       className="text-red-500 text-sm"
-                      onClick={() => handleDeleteComment(comment.id)}
+                      onClick={() => {
+                        setCommentToDelete(comment.id);
+                        setShowDeletCommentConfirm(true);
+                      }}
                     >
                       Delete
                     </button>
@@ -484,6 +519,47 @@ function ViewPost() {
           )}
         </div>
       </div>
+      {showDeletCommentConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => {
+              setShowDeletCommentConfirm(false);
+              setCommentToDelete(null);
+            }}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-red-600">
+              Delete Comment?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this comment? This action is
+              irreversible and will also remove all related sub-comments.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowDeletCommentConfirm(false);
+                  setCommentToDelete(null);
+                }}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (commentToDelete) handleDeleteComment(commentToDelete);
+                  setShowDeletCommentConfirm(false);
+                  setCommentToDelete(null);
+                }}
+                className="btn btn-danger"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
