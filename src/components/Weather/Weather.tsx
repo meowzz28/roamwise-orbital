@@ -70,7 +70,7 @@ function Weather() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border p-4">
+    <div className="group border p-5 rounded-2xl ">
       <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
         Live Weather ☁️
       </h1>

@@ -82,7 +82,11 @@ function Forum() {
         };
 
         const like = (a, b) => {
-          return b.likes - a.likes;
+          if (!a.Likes && !b.Likes) return 0;
+          if (!a.Likes) return 1;
+          if (!b.Likes) return -1;
+
+          return b.Likes - a.Likes;
         };
 
         const sortedPosts = forumData.sort(filter == "recent" ? recent : like);
@@ -141,9 +145,9 @@ function Forum() {
   };
 
   return (
-    <div className="container bg-gray-200 p-5 rounded shadow-lg">
+    <div className="container bg-white 200 p-5 rounded-2xl shadow-lg">
       <div className="flex justify-between items-center mb-4  border-dark border-bottom">
-        <h1 className="text-2xl font-bold ">Community Forum</h1>
+        <h1 className="text-center text-2xl font-bold ">Community Forum💬</h1>
         <button className="btn btn-outline-success" onClick={handleCreate}>
           Create Post
         </button>
@@ -172,7 +176,7 @@ function Forum() {
         />
       </div>
       {posts.length > 0 ? (
-        <div className="bg-white p-4 rounded shadow-md mb-4">
+        <div className="bg-shadow p-4 rounded shadow-md mb-4">
           <div className="table-responsive">
             <table className="table table-hover">
               <thead className="table-light">
@@ -188,7 +192,7 @@ function Forum() {
                   <tr
                     key={post.id}
                     onClick={() => handleViewPost(post.id)}
-                    className="cursor-pointer"
+                    className="cursor-pointer transition-transform duration-300 hover:scale-[1.008] hover:bg-gray-100"
                     style={{ cursor: "pointer" }}
                   >
                     <td>

@@ -363,17 +363,6 @@ const BudgetMainPage = () => {
     );
   }
 
-  if (isCreating) {
-    return (
-      <div className="container text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Creating New Entry...</p>
-      </div>
-    );
-  }
-
   if (isFetching) {
     return (
       <div className="container text-center p-5">
@@ -456,7 +445,9 @@ const BudgetMainPage = () => {
         {/* Right Column: Expenses List */}
         {selectedTripId && (
           <div className="flex-1 space-y-6">
-            <CurrencyConverter />
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+              <CurrencyConverter />
+            </div>
             <ExpensesList expenses={convertedExpenses} />
           </div>
         )}
@@ -466,6 +457,7 @@ const BudgetMainPage = () => {
       {showModal && selectedTripId && (
         <ExpenseModal
           setIsCreating={setIsCreating}
+          isCreating={isCreating}
           onClose={() => setShowModal(false)}
           tripId={selectedTripId}
         />

@@ -22,6 +22,8 @@ function Profile() {
   const [authChecked, setAuthChecked] = useState(false);
   const [selectedImg, setSelectedImg] = useState(null);
   const [activeTab, setActiveTab] = useState("profile");
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -47,7 +49,7 @@ function Profile() {
     return () => unsubscribe();
   }, []);
 
-  const handleDelete = async () => {
+  const confirmDelete = async () => {
     try {
       const loadingToastId = toast.loading("Deleting user's data...", {
         position: "bottom-center",
@@ -104,74 +106,107 @@ function Profile() {
   }
 
   return (
-    <div className="container bg-gray-200 p-5 rounded shadow-lg ">
-      <div className="flex justify-between items-center mb-4 border-dark border-bottom">
-        <h1 className="text-2xl font-bold">Profile Page</h1>
+    <div className="container bg-white p-5 rounded-2xl shadow">
+      <div className="flex justify-between items-center border-b pb-3 mb-4">
+        <h1 className="text-2xl font-bold"> My Profile 👤</h1>
       </div>
+
       <div className="row">
-        <div className=" col-1 d-flex flex-column align-items-center me-4 border-end pe-3">
-          <div
-            className={`fs-4 fw-bold mb-4 ${
-              activeTab === "profile" ? "text-primary" : "text-secondary"
-            }`}
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveTab("profile")}
-            title="Profile"
-          >
-            Profile
-          </div>
-          <div
-            className={`fs-4 fw-bold ${
-              activeTab === "memories" ? "text-primary" : "text-secondary"
-            }`}
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveTab("memories")}
-            title="Memories"
-          >
-            Memory
-          </div>
+        {/* Sidebar Tabs */}
+        <div className="col-2 pe-3 border-end d-flex flex-column gap-4">
+          {["profile", "memories"].map((tab) => (
+            <div
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`fw-bold text-center p-2 rounded cursor-pointer transition-all ${
+                activeTab === tab
+                  ? "bg-primary text-white shadow"
+                  : "text-secondary hover:bg-gray-200"
+              }`}
+              style={{ cursor: "pointer" }}
+            >
+              {tab === "profile" ? "Profile 👤" : "Memories 📸 "}
+            </div>
+          ))}
         </div>
-        {/* User Profile Section */}
 
-        <div className="col  bg-white p-6 rounded shadow-md mb-6">
+        {/* Content Section */}
+        <div className="col">
           {activeTab === "profile" && (
-            <div>
-              <h2 className="text-center border-bottom stext-xl font-semibold mb-4">
-                User Profile
+            <div className="fade-in">
+              <h2 className="text-xl font-semibold text-center border-bottom pb-2 mb-4">
+                My Profile👤
               </h2>
-              {userDetails.pic && (
-                <img
-                  src={userDetails.pic}
-                  alt="Profile"
-                  className="rounded-circle mb-3"
-                  style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                />
-              )}
-              <p>
-                <strong>Email:</strong> {userDetails.email}
-              </p>
-              <p>
-                <strong>First Name:</strong> {userDetails.firstName}
-              </p>
-              {userDetails.lastName && (
+              <div className="d-flex flex-column align-items-center">
+                {userDetails.pic && (
+                  <img
+                    src={userDetails.pic}
+                    alt="Profile"
+                    className="rounded-circle mb-3"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
                 <p>
-                  <strong>Last Name:</strong> {userDetails.lastName}
+                  <strong>Email:</strong> {userDetails.email}
                 </p>
-              )}
-
-              <div className="mt-4">
-                <button className="btn btn-danger" onClick={handleDelete}>
+                <p>
+                  <strong>First Name:</strong> {userDetails.firstName}
+                </p>
+                {userDetails.lastName && (
+                  <p>
+                    <strong>Last Name:</strong> {userDetails.lastName}
+                  </p>
+                )}
+                <button
+                  className="btn btn-danger mt-4"
+                  onClick={() => setIsDeleteConfirmOpen(true)}
+                >
                   Delete Account
                 </button>
               </div>
             </div>
           )}
-
-          {/* Memories Section */}
+          {isDeleteConfirmOpen && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div
+                className="fixed inset-0 bg-black/50"
+                onClick={() => !isDeleting && setIsDeleteConfirmOpen(false)}
+              />
+              <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+                <h3 className="text-lg text-red-600 font-semibold mb-2">
+                  Delete Account?
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Are you sure you want to delete your account? This action
+                  cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setIsDeleteConfirmOpen(false)}
+                    className="btn btn-secondary"
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="btn btn-danger"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {activeTab === "memories" && (
-            <div>
-              <h2 className="text-xl font-semibold text-center mb-4 border-bottom">
-                Your Memories
+            <div className="fade-in">
+              <h2 className="text-xl font-semibold text-center border-bottom pb-2 mb-4">
+                Your Memories📸
               </h2>
               <UploadForm />
               <ImageGrid setSelectedImg={setSelectedImg} />
