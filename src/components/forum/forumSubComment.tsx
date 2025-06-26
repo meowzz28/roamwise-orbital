@@ -32,6 +32,10 @@ function ForumSubComment({ postId, parentId }: Props) {
   const [subComments, setSubComments] = useState<SubComment[]>([]);
   const [UID, setUID] = useState("");
   const [userName, setUserName] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [subCommentToDelete, setSubCommentToDelete] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -83,7 +87,9 @@ function ForumSubComment({ postId, parentId }: Props) {
         ParentCommentId: parentId,
         Time: serverTimestamp(),
       });
-      toast.success("Reply posted.");
+      toast.success("Reply posted.", {
+        position: "bottom-center",
+      });
       setReply("");
       fetchSubComments();
     } catch (err: any) {
@@ -94,7 +100,9 @@ function ForumSubComment({ postId, parentId }: Props) {
   const handleDelete = async (id: string) => {
     try {
       await deleteDoc(doc(db, "ForumSubComment", id));
-      toast.success("Reply deleted.");
+      toast.success("Reply deleted.", {
+        position: "bottom-center",
+      });
       fetchSubComments();
     } catch (err: any) {
       toast.error(err.message);
@@ -121,8 +129,11 @@ function ForumSubComment({ postId, parentId }: Props) {
             </p>
             {UID === subComment.UID && (
               <button
-                className="text-xs text-red-400"
-                onClick={() => handleDelete(subComment.id)}
+                className="p-1 text-red-500 text-sm"
+                onClick={() => {
+                  setSubCommentToDelete(subComment.id);
+                  setShowDeleteConfirm(true);
+                }}
               >
                 Delete
               </button>
@@ -145,6 +156,47 @@ function ForumSubComment({ postId, parentId }: Props) {
           Reply
         </button>
       </form>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setSubCommentToDelete(null);
+            }}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-red-600">
+              Delete Reply?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this reply? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setSubCommentToDelete(null);
+                }}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (subCommentToDelete) handleDelete(subCommentToDelete);
+                  setShowDeleteConfirm(false);
+                  setSubCommentToDelete(null);
+                }}
+                className=" btn btn-danger"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

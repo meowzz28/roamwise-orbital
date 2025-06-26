@@ -266,11 +266,11 @@ const templatesPage = () => {
     <div>
       <div className="relative flex items-center justify-end mb-6">
         <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-center">
-          Trips 🗓️
+          My Trips 🗓️
         </h1>
         <button
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          className="btn btn-outline-success"
         >
           Create New Trip +
         </button>
@@ -279,7 +279,7 @@ const templatesPage = () => {
       {templates.length === 0 ? (
         <p className="text-gray-600">No trips found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
           {templates.map((template) => (
             <motion.div
               key={template.id}

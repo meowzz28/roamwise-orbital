@@ -19,6 +19,7 @@ type ExpenseListProps = {
 const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = (id: string) => {
     setExpenseToDelete(id);
@@ -27,19 +28,28 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
 
   const confirmDelete = async () => {
     if (!expenseToDelete) return;
-
+    setIsDeleting(true);
     try {
+      const loadingToastId = toast.loading("Deleting expenses...", {
+        position: "bottom-center",
+      });
       await deleteDoc(doc(db, "Expenses", expenseToDelete));
-      toast.success("Expense deleted successfully", {
+      toast.update(loadingToastId, {
+        render: `Expenses deleted successfully!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } catch (error) {
       toast.error("Error deleting expense:" + error, {
         position: "bottom-center",
       });
+    } finally {
+      setIsDeleteConfirmOpen(false);
+      setExpenseToDelete(null);
+      setIsDeleting(false);
     }
-    setIsDeleteConfirmOpen(false);
-    setExpenseToDelete(null);
   };
 
   return (
@@ -85,7 +95,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
             onClick={() => setIsDeleteConfirmOpen(false)}
           />
           <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold mb-2">Delete Expense?</h3>
+            <h3 className="text-lg text-red-600 font-semibold mb-2">
+              Delete Expense?
+            </h3>
             <p className="text-gray-600 mb-4">
               Are you sure you want to delete this expense? This action cannot
               be undone.
@@ -93,16 +105,12 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsDeleteConfirmOpen(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
-              <button
-                onClick={confirmDelete}
-                style={{ borderRadius: "8px" }}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-              >
-                Delete Expense
+              <button onClick={confirmDelete} className="btn btn-danger ">
+                Delete
               </button>
             </div>
           </div>

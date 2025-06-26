@@ -85,7 +85,7 @@ const DateSection = ({ id, template }) => {
           onClick={handleUpdate}
           disabled={loading}
           style={{ borderRadius: "8px" }}
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:opacity-70"
+          className="btn btn-primary"
         >
           {loading ? "Updating..." : "Update Dates"}
         </button>
@@ -110,15 +110,11 @@ const DateSection = ({ id, template }) => {
               <button
                 onClick={() => setIsConfirmOpen(false)}
                 style={{ borderRadius: "8px" }}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
-              <button
-                onClick={confirmUpdate}
-                style={{ borderRadius: "8px" }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-              >
+              <button onClick={confirmUpdate} className="btn btn-primary">
                 Update Dates
               </button>
             </div>

@@ -40,10 +40,13 @@ const AddTeamAdmin = ({
   setIsAddingAdmin: (value: boolean) => void;
 }) => {
   const [email, setEmail] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingAdmin(true);
+    setIsAdding(true);
+
     try {
       //   Check if the email belongs to an existing team member
       if (!team.user_email?.includes(email)) {
@@ -121,6 +124,7 @@ const AddTeamAdmin = ({
         position: "bottom-center",
       });
       setIsAddingAdmin(false);
+      setIsAdding(false);
     }
   };
 
@@ -179,9 +183,17 @@ const AddTeamAdmin = ({
             </div>
             <button
               type="submit"
-              className="rounded-lg w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
+              className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+              disabled={isAdding}
             >
-              Add Admin
+              {isAdding && (
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              )}
+              {isAdding ? "Adding..." : "Add Admin"}
             </button>
           </form>
         </div>
