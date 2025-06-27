@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "../firebase";
-import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 import { FaPlaneDeparture } from "react-icons/fa";
 import { toast } from "react-toastify";
 import ForumDateSection from "./ForumDateSection";

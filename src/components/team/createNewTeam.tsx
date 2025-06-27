@@ -17,7 +17,6 @@ const CreateNewTeam = ({
     e.preventDefault();
     if (teamName.trim()) {
       onCreate(teamName.trim());
-      setTeamName("");
     }
   };
 
@@ -73,7 +72,7 @@ const CreateNewTeam = ({
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                   className="w-full p-2.5 text-sm rounded-lg border border-gray-300  "
-                  placeholder="eg. Power Rangers"
+                  placeholder="eg. Team Japan"
                   required
                 />
               </div>
