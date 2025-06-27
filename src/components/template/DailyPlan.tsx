@@ -25,9 +25,18 @@ const DailyPlan = ({ templateID, date }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const toastId = toast.loading("Saving...", {
+        position: "bottom-center",
+      });
       const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
       await runTransaction(db, async (transaction) => {
         transaction.set(planRef, { text }, { merge: true });
+      });
+      toast.update(toastId, {
+        render: "Plan saved successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
     } catch (error: any) {
       toast.error(error.message, {
