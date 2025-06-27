@@ -145,6 +145,7 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage, teams }) => {
 
               <button
                 type="submit"
+                style={{ borderRadius: "8px" }}
                 className="w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 "
               >
                 <svg
@@ -158,7 +159,7 @@ const CreateNewTemplate = ({ show, onClose, onCreate, setImage, teams }) => {
                     clipRule="evenodd"
                   />
                 </svg>
-                Create New Template
+                Create New Trip
               </button>
             </form>
           </div>
