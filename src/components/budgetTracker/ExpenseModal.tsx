@@ -216,6 +216,10 @@ const ExpenseModal: React.FC<Props> = ({
     setIsCreating(true);
 
     try {
+      const toastId = toast.loading("Adding expenses", {
+        position: "bottom-center",
+      });
+
       await addDoc(collection(db, "Expenses"), {
         userId: user.uid,
         tripId: tripId,
@@ -225,7 +229,12 @@ const ExpenseModal: React.FC<Props> = ({
         currency: currency,
         totalSpending: totalSpending,
       });
-      toast.success("Successfully added expenses", {
+
+      toast.update(toastId, {
+        render: `Successfully added expenses!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } catch (error: any) {

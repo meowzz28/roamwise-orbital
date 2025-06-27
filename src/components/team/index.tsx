@@ -75,43 +75,44 @@ function Team() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          query(
-            collection(db, "Team"),
-            where("user_uid", "array-contains", uid),
-            orderBy("created_at", "desc")
-          )
-        );
-        const teamData = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            Name: data.Name,
-            admin: data.admin || "",
-            user_email: data.user_email || "",
-            user_uid: data.user_uid || "",
-            user_name: data.user_name || "",
-          } as Team;
-        });
-
-        const filteredList = list.filter((team) =>
-          team.Name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        setList(teamData);
-      } catch (err) {
-        console.error("Error fetching team data:", err);
-      }
-    };
-    fetchData();
+    if (uid) fetchTeamList();
   }, [uid]);
+
+  const fetchTeamList = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, "Team"),
+          where("user_uid", "array-contains", uid),
+          orderBy("created_at", "desc")
+        )
+      );
+      const teamData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          Name: data.Name,
+          admin: data.admin || [],
+          admin_name: data.admin_name || [],
+          user_email: data.user_email || [],
+          user_uid: data.user_uid || [],
+          user_name: data.user_name || [],
+        } as Team;
+      });
+
+      setList(teamData);
+    } catch (err) {
+      console.error("Error fetching team data:", err);
+    }
+  };
 
   const handleCreate = async (teamName: string) => {
     setIsCreating(true);
     try {
       const user = auth.currentUser;
+      const toastId = toast.loading("Creating team...", {
+        position: "bottom-center",
+      });
       if (user && userDetails) {
         const newDocRef = await addDoc(collection(db, "Team"), {
           Name: teamName,
@@ -136,9 +137,13 @@ function Team() {
 
         setList((prev) => [newTeam, ...prev]);
 
-        toast.success("Team created successfully!", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Team created successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
         });
+
         setShowModal(false);
       } else {
         toast.error("Failed to create new template. Please try again.", {
@@ -252,6 +257,10 @@ function Team() {
                 teamID={selectedTeamID}
                 team={selectedTeam}
                 uid={uid}
+                onQuit={() => {
+                  setSelectedTeamID(null);
+                  fetchTeamList();
+                }}
               />
             </div>
           )}

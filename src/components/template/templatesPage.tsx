@@ -150,6 +150,9 @@ const templatesPage = () => {
   ) => {
     setIsCreating(true);
     try {
+      const toastId = toast.loading("Creating trip...", {
+        position: "bottom-center",
+      });
       const user = auth.currentUser;
       let uploadedImageURL = "";
       let teamName = "";
@@ -211,6 +214,12 @@ const templatesPage = () => {
           },
           ...prev,
         ]);
+        toast.update(toastId, {
+          render: "Trip created successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
       } else {
         toast.error("Failed to create new template. Please try again.", {
           position: "bottom-center",
@@ -238,16 +247,16 @@ const templatesPage = () => {
     );
   }
 
-  if (isCreating) {
-    return (
-      <div className="container text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Creating New Trip...</p>
-      </div>
-    );
-  }
+  // if (isCreating) {
+  //   return (
+  //     <div className="container text-center p-5">
+  //       <div className="spinner-border text-primary" role="status">
+  //         <span className="visually-hidden">Loading...</span>
+  //       </div>
+  //       <p className="mt-3">Creating New Trip...</p>
+  //     </div>
+  //   );
+  // }
   if (!userDetails) {
     return (
       <div className="container text-center p-5">
@@ -305,6 +314,7 @@ const templatesPage = () => {
           onCreate={handleCreate}
           setImage={setImage}
           teams={teams}
+          isCreating={isCreating}
         />
       )}
     </div>

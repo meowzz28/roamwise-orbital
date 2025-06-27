@@ -38,9 +38,6 @@ const CurrencyConverter = () => {
     getExchangeRate();
   };
 
-  // Fetch exchange rate on initial render
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // Fetch on initial render
   useEffect(() => {
     getExchangeRate();
   }, []);

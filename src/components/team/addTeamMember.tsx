@@ -46,7 +46,9 @@ const AddTeamMember = ({
     e.preventDefault();
     setIsAddingMember(true);
     setIsAdding(true);
-
+    const toastId = toast.loading("Adding member...", {
+      position: "bottom-center",
+    });
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "Users"), where("email", "==", email))
@@ -126,8 +128,11 @@ const AddTeamMember = ({
         }
       });
 
-      toast.success("Member added successfully!", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Member added successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
       setIsAddingMember(false);
       onClose();

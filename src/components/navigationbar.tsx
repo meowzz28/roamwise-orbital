@@ -2,6 +2,7 @@ import React from "react";
 import { auth } from "./firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { User } from "firebase/auth";
+import { motion } from "framer-motion";
 
 type Props = {
   user: User | null;
@@ -114,15 +115,24 @@ const Navigationbar = ({ user }: Props) => {
             </div>
 
             {!user && (
-              <Link
-                to="/login"
-                className="rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+              <motion.div
+                animate={{ opacity: [1, 0.4, 1] }}
+                transition={{ duration: 2, repeat: 40 }}
               >
-                Login
-              </Link>
+                <Link
+                  to="/login"
+                  className="relative top-2 rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+                >
+                  Login
+                </Link>
+              </motion.div>
             )}
             {user && (
-              <button className="btn btn-danger" onClick={forceLogout}>
+              <button
+                className="btn btn-danger"
+                style={{ borderRadius: "5px" }}
+                onClick={forceLogout}
+              >
                 <span className="  font-medium  text-lg">Logout</span>
               </button>
             )}

@@ -237,10 +237,6 @@ function Forum() {
           </button>
         </div>
       )}
-
-      <div className="text-gray-600 text-sm mt-3">
-        <small>Posts are displayed in order of most recent first</small>
-      </div>
     </div>
   );
 }

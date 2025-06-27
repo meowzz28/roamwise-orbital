@@ -20,9 +20,11 @@ const DateSection = ({ id, template }) => {
   };
 
   const confirmUpdate = async () => {
-    setIsConfirmOpen(false);
     setLoading(true);
     try {
+      const toastId = toast.loading("Updating...", {
+        position: "bottom-center",
+      });
       const templateRef = doc(db, "Templates", id);
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(templateRef);
@@ -31,20 +33,24 @@ const DateSection = ({ id, template }) => {
             startDate: startDate,
             endDate: endDate,
           });
-          toast.success("Dates updated successfully!", {
-            position: "bottom-center",
-          });
         } else {
           toast.error("Failed to update", {
             position: "bottom-center",
           });
         }
       });
+      toast.update(toastId, {
+        render: "Dates updated successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
     } catch (err: any) {
       toast.error(err.message, {
         position: "bottom-center",
       });
     } finally {
+      setIsConfirmOpen(false);
       setLoading(false);
     }
   };
@@ -109,13 +115,25 @@ const DateSection = ({ id, template }) => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsConfirmOpen(false)}
-                style={{ borderRadius: "8px" }}
+                style={{ borderRadius: "5px" }}
                 className="btn btn-secondary"
               >
                 Cancel
               </button>
-              <button onClick={confirmUpdate} className="btn btn-primary">
-                Update Dates
+              <button
+                onClick={confirmUpdate}
+                style={{ borderRadius: "5px" }}
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {loading ? "Updating..." : "Update"}
               </button>
             </div>
           </div>
