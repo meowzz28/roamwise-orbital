@@ -1,4 +1,3 @@
-// Array of currency codes
 const currencyCodes = [
   "USD",
   "AED",
@@ -165,7 +164,6 @@ const currencyCodes = [
 ];
 
 const CurrencySelect = ({ selectedCurrency, handleCurrency }) => {
-  // Extract the country code from the selected currency code
   const countryCode = selectedCurrency.substring(0, 2);
   return (
     <div className="">
