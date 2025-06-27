@@ -48,6 +48,9 @@ const AddTeamAdmin = ({
     setIsAdding(true);
 
     try {
+      const toastId = toast.loading("Adding admin...", {
+        position: "bottom-center",
+      });
       //   Check if the email belongs to an existing team member
       if (!team.user_email?.includes(email)) {
         toast.error("User must be a team member first", {
@@ -113,8 +116,11 @@ const AddTeamAdmin = ({
         }
       });
 
-      toast.success("Admin added successfully!", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Admin added successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
       setIsAddingAdmin(false);
       onClose();

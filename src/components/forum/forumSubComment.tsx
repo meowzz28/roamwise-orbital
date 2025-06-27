@@ -79,6 +79,9 @@ function ForumSubComment({ postId, parentId }: Props) {
     if (!user) return;
 
     try {
+      const toastId = toast.loading("Replying...", {
+        position: "bottom-center",
+      });
       await addDoc(collection(db, "ForumSubComment"), {
         User: userName,
         UID: UID,
@@ -87,9 +90,13 @@ function ForumSubComment({ postId, parentId }: Props) {
         ParentCommentId: parentId,
         Time: serverTimestamp(),
       });
-      toast.success("Reply posted.", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Reply posted",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
+
       setReply("");
       fetchSubComments();
     } catch (err: any) {
@@ -99,9 +106,15 @@ function ForumSubComment({ postId, parentId }: Props) {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "ForumSubComment", id));
-      toast.success("Reply deleted.", {
+      const toastId = toast.loading("Deleting...", {
         position: "bottom-center",
+      });
+      await deleteDoc(doc(db, "ForumSubComment", id));
+      toast.update(toastId, {
+        render: "Reply deleted",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
       fetchSubComments();
     } catch (err: any) {

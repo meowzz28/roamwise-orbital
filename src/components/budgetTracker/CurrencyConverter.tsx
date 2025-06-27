@@ -38,8 +38,6 @@ const CurrencyConverter = () => {
     getExchangeRate();
   };
 
-  // Fetch exchange rate on initial render
-  // Fetch on initial render
   useEffect(() => {
     getExchangeRate();
   }, []);

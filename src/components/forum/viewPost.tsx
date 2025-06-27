@@ -52,19 +52,6 @@ type Comment = {
   };
 };
 
-type SubComment = {
-  id: string;
-  UID: string;
-  User: string;
-  Message: string;
-  PostId: string;
-  ParentCommentId: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
-
 function ViewPost() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
@@ -77,9 +64,11 @@ function ViewPost() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeletCommentConfirm, setShowDeletCommentConfirm] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [isDeletingComment, setIsDeletingComment] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,6 +175,7 @@ function ViewPost() {
 
   const handleDelete = async () => {
     try {
+      setIsDeleting(true);
       if (!postId) {
         toast.error("Post ID is missing.", {
           position: "bottom-center",
@@ -225,6 +215,8 @@ function ViewPost() {
       toast.error(`Error: ${error.message}`, {
         position: "bottom-center",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -238,6 +230,9 @@ function ViewPost() {
     }
 
     try {
+      const toastId = toast.loading("Posting comment...", {
+        position: "bottom-center",
+      });
       const user = auth.currentUser;
       if (user && userDetails && postId) {
         await addDoc(collection(db, "ForumComment"), {
@@ -248,8 +243,11 @@ function ViewPost() {
           Time: serverTimestamp(),
         });
 
-        toast.success("Comment posted successfully!", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Comment posted successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
         });
 
         setComment("");
@@ -268,7 +266,11 @@ function ViewPost() {
   };
 
   const handleDeleteComment = async (commentId: string) => {
+    const toastId = toast.loading("Deleting comment...", {
+      position: "bottom-center",
+    });
     try {
+      setIsDeletingComment(true);
       await deleteDoc(doc(db, "ForumComment", commentId));
       const subCommentsQuery = query(
         collection(db, "ForumSubComment"),
@@ -280,15 +282,24 @@ function ViewPost() {
       );
       await Promise.all(subDeletePromises);
 
-      toast.success("Comment deleted successfully!", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Comment deleted successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
+
+      setShowDeletCommentConfirm(false);
+      setCommentToDelete(null);
+
       fetchComments();
     } catch (error: any) {
       console.error("Error deleting comment:", error);
       toast.error(error.message, {
         position: "bottom-center",
       });
+    } finally {
+      setIsDeletingComment(false);
     }
   };
 
@@ -434,8 +445,19 @@ function ViewPost() {
               >
                 Cancel
               </button>
-              <button onClick={handleDelete} className="btn btn-danger">
-                Delete
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="btn btn-danger"
+              >
+                {isDeleting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
@@ -503,8 +525,16 @@ function ViewPost() {
                         setCommentToDelete(comment.id);
                         setShowDeletCommentConfirm(true);
                       }}
+                      disabled={isDeleting}
                     >
-                      Delete
+                      {isDeleting ? (
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                      ) : null}
+                      {isDeleting ? "Deleting..." : "Delete"}
                     </button>
                   )}
                 </div>
@@ -549,12 +579,18 @@ function ViewPost() {
               <button
                 onClick={() => {
                   if (commentToDelete) handleDeleteComment(commentToDelete);
-                  setShowDeletCommentConfirm(false);
-                  setCommentToDelete(null);
                 }}
                 className="btn btn-danger"
+                disabled={isDeletingComment}
               >
-                Delete
+                {isDeletingComment ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {isDeletingComment ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
