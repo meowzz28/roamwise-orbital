@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import {
   doc,
@@ -22,15 +23,16 @@ type Team = {
   user_uid: string[];
   user_name: string[];
 };
-
 function TeamProfile({
   teamID,
   team,
   uid,
+  onQuit,
 }: {
   teamID: string;
   team: Team;
   uid: string;
+  onQuit?: () => void;
 }) {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
@@ -39,6 +41,8 @@ function TeamProfile({
   const [isQuiting, setIsQuiting] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<Team>(team);
   const [quitConfirm, setQuitConfirm] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleAddNewMember = () => {
     setShowAddMemberModal(true);
@@ -59,6 +63,9 @@ function TeamProfile({
     if (!teamID || !uid) return;
 
     setIsQuiting(true);
+    const toastId = toast.loading("Quitting team...", {
+      position: "bottom-center",
+    });
 
     try {
       const templatesQuery = query(
@@ -101,13 +108,17 @@ function TeamProfile({
         );
 
         // Apply update
-        transaction.update(teamRef, {
-          user_uid: updated_user_uid,
-          user_email: updated_user_email,
-          user_name: updated_user_name,
-          admin: updated_admin,
-          admin_name: updated_admin_name,
-        });
+        if (updated_user_uid.length === 0 && updated_admin.length === 0) {
+          transaction.delete(teamRef);
+        } else {
+          transaction.update(teamRef, {
+            user_uid: updated_user_uid,
+            user_email: updated_user_email,
+            user_name: updated_user_name,
+            admin: updated_admin,
+            admin_name: updated_admin_name,
+          });
+        }
 
         templateDocs.forEach((templateDoc, index) => {
           if (templateDoc.exists()) {
@@ -126,13 +137,16 @@ function TeamProfile({
           }
         });
       });
-
-      toast.success("You have quit the team successfully.", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "You have quit the team successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
+      onQuit?.();
       setQuitConfirm(false);
 
-      window.location.href = "/team"; // Or use navigate("/team") if you have access to navigate
+      navigate("/team");
     } catch (err: any) {
       console.error("Error quitting team:", err.message);
       toast.error("Failed to quit the team. Try again.", {
@@ -257,17 +271,18 @@ function TeamProfile({
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setQuitConfirm(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmQuit}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                disabled={isQuiting}
+                className="btn btn-danger"
               >
                 {isQuiting ? (
                   <span
-                    className="spinner-border spinner-border-sm me-2"
+                    className="disabled spinner-border spinner-border-sm me-2"
                     role="status"
                     aria-hidden="true"
                   ></span>

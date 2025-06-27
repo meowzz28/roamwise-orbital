@@ -29,12 +29,12 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
   const confirmDelete = async () => {
     if (!expenseToDelete) return;
     setIsDeleting(true);
+    const toastId = toast.loading("Deleting expenses...", {
+      position: "bottom-center",
+    });
     try {
-      const loadingToastId = toast.loading("Deleting expenses...", {
-        position: "bottom-center",
-      });
       await deleteDoc(doc(db, "Expenses", expenseToDelete));
-      toast.update(loadingToastId, {
+      toast.update(toastId, {
         render: `Expenses deleted successfully!`,
         type: "success",
         isLoading: false,
@@ -109,8 +109,19 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
               >
                 Cancel
               </button>
-              <button onClick={confirmDelete} className="btn btn-danger ">
-                Delete
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="btn btn-danger"
+              >
+                {isDeleting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
