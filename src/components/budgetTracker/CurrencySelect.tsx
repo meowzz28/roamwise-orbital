@@ -1,4 +1,3 @@
-// Array of currency codes
 const currencyCodes = [
   "USD",
   "AED",

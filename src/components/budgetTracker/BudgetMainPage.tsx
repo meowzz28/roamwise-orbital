@@ -254,7 +254,7 @@ const BudgetMainPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedTripId || !userUID) return;
+    if (!selectedTripId || !userUID || !currency) return;
     setIsFetching(true);
 
     const q = query(
@@ -285,7 +285,7 @@ const BudgetMainPage = () => {
       }
     );
     return () => unsubscribe();
-  }, [selectedTripId, userUID]);
+  }, [selectedTripId, userUID, currency]);
 
   const getDistinctCurrencies = (expenses: Expenses[]) => {
     const currencies = expenses.map((expense) => expense.currency);
@@ -376,33 +376,78 @@ const BudgetMainPage = () => {
 
   return (
     <div className="min-h-screen px-4 py-8">
-      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
-        {/* Left Column */}
-        <div className="flex-1 space-y-6">
-          {/* Trip selector + Add Expense */}
-          <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
-            <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
-              Budget & Expense Tracker 💵
-            </h1>
-            <div className="mb-1">
-              <label className="block mb-2 font-medium text-gray-700">
-                Select a Trip:
-              </label>
-              <select
-                value={selectedTripId}
-                onChange={(e) => setSelectedTripId(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
-              >
-                <option value="">-- Choose a trip --</option>
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.topic}
-                  </option>
-                ))}
-              </select>
+      {!selectedTripId || !currency ? (
+        <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+          <div className="flex-1 space-y-6">
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
+                Budget & Expense Tracker 💵
+              </h1>
+              <div className="mb-4">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Select a Trip:
+                </label>
+                <select
+                  value={selectedTripId}
+                  onChange={(e) => setSelectedTripId(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                >
+                  <option value="">-- Choose a trip --</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.topic}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Select a Display Currency:
+                </label>
+                <div>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                  >
+                    <option value="">-- Choose a currency --</option>
+                    {allCurrencies.map((curr) => (
+                      <option key={curr.code} value={curr.code}>
+                        {curr.code + ": " + curr.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+          {/* Left Column */}
+          <div className="flex-1 space-y-6">
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6  h-[400px]">
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
+                Budget & Expense Tracker 💵
+              </h1>
+              <div className="mb-1">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Select a Trip:
+                </label>
+                <select
+                  value={selectedTripId}
+                  onChange={(e) => setSelectedTripId(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                >
+                  <option value="">-- Choose a trip --</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.topic}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {selectedTripId && (
               <div>
                 <div className="mb-2">
                   <label className="block mb-2 font-medium text-gray-700">
@@ -431,27 +476,23 @@ const BudgetMainPage = () => {
                   + Add Expense
                 </button>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Donut Chart + Currency Exchange side by side */}
-          {selectedTripId && (
             <div className="flex-1 bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
               <DonutChart expenses={convertedExpenses} />
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Right Column: Expenses List */}
-        {selectedTripId && (
+          {/* Right Column: Expenses List */}
+
           <div className="flex-1 space-y-6">
-            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+            <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6  h-[400px]">
               <CurrencyConverter />
             </div>
             <ExpensesList expenses={convertedExpenses} />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && selectedTripId && (
