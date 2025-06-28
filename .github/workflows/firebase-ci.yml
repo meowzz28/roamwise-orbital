@@ -25,7 +25,13 @@ jobs:
           cd functions
           npm ci
 
-      - name: Set up functions env
+      - name: Set up frontend .env for Vite
+        run: |
+          echo "VITE_API_KEY_FIREBASE=${{ secrets.VITE_API_KEY_FIREBASE }}" >> .env
+          echo "VITE_API_KEY_CURRENCY=${{ secrets.VITE_API_KEY_CURRENCY }}" >> .env
+          echo "VITE_API_KEY_OPENAI=${{ secrets.VITE_API_KEY_OPENAI }}" >> .env
+
+      - name: Set up functions .env
         run: |
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > functions/.env
 
