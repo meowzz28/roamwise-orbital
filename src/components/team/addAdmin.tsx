@@ -46,17 +46,20 @@ const AddTeamAdmin = ({
     e.preventDefault();
     setIsAddingAdmin(true);
     setIsAdding(true);
-
     try {
       const toastId = toast.loading("Adding admin...", {
         position: "bottom-center",
       });
       //   Check if the email belongs to an existing team member
       if (!team.user_email?.includes(email)) {
-        toast.error("User must be a team member first", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "User must be a team member first",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
         setIsAddingAdmin(false);
+        setIsAdding(false);
         return;
       }
 
@@ -65,10 +68,14 @@ const AddTeamAdmin = ({
         const userUID = team.user_uid?.[userIndex];
 
         if (team.admin?.includes(userUID)) {
-          toast.error("User is already an admin", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "User is already an admin",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
           setIsAddingAdmin(false);
+          setIsAdding(false);
           return;
         }
       }
@@ -78,23 +85,15 @@ const AddTeamAdmin = ({
       );
 
       if (querySnapshot.empty) {
-        toast.error("User not found", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "User not found",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
         setIsAddingAdmin(false);
+        setIsAdding(false);
         return;
-      }
-      if (team.user_email && team.user_email.includes(email)) {
-        const userIndex = team.user_email.indexOf(email);
-        const userUID = team.user_email?.[userIndex];
-
-        if (userUID && team.admin?.includes(userUID)) {
-          toast.error("User is already an admin", {
-            position: "bottom-center",
-          });
-          setIsAddingAdmin(false);
-          return;
-        }
       }
 
       const userDoc = querySnapshot.docs[0];
@@ -110,8 +109,11 @@ const AddTeamAdmin = ({
             admin_name: arrayUnion(`${userDocData.firstName}`.trim()),
           });
         } else {
-          toast.error("Team not found", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "Team not found",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
         }
       });

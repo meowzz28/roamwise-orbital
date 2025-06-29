@@ -78,11 +78,13 @@ function CreatePost() {
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     if (!topic.trim()) {
       toast.error("Topic cannot be empty", {
         position: "bottom-center",
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -90,17 +92,16 @@ function CreatePost() {
       toast.error("Content cannot be empty", {
         position: "bottom-center",
       });
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    const toastId = toast.loading("Creating your post...", {
+      position: "bottom-center",
+    });
     try {
       const user = auth.currentUser;
       if (user && userDetails) {
-        const loadingToastId = toast.loading("Creating your post...", {
-          position: "bottom-center",
-        });
-
         await addDoc(collection(db, "Forum"), {
           User: userDetails.firstName,
           UID: user.uid,
@@ -112,7 +113,7 @@ function CreatePost() {
           Time: serverTimestamp(),
         });
 
-        toast.update(loadingToastId, {
+        toast.update(toastId, {
           render: "Post created successfully!",
           type: "success",
           isLoading: false,
@@ -122,14 +123,19 @@ function CreatePost() {
 
         navigate("/forum");
       } else {
-        toast.error("Something went wrong. Please try again.", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Something went wrong. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
       }
     } catch (error: any) {
-      console.error("Error creating post:", error);
-      toast.error(error.message, {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsSubmitting(false);

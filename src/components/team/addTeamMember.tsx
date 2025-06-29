@@ -55,20 +55,28 @@ const AddTeamMember = ({
       );
 
       if (querySnapshot.empty) {
-        toast.error("User not found", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "User not found",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
         setIsAddingMember(false);
+        setIsAdding(false);
         return;
       }
 
       const [userDoc] = querySnapshot.docs;
 
       if (!userDoc) {
-        toast.error("Unexpected error: user document not found", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Unexpected error: user document not found",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
         setIsAddingMember(false);
+        setIsAdding(false);
         return;
       }
 
@@ -78,24 +86,35 @@ const AddTeamMember = ({
       // Prevent adding if already a member or admin
       if (team.user_uid?.includes(uid)) {
         if (team.admin?.includes(uid)) {
-          toast.error("User is already an admin", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "User is already an admin",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
         } else {
-          toast.error("User is already a member", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "User is already a member",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
         }
         setIsAddingMember(false);
+        setIsAdding(false);
         return;
       }
 
       if (!teamID) {
-        console.error("teamID is undefined!");
-        toast.error("Internal error: teamID is missing", {
-          position: "bottom-center",
+        // console.error("teamID is undefined!");
+        toast.update(toastId, {
+          render: "Internal error: teamID is missing",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
         setIsAddingMember(false);
+        setIsAdding(false);
         return;
       }
 
@@ -109,8 +128,11 @@ const AddTeamMember = ({
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(teamRef);
         if (!docSnap.exists()) {
-          toast.error("Team not found", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "Team not found",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
           return;
         }
@@ -138,8 +160,11 @@ const AddTeamMember = ({
       onClose();
     } catch (error: any) {
       console.error("Error adding member:", error);
-      toast.error("Failed to add member", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Failed to add member",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
       setIsAddingMember(false);
       setIsAdding(false);

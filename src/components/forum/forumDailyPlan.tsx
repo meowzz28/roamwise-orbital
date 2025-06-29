@@ -5,7 +5,6 @@ import { db } from "../firebase";
 const ForumDailyPlan = ({ templateID, date }) => {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

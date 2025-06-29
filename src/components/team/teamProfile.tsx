@@ -149,8 +149,11 @@ function TeamProfile({
       navigate("/team");
     } catch (err: any) {
       console.error("Error quitting team:", err.message);
-      toast.error("Failed to quit the team. Try again.", {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: "Failed to quit the team. Try again.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsQuiting(false);
