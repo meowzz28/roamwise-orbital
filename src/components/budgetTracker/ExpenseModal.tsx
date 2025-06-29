@@ -214,12 +214,10 @@ const ExpenseModal: React.FC<Props> = ({
     }
 
     setIsCreating(true);
-
+    const toastId = toast.loading("Adding expenses", {
+      position: "bottom-center",
+    });
     try {
-      const toastId = toast.loading("Adding expenses", {
-        position: "bottom-center",
-      });
-
       await addDoc(collection(db, "Expenses"), {
         userId: user.uid,
         tripId: tripId,
@@ -238,7 +236,11 @@ const ExpenseModal: React.FC<Props> = ({
         position: "bottom-center",
       });
     } catch (error: any) {
-      toast.error(error, {
+      toast.update(toastId, {
+        render: error.message,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } finally {

@@ -108,11 +108,11 @@ function Team() {
 
   const handleCreate = async (teamName: string) => {
     setIsCreating(true);
+    const toastId = toast.loading("Creating team...", {
+      position: "bottom-center",
+    });
     try {
       const user = auth.currentUser;
-      const toastId = toast.loading("Creating team...", {
-        position: "bottom-center",
-      });
       if (user && userDetails) {
         const newDocRef = await addDoc(collection(db, "Team"), {
           Name: teamName,
@@ -146,15 +146,19 @@ function Team() {
 
         setShowModal(false);
       } else {
-        toast.error("Failed to create new template. Please try again.", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Failed to create new template. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
       }
     } catch (err: any) {
-      toast.error(`Error creating template: ${err.message}`, {
-        position: "bottom-center",
-        autoClose: 5000,
-        hideProgressBar: false,
+      toast.update(toastId, {
+        render: `Error creating template: ${err.message}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsCreating(false);

@@ -50,10 +50,11 @@ function Profile() {
   }, []);
 
   const confirmDelete = async () => {
+    const toastId = toast.loading("Deleting user's data...", {
+      position: "bottom-center",
+    });
+
     try {
-      const loadingToastId = toast.loading("Deleting user's data...", {
-        position: "bottom-center",
-      });
       const user = auth.currentUser;
       if (user) {
         const folderRef = ref(storage, `images/${user.uid}`);
@@ -64,7 +65,7 @@ function Profile() {
         await Promise.all(deletePromises);
         await deleteDoc(doc(db, "Users", user.uid));
         await user.delete();
-        toast.update(loadingToastId, {
+        toast.update(toastId, {
           render: `User deleted successfully!`,
           type: "success",
           isLoading: false,
@@ -74,9 +75,23 @@ function Profile() {
         navigate("/login");
       } else {
         console.error("No user is currently logged in.");
+        toast.update(toastId, {
+          render: "No user is currently logged in.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+          position: "bottom-center",
+        });
       }
     } catch (error) {
       console.error("Error delete account:", error.message);
+      toast.update(toastId, {
+        render: "Error delete account:" + error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+        position: "bottom-center",
+      });
     }
   };
 

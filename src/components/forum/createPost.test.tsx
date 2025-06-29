@@ -79,11 +79,15 @@ describe("CreatePost", () => {
       </BrowserRouter>
     );
 
-    const topicInput = await screen.findByPlaceholderText(
+    const topicInput = (await screen.findByPlaceholderText(
       /enter an interesting topic/i
-    );
-    const contentInput = screen.getByPlaceholderText(/share your thoughts/i);
-    const submitButton = screen.getByRole("button", { name: /create post/i });
+    )) as HTMLTextAreaElement;
+    const contentInput = screen.getByPlaceholderText(
+      /share your thoughts/i
+    ) as HTMLTextAreaElement;
+    const submitButton = screen.getByRole("button", {
+      name: /create post/i,
+    }) as HTMLTextAreaElement;
 
     expect(topicInput).toHaveValue("");
     expect(contentInput).toHaveValue("");

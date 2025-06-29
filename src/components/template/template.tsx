@@ -147,10 +147,17 @@ const template = () => {
         isLoading: false,
         autoClose: 3000,
       });
-      await deleteObject(ref(storage, template?.imageURL));
+      if (template?.imageURL) {
+        await deleteObject(ref(storage, template.imageURL));
+      }
       navigate("/templates");
     } catch (error: any) {
-      console.log("Failed to delete template");
+      toast.update(toastId, {
+        render: error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
     } finally {
       setIsDeleteConfirmOpen(false);
       setIsDeleting(false);

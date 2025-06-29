@@ -21,10 +21,10 @@ const DateSection = ({ id, template }) => {
 
   const confirmUpdate = async () => {
     setLoading(true);
+    const toastId = toast.loading("Updating...", {
+      position: "bottom-center",
+    });
     try {
-      const toastId = toast.loading("Updating...", {
-        position: "bottom-center",
-      });
       const templateRef = doc(db, "Templates", id);
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(templateRef);
@@ -34,8 +34,11 @@ const DateSection = ({ id, template }) => {
             endDate: endDate,
           });
         } else {
-          toast.error("Failed to update", {
-            position: "bottom-center",
+          toast.update(toastId, {
+            render: "Failed to update",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
           });
         }
       });
@@ -46,8 +49,11 @@ const DateSection = ({ id, template }) => {
         autoClose: 3000,
       });
     } catch (err: any) {
-      toast.error(err.message, {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: err.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsConfirmOpen(false);
