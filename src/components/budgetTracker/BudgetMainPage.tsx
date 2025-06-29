@@ -274,7 +274,7 @@ const BudgetMainPage = () => {
               ...doc.data(),
             } as Expenses)
         );
-        console.log("Fetched expenses:", data);
+        // console.log("Fetched expenses:", data);
         setOriginalExpenses(data);
         setConvertedExpenses(data);
         setIsFetching(false);
@@ -389,6 +389,7 @@ const BudgetMainPage = () => {
                 Select a Trip:
               </label>
               <select
+                data-testid="select"
                 value={selectedTripId}
                 onChange={(e) => setSelectedTripId(e.target.value)}
                 className="border border-gray-300 rounded-lg px-4 py-2 w-full"
@@ -424,6 +425,7 @@ const BudgetMainPage = () => {
                   </div>
                 </div>
                 <button
+                  id="add-expense-button"
                   style={{ borderRadius: "8px" }}
                   className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
                   onClick={() => setShowModal(true)}

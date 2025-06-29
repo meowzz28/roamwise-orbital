@@ -244,11 +244,14 @@ function EditPost() {
       <div className="bg-white p-4 rounded shadow-md mb-4">
         <form onSubmit={handlePost}>
           <div className="mb-3">
-            <label className="block mb-1 font-medium">Topic</label>
+            <label htmlFor="topic" className="block mb-1 font-medium">
+              Topic
+            </label>
             <input
               type="text"
               className="form-control w-full p-2 border rounded"
               value={topic}
+              placeholder="Enter an interesting topic..."
               onChange={(e) => setTopic(e.target.value)}
               required
             />
@@ -272,10 +275,13 @@ function EditPost() {
           </div>
 
           <div className="mb-3">
-            <label className="block mb-1 font-medium">Context</label>
+            <label htmlFor="context" className="block mb-1 font-medium">
+              Context
+            </label>
             <textarea
               className="form-control w-full p-2 border rounded"
               value={context}
+              placeholder="Share your thoughts, questions, or ideas..."
               onChange={(e) => setContext(e.target.value)}
               required
             />
