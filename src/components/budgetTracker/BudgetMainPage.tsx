@@ -274,7 +274,7 @@ const BudgetMainPage = () => {
               ...doc.data(),
             } as Expenses)
         );
-        console.log("Fetched expenses:", data);
+        // console.log("Fetched expenses:", data);
         setOriginalExpenses(data);
         setConvertedExpenses(data);
         setIsFetching(false);
@@ -388,6 +388,7 @@ const BudgetMainPage = () => {
                   Select a Trip:
                 </label>
                 <select
+                  data-testid="select-template"
                   value={selectedTripId}
                   onChange={(e) => setSelectedTripId(e.target.value)}
                   className="border border-gray-300 rounded-lg px-4 py-2 w-full"
@@ -406,6 +407,7 @@ const BudgetMainPage = () => {
                 </label>
                 <div>
                   <select
+                    data-testid="select-currency"
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
                     className="border border-gray-300 rounded-lg px-4 py-2 w-full"
@@ -435,6 +437,7 @@ const BudgetMainPage = () => {
                   Select a Trip:
                 </label>
                 <select
+                  data-testid="select-template"
                   value={selectedTripId}
                   onChange={(e) => setSelectedTripId(e.target.value)}
                   className="border border-gray-300 rounded-lg px-4 py-2 w-full"
@@ -455,6 +458,7 @@ const BudgetMainPage = () => {
                   </label>
                   <div>
                     <select
+                      data-testid="select-currency"
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
                       className="border border-gray-300 rounded-lg px-4 py-2 w-full"
