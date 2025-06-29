@@ -42,7 +42,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
         position: "bottom-center",
       });
     } catch (error) {
-      toast.error("Error deleting expense:" + error, {
+      toast.update(toastId, {
+        render: "Error deleting expense:" + error,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } finally {
