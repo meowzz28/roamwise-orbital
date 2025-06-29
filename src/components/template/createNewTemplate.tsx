@@ -130,7 +130,10 @@ const CreateNewTemplate = ({
               </div>
 
               <div className="col-span-2 sm:col-span-1 mb-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900 ">
+                <label
+                  htmlFor="start-date"
+                  className="block mb-2 text-sm font-medium text-gray-900 "
+                >
                   Start Date
                 </label>
                 <input
@@ -146,7 +149,10 @@ const CreateNewTemplate = ({
               </div>
 
               <div className="col-span-2 sm:col-span-1 mb-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="end-date"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   End Date
                 </label>
                 <input
@@ -162,6 +168,7 @@ const CreateNewTemplate = ({
               </div>
 
               <button
+                data-testid="create-template-btn"
                 type="submit"
                 disabled={isCreating}
                 className={`w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 ${

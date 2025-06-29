@@ -1,13 +1,24 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import Forum from "./forum";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
+import { act } from "react";
+import Forum from "./forum";
 
-// Firebase mocks
+const mockNavigate = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<any>("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    BrowserRouter: actual.BrowserRouter,
+  };
+});
+
 vi.mock("../firebase", () => ({
   auth: {
     onAuthStateChanged: (cb: any) => {
-      cb({ uid: "testUID" }); // Mock user
+      cb({ uid: "testUID" });
       return () => {};
     },
     currentUser: { uid: "testUID" },
@@ -23,7 +34,11 @@ vi.mock("firebase/firestore", async () => {
     getDoc: vi.fn(() =>
       Promise.resolve({
         exists: () => true,
-        data: () => ({ firstName: "Test", email: "test@test.com", pic: "" }),
+        data: () => ({
+          firstName: "Test",
+          email: "test@test.com",
+          pic: "",
+        }),
       })
     ),
     getDocs: vi.fn(() =>
@@ -33,10 +48,20 @@ vi.mock("firebase/firestore", async () => {
             id: "1",
             data: () => ({
               User: "TestUser",
-              Topic: "Test Topic",
+              Topic: "Less Liked Topic",
               Likes: 5,
               Message: "Test Message",
               Time: { seconds: Date.now() / 1000 },
+            }),
+          },
+          {
+            id: "2",
+            data: () => ({
+              User: "UserB",
+              Topic: "More Liked Topic",
+              Likes: 10,
+              Message: "Message B",
+              Time: { seconds: Date.now() / 1000 - 10 }, // earlier time
             }),
           },
         ],
@@ -46,33 +71,85 @@ vi.mock("firebase/firestore", async () => {
   };
 });
 
-// Mock react-toastify to prevent actual toast display
-vi.mock("react-toastify", () => ({
-  toast: { error: vi.fn(), success: vi.fn() },
-}));
-
 describe("Forum Component", () => {
-  it("renders and shows posts", async () => {
-    render(
-      <BrowserRouter>
-        <Forum />
-      </BrowserRouter>
-    );
+  it("Renders and shows forum posts", async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Forum />
+        </BrowserRouter>
+      );
+    });
 
-    // Wait for loading to finish and check if topic appears
     await waitFor(() => {
-      expect(screen.getByText("Test Topic")).toBeInTheDocument();
+      expect(screen.getByText("More Liked Topic")).toBeInTheDocument();
       expect(screen.getByText("TestUser")).toBeInTheDocument();
     });
   });
 
-  it("shows loading initially", () => {
-    render(
-      <BrowserRouter>
-        <Forum />
-      </BrowserRouter>
-    );
+  it("Sorts posts by likes when filter is set to 'Most Liked'", async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Forum />
+        </BrowserRouter>
+      );
+    });
 
-    expect(screen.getAllByText("Loading...").length).toBeGreaterThan(0);
+    const filterSelect = screen.getByLabelText(/Filter by/i);
+
+    await act(async () => {
+      const select = filterSelect as HTMLSelectElement;
+      select.value = "likes";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const rows = screen.getAllByRole("row");
+
+    const firstPostRow = rows[1];
+    const secondPostRow = rows[2];
+
+    expect(firstPostRow).toHaveTextContent("More Liked Topic");
+    expect(secondPostRow).toHaveTextContent("Less Liked Topic");
+  });
+
+  it("Filters posts based on search input", async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Forum />
+        </BrowserRouter>
+      );
+    });
+
+    const searchInput = screen.getByPlaceholderText("Search by topic...");
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: "More" } });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("More Liked Topic")).toBeInTheDocument();
+      expect(screen.queryByText("Less Liked Topic")).not.toBeInTheDocument();
+    });
+  });
+
+  it("Navigates to ViewPost when a post is clicked", async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Forum />
+        </BrowserRouter>
+      );
+    });
+
+    const postToClick = await screen.findByText("More Liked Topic");
+
+    await act(async () => {
+      fireEvent.click(postToClick);
+    });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/viewPost/2");
+    });
   });
 });

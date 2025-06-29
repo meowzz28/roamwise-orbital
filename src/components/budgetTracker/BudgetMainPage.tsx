@@ -274,7 +274,7 @@ const BudgetMainPage = () => {
               ...doc.data(),
             } as Expenses)
         );
-        console.log("Fetched expenses:", data);
+        // console.log("Fetched expenses:", data);
         setOriginalExpenses(data);
         setConvertedExpenses(data);
         setIsFetching(false);
@@ -376,6 +376,33 @@ const BudgetMainPage = () => {
 
   return (
     <div className="min-h-screen px-4 py-8">
+
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
+        {/* Left Column */}
+        <div className="flex-1 space-y-6">
+          {/* Trip selector + Add Expense */}
+          <div className="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
+              Budget & Expense Tracker 💵
+            </h1>
+            <div className="mb-1">
+              <label className="block mb-2 font-medium text-gray-700">
+                Select a Trip:
+              </label>
+              <select
+                data-testid="select"
+                value={selectedTripId}
+                onChange={(e) => setSelectedTripId(e.target.value)}
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+              >
+                <option value="">-- Choose a trip --</option>
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.topic}
+                  </option>
+                ))}
+              </select>
+
       {!selectedTripId || !currency ? (
         <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
           <div className="flex-1 space-y-6">
@@ -406,6 +433,7 @@ const BudgetMainPage = () => {
                 </label>
                 <div>
                   <select
+                    data-testid="select"
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
                     className="border border-gray-300 rounded-lg px-4 py-2 w-full"
@@ -419,6 +447,7 @@ const BudgetMainPage = () => {
                   </select>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -469,6 +498,7 @@ const BudgetMainPage = () => {
                   </div>
                 </div>
                 <button
+                  id="add-expense-button"
                   style={{ borderRadius: "8px" }}
                   className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
                   onClick={() => setShowModal(true)}
