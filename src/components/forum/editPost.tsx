@@ -155,12 +155,12 @@ function EditPost() {
     }
 
     setIsSubmitting(true);
+    const toastId = toast.loading("Editing your post...", {
+      position: "bottom-center",
+    });
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
-        const loadingToastId = toast.loading("Editing your post...", {
-          position: "bottom-center",
-        });
         await updateDoc(doc(db, "Forum", postId), {
           User: userDetails.firstName,
           UID: user.uid,
@@ -170,7 +170,7 @@ function EditPost() {
           TemplateID: selectedTemplateID || null,
         });
 
-        toast.update(loadingToastId, {
+        toast.update(toastId, {
           render: "Post updated successfully!",
           type: "success",
           isLoading: false,
@@ -180,13 +180,21 @@ function EditPost() {
 
         navigate(`/viewPost/${postId}`);
       } else {
-        toast.error("Something went wrong. Please try again.", {
+        toast.update(toastId, {
+          render: "Something went wrong. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
           position: "bottom-center",
         });
       }
     } catch (error: any) {
       console.error("Error creating post:", error);
-      toast.error(error.message, {
+      toast.update(toastId, {
+        render: error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } finally {

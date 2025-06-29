@@ -84,7 +84,6 @@ function ViewPost() {
               } else {
                 setError("User document does not exist.");
               }
-
               if (postId) {
                 const postDocRef = doc(db, "Forum", postId);
                 const postDocSnap = await getDoc(postDocRef);
@@ -122,7 +121,6 @@ function ViewPost() {
           }
           setLoading(false);
         });
-
         return () => unsubscribe();
       } catch (err: any) {
         setError(`Error: ${err.message}`);
@@ -174,18 +172,17 @@ function ViewPost() {
   };
 
   const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      if (!postId) {
-        toast.error("Post ID is missing.", {
-          position: "bottom-center",
-        });
-        return;
-      }
-
-      const loadingToastId = toast.loading("Deleting post and comments...", {
+    if (!postId) {
+      toast.error("Post ID is missing.", {
         position: "bottom-center",
       });
+      return;
+    }
+    setIsDeleting(true);
+    const toastId = toast.loading("Deleting post and comments...", {
+      position: "bottom-center",
+    });
+    try {
       const commentsQuery = query(
         collection(db, "ForumComment"),
         where("PostId", "==", postId)
@@ -201,7 +198,7 @@ function ViewPost() {
 
       await deleteDoc(doc(db, "Forum", postId));
 
-      toast.update(loadingToastId, {
+      toast.update(toastId, {
         render: `Post deleted successfully!`,
         type: "success",
         isLoading: false,
@@ -212,7 +209,11 @@ function ViewPost() {
       navigate("/forum");
     } catch (error: any) {
       console.error("Error deleting post:", error);
-      toast.error(`Error: ${error.message}`, {
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     } finally {
@@ -228,11 +229,10 @@ function ViewPost() {
       });
       return;
     }
-
+    const toastId = toast.loading("Posting comment...", {
+      position: "bottom-center",
+    });
     try {
-      const toastId = toast.loading("Posting comment...", {
-        position: "bottom-center",
-      });
       const user = auth.currentUser;
       if (user && userDetails && postId) {
         await addDoc(collection(db, "ForumComment"), {
@@ -253,13 +253,21 @@ function ViewPost() {
         setComment("");
         fetchComments();
       } else {
-        toast.error("Something went wrong. Please try again.", {
+        toast.update(toastId, {
+          render: "Something went wrong. Please try again.",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
           position: "bottom-center",
         });
       }
     } catch (error: any) {
       console.error("Error posting comment:", error);
-      toast.error(error.message, {
+      toast.update(toastId, {
+        render: error.message,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
         position: "bottom-center",
       });
     }
@@ -295,8 +303,11 @@ function ViewPost() {
       fetchComments();
     } catch (error: any) {
       console.error("Error deleting comment:", error);
-      toast.error(error.message, {
-        position: "bottom-center",
+      toast.update(toastId, {
+        render: error.message,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsDeletingComment(false);

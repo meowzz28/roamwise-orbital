@@ -149,10 +149,10 @@ const templatesPage = () => {
     teamID: string
   ) => {
     setIsCreating(true);
+    const toastId = toast.loading("Creating trip...", {
+      position: "bottom-center",
+    });
     try {
-      const toastId = toast.loading("Creating trip...", {
-        position: "bottom-center",
-      });
       const user = auth.currentUser;
       let uploadedImageURL = "";
       let teamName = "";
@@ -221,15 +221,19 @@ const templatesPage = () => {
           autoClose: 3000,
         });
       } else {
-        toast.error("Failed to create new template. Please try again.", {
-          position: "bottom-center",
+        toast.update(toastId, {
+          render: "Failed to create new template. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
       }
     } catch (err: any) {
-      toast.error(`Error creating template: ${err.message}`, {
-        position: "bottom-center",
-        autoClose: 5000,
-        hideProgressBar: false,
+      toast.update(toastId, {
+        render: `Error creating template: ${err.message}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
       });
     } finally {
       setIsCreating(false);
