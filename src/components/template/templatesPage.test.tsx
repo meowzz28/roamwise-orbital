@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import TemplatesPage from "./templatesPage";
-import { act } from "react";
+import { act } from "@testing-library/react";
 import { addDoc } from "firebase/firestore";
 
 const mockNavigate = vi.fn();
