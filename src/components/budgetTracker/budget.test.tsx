@@ -120,7 +120,7 @@ describe("BudgetMainPage", () => {
       </BrowserRouter>
     );
 
-    const select = await screen.findByTestId("select");
+    const select = await screen.findByTestId("select-template");
     await waitFor(() =>
       expect(
         screen.getByRole("option", { name: "Japan Trip" })
@@ -129,6 +129,16 @@ describe("BudgetMainPage", () => {
 
     fireEvent.change(select, { target: { value: "template1" } });
     await waitFor(() => expect(select).toHaveValue("template1"));
+
+    const select_curr = await screen.findByTestId("select-currency");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("option", { name: "Japan Trip" })
+      ).toBeInTheDocument()
+    );
+
+    fireEvent.change(select_curr, { target: { value: "MYR" } });
+    await waitFor(() => expect(select_curr).toHaveValue("MYR"));
 
     const addButton = await screen.findByRole("button", {
       name: /\+ add expense/i,
