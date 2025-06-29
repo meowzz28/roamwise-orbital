@@ -15,7 +15,7 @@ function Weather() {
         const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
         console.log(data);
-        const detectedCity = data.country_capital;
+        const detectedCity = data.city;
         await setLocation(detectedCity);
         fetchWeather(detectedCity);
       } catch (err) {
@@ -30,7 +30,9 @@ function Weather() {
     setResult("");
     const API_KEY = import.meta.env.VITE_API_KEY_WEATHER;
     try {
-      const API_URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${loc}`;
+      const API_URL = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${loc}`;
+      console.log("API URL:", API_URL);
+
       const response = await fetch(API_URL);
       const data = await response.json();
 
