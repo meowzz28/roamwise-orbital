@@ -19,6 +19,7 @@ import Tracker from "../components/budgetTracker/BudgetMainPage";
 import FloatingAIWidget from "../components/FloatingAIWidget";
 import CurrencyConverter from "../components/budgetTracker/CurrencyConverter";
 import Weather from "../components/Weather/Weather";
+import Nearby from "../components/NearbyPlaces/Nearby";
 
 type Props = {
   user: User | null;
@@ -44,7 +45,6 @@ function AppRoutes({ user }: Props) {
             <Route path="/team" element={<Team />} />
             <Route path="/currency" element={<CurrencyConverter />} />
             <Route path="/weather" element={<Weather />} />
-
             <Route path="/viewTeam/:teamID" element={<ViewTeam />} />
             <Route path="/register" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
@@ -53,6 +53,7 @@ function AppRoutes({ user }: Props) {
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/:templateID" element={<Template />} />
             <Route path="/expenses" element={<Tracker />} />
+            <Route path="/nearby" element={<Nearby />} />
           </Routes>
         </div>
       </div>

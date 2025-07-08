@@ -111,6 +111,14 @@ const Navigationbar = ({ user }: Props) => {
                     Currency 💲
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    className="dropdown-item px-4 py-2 hover:bg-indigo-100 transition"
+                    to="/nearby"
+                  >
+                    Explore 📍
+                  </Link>
+                </li>
               </ul>
             </div>
 
