@@ -12,6 +12,8 @@ import LeftPanel from "./LeftPanel";
 import AttractionDetailPanel from "./AttractionDetailPanel";
 import Directions from "./Directions";
 
+type PlaceType = "attraction" | "restaurant" | "hotel";
+
 type Poi = {
   key: string;
   location: google.maps.LatLngLiteral;
@@ -19,7 +21,7 @@ type Poi = {
   placeId?: string;
   rating?: number;
   user_ratings_total?: number;
-  type: "origin" | "attraction";
+  type: "origin" | "attraction" | "restaurant" | "hotel";
 };
 
 const MapLogic = () => {
@@ -30,9 +32,9 @@ const MapLogic = () => {
     lng: 151.208138,
   });
   const [zoom, setZoom] = useState(13);
-  //   const [selectedAttraction, setSelectedAttraction] = useState<Poi | null>(
-  //     null
-  //   );
+  const [selectedAttraction, setSelectedAttraction] = useState<Poi | null>(
+    null
+  );
   const [selectedAttractionDetail, setSelectedAttractionDetail] =
     useState<google.maps.places.PlaceResult | null>(null);
 
@@ -44,6 +46,11 @@ const MapLogic = () => {
     origin: google.maps.LatLngLiteral;
     destination: google.maps.LatLngLiteral;
   } | null>(null);
+  const [filters, setFilters] = useState<PlaceType[]>([
+    "attraction",
+    "restaurant",
+    "hotel",
+  ]);
 
   useEffect(() => {
     if (placesLib && map) {
@@ -110,9 +117,12 @@ const MapLogic = () => {
   };
 
   const handleAttractionClick = (poi: Poi) => {
-    // setSelectedAttraction(poi);
+    if (showDirections) {
+      setShowDirections(null);
+    }
+    setSelectedAttraction(poi);
     setCenter(poi.location);
-    setZoom(16);
+    setZoom(18);
 
     if (!placesService || !poi.placeId) return;
 
@@ -151,6 +161,10 @@ const MapLogic = () => {
     });
   };
 
+  const filteredAttractions = attractions.filter(
+    (a) => a.type !== "origin" && filters.includes(a.type as PlaceType)
+  );
+
   return (
     <div className="h-dvh w-full">
       <Map
@@ -180,7 +194,10 @@ const MapLogic = () => {
           ) : selectedAttractionDetail ? (
             <AttractionDetailPanel
               place={selectedAttractionDetail}
-              onClose={() => setSelectedAttractionDetail(null)}
+              onClose={() => {
+                setSelectedAttractionDetail(null);
+                setSelectedAttraction(null);
+              }}
               onGetDirections={() => {
                 const location =
                   selectedAttractionDetail.geometry?.location?.toJSON();
@@ -189,8 +206,10 @@ const MapLogic = () => {
             />
           ) : (
             <LeftPanel
-              attractions={attractions}
+              attractions={filteredAttractions}
               onAttractionClick={(place) => handleAttractionClick(place)}
+              filters={filters}
+              setFilters={setFilters}
             />
           )}
         </div>
@@ -198,8 +217,9 @@ const MapLogic = () => {
         <SearchBar onPlaceSelect={handlePlaceSelect} />
 
         <PoiMarker
-          pois={[...(origin ? [origin] : []), ...attractions]}
+          pois={[...(origin ? [origin] : []), ...filteredAttractions]}
           onAttractionClick={(place) => handleAttractionClick(place)}
+          selectedAttraction={selectedAttraction}
         />
 
         <AttractionFetcher origin={origin} onUpdate={setAttractions} />

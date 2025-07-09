@@ -10,15 +10,16 @@ type Poi = {
   name?: string;
   placeId?: string;
   rating?: number;
-  type: "origin" | "attraction";
+  type: "origin" | "attraction" | "restaurant" | "hotel";
 };
 
 type Props = {
   pois: Poi[];
   onAttractionClick: (poi: Poi) => void;
+  selectedAttraction?: Poi | null;
 };
 
-const PoiMarker = ({ pois, onAttractionClick }: Props) => {
+const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
   const map = useMap();
   const markersRef = useRef<Record<string, Marker>>({});
   const clusterer = useRef<MarkerClusterer | null>(null);
@@ -57,7 +58,11 @@ const PoiMarker = ({ pois, onAttractionClick }: Props) => {
     (poi: Poi) => {
       if (!map) return;
       map.panTo(poi.location);
-      if (poi.type === "attraction") {
+      if (
+        poi.type === "attraction" ||
+        poi.type === "hotel" ||
+        poi.type === "restaurant"
+      ) {
         onAttractionClick(poi);
       }
     },
@@ -86,7 +91,13 @@ const PoiMarker = ({ pois, onAttractionClick }: Props) => {
           onClick={() => handleClick(poi)}
         >
           <Pin
-            background={poi.type === "origin" ? "#2563eb" : "#10b981"}
+            background={
+              poi.type === "origin"
+                ? "#2563eb"
+                : selectedAttraction?.key === poi.key
+                ? "#a855f7"
+                : "#10b981"
+            }
             glyphColor="white"
           />
         </AdvancedMarker>

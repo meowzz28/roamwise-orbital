@@ -113,7 +113,7 @@ const SearchBar: React.FC<Props> = ({ onPlaceSelect }) => {
       renderInput={(params) => (
         <TextField
           {...params}
-          label="Search a place"
+          label="Search a starting location"
           variant="outlined"
           fullWidth
           sx={{ backgroundColor: "white" }}
