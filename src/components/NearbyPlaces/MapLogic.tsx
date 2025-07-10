@@ -5,7 +5,7 @@ import {
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import PoiMarker from "./PoIMarker";
+import PoiMarker from "./PoiMarker";
 import SearchBar from "./SearchBar";
 import AttractionFetcher from "./AttractionFetcher";
 import LeftPanel from "./LeftPanel";

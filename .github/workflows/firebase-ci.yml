@@ -31,6 +31,7 @@ jobs:
           echo "VITE_API_KEY_CURRENCY=${{ secrets.VITE_API_KEY_CURRENCY }}" >> .env
           echo "VITE_API_KEY_OPENAI=${{ secrets.VITE_API_KEY_OPENAI }}" >> .env
           echo "VITE_API_KEY_WEATHER=${{ secrets.VITE_API_KEY_WEATHER }}" >> .env
+          echo "VITE_API_KEY_MAPS_API=${{ secrets.VITE_API_KEY_MAPS_API }}" >> .env
 
       - name: Set up functions .env
         run: |
