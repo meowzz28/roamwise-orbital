@@ -171,6 +171,7 @@ const CreateNewTemplate = ({
                 data-testid="create-template-btn"
                 type="submit"
                 disabled={isCreating}
+                style={{ borderRadius: "8px" }}
                 className={`w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 ${
                   isCreating
                     ? "bg-blue-400 cursor-not-allowed"
