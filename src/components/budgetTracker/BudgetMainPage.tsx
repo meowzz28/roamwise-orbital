@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import DonutChart from "./DonutChart";
 import ExpensesList from "./ExpensesList";
 import CurrencyConverter from "./CurrencyConverter";
+
 const allCurrencies = [
   { code: "USD", name: "US Dollar", symbol: "$" },
   { code: "SGD", name: "Singapore Dollar", symbol: "$" },
