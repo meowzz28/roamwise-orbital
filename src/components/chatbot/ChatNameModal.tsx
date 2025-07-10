@@ -62,6 +62,7 @@ const ChatNameModal = ({ onClose, setName, name, handleCreateChat }) => {
               </div>
               <button
                 type="submit"
+                style={{ borderRadius: "8px" }}
                 className="rounded-lg  w-full inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-700  hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 "
               >
                 Create Chat
