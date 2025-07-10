@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import CreatePost from "./CreatePost";
+import CreatePost from "./createPost";
 import { toast } from "react-toastify";
 
 vi.mock("../firebase", () => ({
