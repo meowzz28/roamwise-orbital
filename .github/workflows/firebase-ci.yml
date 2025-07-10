@@ -20,6 +20,9 @@ jobs:
       - name: Install root dependencies
         run: npm ci
 
+      - name: Run Vitest
+        run: npx vitest run
+
       - name: Install Firebase Functions dependencies
         run: |
           cd functions
