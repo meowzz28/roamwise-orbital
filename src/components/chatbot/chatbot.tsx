@@ -19,10 +19,12 @@ type ChatMessage = {
 };
 
 const chatbot = ({ selectedChatID }) => {
+  // Custom hook for AI response and typing state
   const { sendToAI, typing, error } = useAIResponse();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load messages from Firestore for the selected chat
   const loadMessages = async () => {
     setIsLoading(true);
     setMessages([]);
@@ -48,6 +50,7 @@ const chatbot = ({ selectedChatID }) => {
     }
   };
 
+  // Reload messages when selectedChatID changes
   useEffect(() => {
     if (selectedChatID) {
       loadMessages();
@@ -56,6 +59,7 @@ const chatbot = ({ selectedChatID }) => {
     }
   }, [selectedChatID]);
 
+  // Update Firestore with new messages
   const updateFireStore = async (updatedMessages: ChatMessage[]) => {
     const user = auth.currentUser;
     if (!user || !selectedChatID) return;
@@ -68,6 +72,7 @@ const chatbot = ({ selectedChatID }) => {
     }
   };
 
+  // Handle sending a new message
   const handleSend = async (message: string) => {
     const newMessage: ChatMessage = {
       message: message,
@@ -76,6 +81,7 @@ const chatbot = ({ selectedChatID }) => {
     };
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
+    // Send to AI and handle response
     const res = await sendToAI(newMessages);
     if (res.success) {
       const assistantMessage: ChatMessage = {
@@ -112,6 +118,7 @@ const chatbot = ({ selectedChatID }) => {
     );
   }
 
+  // Main chat UI
   return (
     <div>
       <div style={{ position: "relative", height: "500px", width: "100%" }}>

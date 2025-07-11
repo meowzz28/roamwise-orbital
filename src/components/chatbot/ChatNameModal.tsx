@@ -16,6 +16,7 @@ const ChatNameModal = ({ onClose, setName, name, handleCreateChat }) => {
       >
         <div className="relative p-4 w-full max-w-md max-h-full">
           <div className="bg-white rounded-lg shadow">
+            {/* Modal header with close button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 ">
               <h3 className="text-lg font-semibold text-gray-900 ">
                 Add A Chat Name
@@ -25,6 +26,7 @@ const ChatNameModal = ({ onClose, setName, name, handleCreateChat }) => {
                 onClick={onClose}
                 className="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg w-8 h-8 flex justify-center items-center "
               >
+                {/* Close icon */}
                 <svg
                   className="w-3 h-3"
                   xmlns="http://www.w3.org/2000/svg"
@@ -42,6 +44,7 @@ const ChatNameModal = ({ onClose, setName, name, handleCreateChat }) => {
               </button>
             </div>
 
+            {/* Form for entering chat name */}
             <form className="p-4" onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label
@@ -60,6 +63,7 @@ const ChatNameModal = ({ onClose, setName, name, handleCreateChat }) => {
                   required
                 />
               </div>
+              {/* Submit button */}
               <button
                 type="submit"
                 style={{ borderRadius: "8px" }}

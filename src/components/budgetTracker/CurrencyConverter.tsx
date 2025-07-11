@@ -33,14 +33,17 @@ const CurrencyConverter = () => {
     }
   };
 
+  // Handle form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
     getExchangeRate();
   };
 
+  // Fetch initial exchange rate on mount
   useEffect(() => {
     getExchangeRate();
   }, []);
+
   return (
     <div className="flex justify-center items-center w-full">
       <div className="bg-shadow border rounded-2xl">

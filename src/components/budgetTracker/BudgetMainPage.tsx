@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "../firebase";
+import { auth, db } from "../firebase";
 import {
   doc,
   onSnapshot,
@@ -217,6 +217,7 @@ const BudgetMainPage = () => {
   const [originalExpenses, setOriginalExpenses] = useState<Expenses[]>([]);
   const [convertedExpenses, setConvertedExpenses] = useState<Expenses[]>([]);
 
+  // Listen for auth state and fetch user/templates from Firestore
   useEffect(() => {
     let unsubscribeTemplates: (() => void) | null = null;
     const unsubscribeAuth = auth.onAuthStateChanged(async (user) => {
@@ -254,6 +255,7 @@ const BudgetMainPage = () => {
     };
   }, []);
 
+  // Fetch expenses for selected trip and user, filtered by currency
   useEffect(() => {
     if (!selectedTripId || !userUID || !currency) return;
     setIsFetching(true);
@@ -288,6 +290,7 @@ const BudgetMainPage = () => {
     return () => unsubscribe();
   }, [selectedTripId, userUID, currency]);
 
+  // Fetch rates from exchangerate-api
   const getDistinctCurrencies = (expenses: Expenses[]) => {
     const currencies = expenses.map((expense) => expense.currency);
     const uniqueCurrencies = Array.from(new Set(currencies));
@@ -377,6 +380,7 @@ const BudgetMainPage = () => {
 
   return (
     <div className="min-h-screen px-4 py-8">
+      {/* Show trip/currency selection if not selected */}
       {!selectedTripId || !currency ? (
         <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
           <div className="flex-1 space-y-6">

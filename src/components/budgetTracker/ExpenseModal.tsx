@@ -196,6 +196,7 @@ const ExpenseModal: React.FC<Props> = ({
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [currencySearch, setCurrencySearch] = useState("");
 
+  // Handle form submission to add expense
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const user = auth.currentUser;
@@ -218,6 +219,7 @@ const ExpenseModal: React.FC<Props> = ({
       position: "bottom-center",
     });
     try {
+      // Add expense to Firestore
       await addDoc(collection(db, "Expenses"), {
         userId: user.uid,
         tripId: tripId,
@@ -258,6 +260,7 @@ const ExpenseModal: React.FC<Props> = ({
         className="relative p-4 w-full max-w-md max-h-full"
       >
         <div className="bg-white rounded-lg shadow">
+          {/* Modal header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
               Add New Expense
@@ -267,6 +270,7 @@ const ExpenseModal: React.FC<Props> = ({
               onClick={onClose}
               className="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg w-8 h-8 flex justify-center items-center"
             >
+              {/* Close icon */}
               <svg
                 className="w-3 h-3"
                 xmlns="http://www.w3.org/2000/svg"
@@ -284,6 +288,7 @@ const ExpenseModal: React.FC<Props> = ({
             </button>
           </div>
 
+          {/* Expense form */}
           <form className="p-4" onSubmit={handleSubmit}>
             <div className="mb-4 relative">
               <label
@@ -336,6 +341,7 @@ const ExpenseModal: React.FC<Props> = ({
               )}
             </div>
 
+            {/* Description input */}
             <div className="mb-4">
               <label
                 htmlFor="description"
@@ -354,6 +360,7 @@ const ExpenseModal: React.FC<Props> = ({
               />
             </div>
 
+            {/* Total spending and currency selector */}
             <div className="mb-4">
               <label
                 htmlFor="spending"
@@ -364,6 +371,7 @@ const ExpenseModal: React.FC<Props> = ({
 
               <div className="relative flex gap-2 items-center">
                 <div className="relative inline-block">
+                  {/* Currency dropdown */}
                   <button
                     type="button"
                     onClick={() => setShowCurrencyDropdown((prev) => !prev)}
@@ -379,6 +387,7 @@ const ExpenseModal: React.FC<Props> = ({
 
                   {showCurrencyDropdown && (
                     <div className="absolute z-30 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-md">
+                      {/* Currency search input */}
                       <input
                         type="text"
                         value={currencySearch}
@@ -411,6 +420,7 @@ const ExpenseModal: React.FC<Props> = ({
                   )}
                 </div>
 
+                {/* Amount input */}
                 <input
                   type="number"
                   id="spending"
@@ -424,6 +434,7 @@ const ExpenseModal: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* Date input */}
             <div className="mb-4">
               <label
                 htmlFor="date"
@@ -442,6 +453,7 @@ const ExpenseModal: React.FC<Props> = ({
               />
             </div>
 
+            {/* Submit button */}
             <button
               type="submit"
               className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
