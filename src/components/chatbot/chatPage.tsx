@@ -4,7 +4,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import SideBar from "./chatbotSidebar";
 import ChatBot from "./chatbot";
-import fetchChats from "../../hooks/fetchChats";
 
 type UserDetails = {
   email: string;
@@ -20,6 +19,7 @@ const ChatPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
 
+  // Listen for auth state and fetch user details from Firestore
   useEffect(() => {
     setPageLoading(true);
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -44,6 +44,7 @@ const ChatPage = () => {
     return () => unsubscribe();
   }, []);
 
+  // Handle chat selection and loading state
   const handleChatChange = (chatId: string | null) => {
     if (selectedChatID !== chatId) {
       setLoading(true);
@@ -56,14 +57,6 @@ const ChatPage = () => {
       }, 50);
     }
   };
-
-  // useEffect(() => {
-  //   setPageLoading(true);
-  //   setTimeout(() => {
-  //     setPageLoading(false);
-  //     setLoading(false);
-  //   }, 1500);
-  // }, []);
 
   if (pageLoading) {
     return (
@@ -97,6 +90,7 @@ const ChatPage = () => {
       </div>
       <div className="flex flex-row">
         <div className="w-1/4">
+          {/* Sidebar for chat list and new chat creation */}
           <SideBar
             selectedChatID={selectedChatID}
             setSelectedChatID={handleChatChange}
@@ -104,6 +98,7 @@ const ChatPage = () => {
           />
         </div>
         <div className="w-3/4">
+          {/* Main chat area */}
           {loading ? (
             <div className="flex items-center justify-center h-full text-gray-500">
               Loading...

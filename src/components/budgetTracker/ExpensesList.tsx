@@ -21,11 +21,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Open delete confirmation modal
   const handleDelete = (id: string) => {
     setExpenseToDelete(id);
     setIsDeleteConfirmOpen(true);
   };
 
+  // Confirm and delete the expense from Firestore
   const confirmDelete = async () => {
     if (!expenseToDelete) return;
     setIsDeleting(true);
@@ -58,11 +60,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
 
   return (
     <div className="w-full max-w-4xl space-y-4 mt-6">
+      {/* Show message if no expenses */}
       {expenses.length === 0 ? (
         <p className="text-center text-gray-400 italic">
           No expenses added yet.
         </p>
       ) : (
+        // Render each expense item
         expenses.map((expense) => (
           <div
             key={expense.id}
@@ -92,6 +96,8 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
           </div>
         ))
       )}
+
+      {/* Delete confirmation modal */}
       {isDeleteConfirmOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div

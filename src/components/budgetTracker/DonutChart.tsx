@@ -31,6 +31,7 @@ const COLORS = [
 ];
 
 const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
+  // Aggregate expenses by category for chart data
   const data = Object.values(
     expenses.reduce((acc, curr) => {
       if (!acc[curr.category]) {
@@ -44,6 +45,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
     }, {} as Record<string, { name: string; value: number }>)
   );
 
+  // Aggregate expenses by category for chart data
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
@@ -51,6 +53,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
       <h2 className="text-xl font-semibold text-center mb-4">Expenses</h2>
 
       {data.length === 0 ? (
+        // Show message if no expenses
         <p className="text-center text-gray-500">No expenses to display.</p>
       ) : (
         <div className="w-full h-[300px] relative">
@@ -66,6 +69,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
                 paddingAngle={3}
                 label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
               >
+                {/* Render colored slices */}
                 {data.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
@@ -78,6 +82,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ expenses }) => {
             </PieChart>
           </ResponsiveContainer>
 
+          {/* Center label for total */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
             <p className="text-sm text-gray-500">Total</p>
             <p className="text-xl font-bold">${total.toFixed(2)}</p>

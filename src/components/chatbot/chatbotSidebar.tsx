@@ -28,11 +28,14 @@ const chatbotSidebar = ({
   const [chats, setChats] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");
+
+  // Open modal to create a new chat
   const openModal = () => {
     setName("");
     setShowModal(true);
   };
 
+  // Create a new chat in Firestore
   const handleCreateChat = async () => {
     const user = auth.currentUser;
     if (!user || !name.trim()) return;
@@ -63,6 +66,7 @@ const chatbotSidebar = ({
     }
   };
 
+  // Delete a chat from Firestore
   const deleteChat = async (chatID: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const user = auth.currentUser;
@@ -80,6 +84,7 @@ const chatbotSidebar = ({
     }
   };
 
+  // Fetch chat list on mount
   useEffect(() => {
     fetchChats(setChats);
   }, []);
@@ -89,6 +94,7 @@ const chatbotSidebar = ({
       className="mb-2 p-4 bg-gray-800 rounded-lg "
       style={{ height: "500px" }}
     >
+      {/* Button to open modal for new chat */}
       <button
         className="text-white bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
         onClick={openModal}
@@ -97,6 +103,7 @@ const chatbotSidebar = ({
         {" "}
         New Chat{" "}
       </button>
+      {/* Modal for entering chat name */}
       {showModal && (
         <ChatNameModal
           onClose={() => setShowModal(false)}
@@ -105,6 +112,7 @@ const chatbotSidebar = ({
           handleCreateChat={handleCreateChat}
         />
       )}
+      {/* List of chats */}
       <div
         className="overflow-y-auto h-96 bg-gray-600"
         style={{ height: "calc(100% - 50px)" }}
@@ -118,6 +126,7 @@ const chatbotSidebar = ({
             }`}
           >
             {chat.chatName}
+            {/* Delete chat button */}
             <button
               onClick={(e) => deleteChat(chat.id, e)}
               className="text-red-500 hover:text-red-700 text-align-right float-right"
