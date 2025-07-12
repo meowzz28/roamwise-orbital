@@ -38,6 +38,7 @@ function Chat({ teamID }: { teamID: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
 
+  // Track auth state and fetch user profile
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -59,12 +60,8 @@ function Chat({ teamID }: { teamID: string }) {
       setAuthChecked(true);
     });
 
+    // Set up real-time listener for messages
     let unsubscribeMessages: (() => void) | null = null;
-
-    const messagesQuery = query(
-      collection(db, "Messages"),
-      where("teamID", "==", teamID)
-    );
 
     if (teamID) {
       const messagesQuery = query(
@@ -96,6 +93,7 @@ function Chat({ teamID }: { teamID: string }) {
     };
   }, [teamID]);
 
+  // Send message to Firestore
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
@@ -120,6 +118,7 @@ function Chat({ teamID }: { teamID: string }) {
 
   return (
     <div className="flex flex-col h-full border rounded-lg shadow-md bg-white">
+      {/* Chat messages */}
       <div className="flex-1 overflow-auto p-4 space-y-2">
         {messages.length == 0 ? (
           <div className="text-center text-gray-400 mt-10">
@@ -131,6 +130,7 @@ function Chat({ teamID }: { teamID: string }) {
         <div ref={dummy}></div>
       </div>
 
+      {/* Input box */}
       <form onSubmit={sendMessage} className="flex p-4 border-t">
         <input
           value={formValue}

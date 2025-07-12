@@ -13,6 +13,8 @@ const CreateNewTeam = ({
   isCreating: boolean;
 }) => {
   const [teamName, setTeamName] = useState("");
+
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
@@ -31,6 +33,7 @@ const CreateNewTeam = ({
         className="relative p-4 w-full max-w-md max-h-full"
       >
         <div className="relative p-4 w-full max-w-md max-h-full">
+          {/* Header */}
           <div className="bg-white rounded-lg shadow">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 ">
               <h3 className="text-lg font-semibold text-gray-900 ">
@@ -41,6 +44,7 @@ const CreateNewTeam = ({
                 onClick={onClose}
                 className="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg w-8 h-8 flex justify-center items-center "
               >
+                {/* Close icon */}
                 <svg
                   className="w-3 h-3"
                   xmlns="http://www.w3.org/2000/svg"
@@ -58,6 +62,7 @@ const CreateNewTeam = ({
               </button>
             </div>
 
+            {/* Form */}
             <form className="p-4" onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label
@@ -76,7 +81,7 @@ const CreateNewTeam = ({
                   required
                 />
               </div>
-
+              {/* Submit button */}
               <button
                 type="submit"
                 className="btn btn-primary w-100 d-flex justify-content-center align-items-center"

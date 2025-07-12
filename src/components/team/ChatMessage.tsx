@@ -35,6 +35,7 @@ function ChatMessage({ message }: { message: Message }) {
             : "bg-gray-200 text-gray-800"
         }`}
       >
+        {/* Display avatar initial, sender name, and timestamp */}
         <div className="d-flex align-items-center">
           <div className="bg-light rounded-circle p-2 me-2 text-primary fw-bold">
             {(user_name?.charAt(0) || "?").toUpperCase()}{" "}

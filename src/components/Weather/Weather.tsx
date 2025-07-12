@@ -9,6 +9,7 @@ function Weather() {
   const [city, setCity] = useState("");
   const [icon, setIcon] = useState("");
 
+  // Auto-detect user location using IP address when component mounts
   useEffect(() => {
     const detectLocation = async () => {
       try {
@@ -16,7 +17,7 @@ function Weather() {
         const data = await res.json();
         console.log(data);
         const detectedCity = data.city;
-        await setLocation(detectedCity);
+        setLocation(detectedCity);
         fetchWeather(detectedCity);
       } catch (err) {
         console.error("Auto-detect failed");
@@ -25,6 +26,7 @@ function Weather() {
     detectLocation();
   }, []);
 
+  // Fetch weather information for a given location using WeatherAPI
   const fetchWeather = async (loc: string) => {
     setIsSearching(true);
     setResult("");
@@ -37,6 +39,7 @@ function Weather() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Show error toast for invalid locations (status 400)
         if (response.status === 400) {
           toast.error("Please enter a valid location.", {
             position: "bottom-center",
@@ -47,6 +50,7 @@ function Weather() {
         }
       }
 
+      // Extract and set weather data from API response
       setTemp(data.current.temp_c);
       setResult(data.current.condition.text);
       setIcon(data.current.condition.icon);
@@ -58,6 +62,7 @@ function Weather() {
     }
   };
 
+  // Trigger weather search on form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchWeather(location);
@@ -73,9 +78,11 @@ function Weather() {
 
   return (
     <div className="group border p-5 rounded-2xl ">
+      {/* Heading */}
       <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
         Live Weather ☁️
       </h1>
+      {/* Search form */}
       <form onSubmit={handleSearch} className="mb-3">
         <div className="row align-items-end">
           <div className="col-md-9">
@@ -108,6 +115,7 @@ function Weather() {
         </div>
       </form>
 
+      {/* Result display */}
       {result ? (
         <div>
           <h3>Result: </h3>

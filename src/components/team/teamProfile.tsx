@@ -59,6 +59,7 @@ function TeamProfile({
 
   const handleQuit = () => setQuitConfirm(true);
 
+  //Handles transactional cleanup and user removal from team and templates.
   const confirmQuit = async () => {
     if (!teamID || !uid) return;
 
@@ -68,6 +69,7 @@ function TeamProfile({
     });
 
     try {
+      // Get templates associated with the team
       const templatesQuery = query(
         collection(db, "Templates"),
         where("teamID", "==", teamID)
@@ -160,6 +162,7 @@ function TeamProfile({
     }
   };
 
+  //Fetch updated team data when modals close
   const fetchUpdatedTeam = async () => {
     const teamRef = doc(db, "Team", teamID);
     const docSnap = await getDoc(teamRef);
@@ -170,12 +173,14 @@ function TeamProfile({
     }
   };
 
+  // Refresh team data after closing "Add Member" modal
   useEffect(() => {
     if (!showAddMemberModal) {
       fetchUpdatedTeam();
     }
   }, [showAddMemberModal]);
 
+  // Refresh team data after closing "Add Admin" modal
   useEffect(() => {
     if (!showAddAdminModal) {
       fetchUpdatedTeam();
@@ -193,6 +198,7 @@ function TeamProfile({
 
   return (
     <>
+      {/* Team Info Panel */}
       <div className="flex flex-col p-4 rounded-lg bg-white shadow-md space-y-3">
         <div>
           <p className="text-lg">
@@ -212,6 +218,7 @@ function TeamProfile({
           </p>
         </div>
 
+        {/* Admin actions */}
         <div className="flex space-x-2 pt-2">
           {currentTeam?.admin?.includes(uid) && (
             <>
@@ -251,6 +258,7 @@ function TeamProfile({
         />
       )}
 
+      {/* Member Modal */}
       {showAddAdminModal && (
         <AddTeamAdmin
           onClose={closeModals}
@@ -259,6 +267,7 @@ function TeamProfile({
           setIsAddingAdmin={setIsAddingAdmin}
         />
       )}
+      {/* Quit Confirmation Modal */}
       {quitConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div

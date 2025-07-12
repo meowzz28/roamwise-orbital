@@ -32,6 +32,7 @@ function ViewTeam() {
   const [authChecked, setAuthChecked] = useState(false);
   const { teamID } = useParams();
 
+  //Check Firebase auth state and load user details
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -56,6 +57,7 @@ function ViewTeam() {
     return () => unsubscribe();
   }, []);
 
+  //Fetch and subscribe to team data from Firestore
   useEffect(() => {
     const fetchData = async () => {
       const user = auth.currentUser;
@@ -115,6 +117,7 @@ function ViewTeam() {
         <h1 className="text-2xl font-bold">{team?.Name}</h1>
       </div>
       <div className="row">
+        {/* SIDEBAR TABS */}
         <div className=" col-2 d-flex flex-column align-items-center me-4 border-end pe-3">
           <div
             className={`fs-4 fw-bold mb-4 ${
@@ -137,6 +140,7 @@ function ViewTeam() {
             Team Chat
           </div>
         </div>
+        {/* CONTENT PANEL */}
         <div className="col  bg-white p-6 rounded shadow-md mb-6">
           {activeTab === "details" && (
             <div>

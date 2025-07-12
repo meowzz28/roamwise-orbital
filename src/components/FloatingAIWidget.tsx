@@ -11,6 +11,7 @@ const FloatingAIWidget = () => {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [hasDragged, setHasDragged] = useState(false);
+  // Load saved chat messages from localStorage (persist session)
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem("aiWidgetMessages");
     if (saved) return JSON.parse(saved);
@@ -18,6 +19,7 @@ const FloatingAIWidget = () => {
   });
   const { sendToAI, typing, error } = useAIResponse();
 
+  // Capture initial mouse position and calculate offset for dragging
   const handleMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
     setOffset({
@@ -27,6 +29,7 @@ const FloatingAIWidget = () => {
     setHasDragged(false);
   };
 
+  // Update widget position as mouse moves
   const handleMouseMove = (e: MouseEvent) => {
     if (!dragging) return;
     const newX = e.clientX - offset.x;
@@ -41,6 +44,7 @@ const FloatingAIWidget = () => {
     setDragging(false);
   };
 
+  // Register mousemove and mouseup listeners globally for drag behavior
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
@@ -50,10 +54,12 @@ const FloatingAIWidget = () => {
     };
   });
 
+  // Persist chat messages to localStorage on update
   useEffect(() => {
     localStorage.setItem("aiWidgetMessages", JSON.stringify(messages));
   }, [messages]);
 
+  // Send user message to AI and handle response
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -69,6 +75,8 @@ const FloatingAIWidget = () => {
       ]);
     }
   };
+
+  // Clear session (localStorage + state)
   const clearChat = () => {
     setMessages([]);
     localStorage.removeItem("aiWidgetMessages");

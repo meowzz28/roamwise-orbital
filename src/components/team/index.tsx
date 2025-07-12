@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase";
-import TeamCard from "./card";
 import CreateNewTeam from "./createNewTeam";
 import Chat from "./chat";
 import TeamProfile from "./teamProfile";
@@ -50,6 +49,7 @@ function Team() {
   );
   const selectedTeam = list.find((team) => team.id === selectedTeamID);
 
+  // Handle Firebase auth state and fetch user details
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -74,10 +74,12 @@ function Team() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch user's teams after UID is set
   useEffect(() => {
     if (uid) fetchTeamList();
   }, [uid]);
 
+  // Retrieve list of teams user belongs to
   const fetchTeamList = async () => {
     try {
       const querySnapshot = await getDocs(
@@ -106,6 +108,7 @@ function Team() {
     }
   };
 
+  // Create a new team document in Firestore
   const handleCreate = async (teamName: string) => {
     setIsCreating(true);
     const toastId = toast.loading("Creating team...", {
@@ -192,9 +195,8 @@ function Team() {
 
   return (
     <div className="container flex flex-col bg-white rounded-2xl shadow-sm border  p-4  h-[calc(100vh-80px)]">
-      <div className="flex h-full h-0 border">
+      <div className="flex h-full border">
         {/* LEFT PANEL */}
-
         <div className="w-1/3 border-r flex flex-col">
           <div className="p-4 border-b ">
             <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-800 text-center">
@@ -239,7 +241,7 @@ function Team() {
             )}
           </div>
         </div>
-
+        {/* RIGHT PANEL: Team Chat and Details */}
         <div className="w-2/3 p-4 flex flex-col h-full">
           {selectedTeamID && selectedTeam && (
             <div className="flex justify-between items-center mb-4 border-b pb-2">

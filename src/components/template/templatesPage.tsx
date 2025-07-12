@@ -65,6 +65,7 @@ const templatesPage = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Auth listener to fetch user info on mount
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -86,6 +87,7 @@ const templatesPage = () => {
     return () => unsubscribe();
   }, []);
 
+  // Fetch templates owned or shared with the user
   useEffect(() => {
     const fetchData = async () => {
       if (!UID) return;
@@ -110,6 +112,7 @@ const templatesPage = () => {
     fetchData();
   }, [UID]);
 
+  // Listen for real-time updates to teams the user is part of
   useEffect(() => {
     if (!UID) return;
 
@@ -142,6 +145,7 @@ const templatesPage = () => {
     return () => unsubscribe();
   }, [UID]);
 
+  // Handle creation of a new travel template
   const handleCreate = async (
     templateName: string,
     start: string,
@@ -157,6 +161,7 @@ const templatesPage = () => {
       let uploadedImageURL = "";
       let teamName = "";
 
+      // Upload image if provided
       if (image && user) {
         const imageRef = ref(
           storage,
@@ -185,6 +190,7 @@ const templatesPage = () => {
           }
         }
 
+        // Create new template document
         const newDocRef = await addDoc(collection(db, "Templates"), {
           userEmails: userEmails,
           userUIDs: userUIDs,
@@ -198,6 +204,7 @@ const templatesPage = () => {
           time: serverTimestamp(),
         });
 
+        // Optimistically update local state
         setTemplates((prev) => [
           {
             id: newDocRef.id,
@@ -251,16 +258,6 @@ const templatesPage = () => {
     );
   }
 
-  // if (isCreating) {
-  //   return (
-  //     <div className="container text-center p-5">
-  //       <div className="spinner-border text-primary" role="status">
-  //         <span className="visually-hidden">Loading...</span>
-  //       </div>
-  //       <p className="mt-3">Creating New Trip...</p>
-  //     </div>
-  //   );
-  // }
   if (!userDetails) {
     return (
       <div className="container text-center p-5">
@@ -277,6 +274,7 @@ const templatesPage = () => {
 
   return (
     <div>
+      {/* Page header and create button */}
       <div className="relative flex items-center justify-end mb-6">
         <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-center">
           My Trips 🗓️
@@ -289,6 +287,7 @@ const templatesPage = () => {
         </button>
       </div>
 
+      {/* Display list of templates or empty state */}
       {templates.length === 0 ? (
         <p className="text-gray-600">No trips found.</p>
       ) : (
@@ -311,6 +310,7 @@ const templatesPage = () => {
         </div>
       )}
 
+      {/* Modal for creating a new trip template */}
       {showModal && (
         <CreateNewTemplate
           show={showModal}
