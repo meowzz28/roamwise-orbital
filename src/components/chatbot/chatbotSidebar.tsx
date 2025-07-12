@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
   collection,
-  getDocs,
   addDoc,
   serverTimestamp,
-  orderBy,
-  query,
   deleteDoc,
   doc,
 } from "firebase/firestore";
@@ -28,6 +25,9 @@ const chatbotSidebar = ({
   const [chats, setChats] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Open modal to create a new chat
   const openModal = () => {
@@ -66,21 +66,34 @@ const chatbotSidebar = ({
     }
   };
 
-  // Delete a chat from Firestore
-  const deleteChat = async (chatID: string, e: React.MouseEvent) => {
+  const confirmDeleteChat = (chatID: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setChatToDelete(chatID);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  // Delete a chat from Firestore
+  const deleteChat = async () => {
+    if (!chatToDelete) return;
     const user = auth.currentUser;
     if (!user) return;
 
+    setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "Users", user.uid, "chats", chatID));
-      const updatedChats = chats.filter((chat) => chat.id !== chatID);
+      await deleteDoc(doc(db, "Users", user.uid, "chats", chatToDelete));
+      const updatedChats = chats.filter((chat) => chat.id !== chatToDelete);
       setChats(updatedChats);
-      if (selectedChatID === chatID) {
+      if (selectedChatID === chatToDelete) {
         setSelectedChatID(null);
       }
+      toast.success("Chat deleted.");
     } catch (error) {
       console.error("Error deleting chat: ", error);
+      toast.error("Failed to delete chat.");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteConfirmOpen(false);
+      setChatToDelete(null);
     }
   };
 
@@ -91,18 +104,23 @@ const chatbotSidebar = ({
 
   return (
     <div
-      className="mb-2 p-4 bg-gray-800 rounded-lg "
+      className="p-4 bg-white shadow-lg rounded-xl h-full flex flex-col border border-blue-200"
       style={{ height: "500px" }}
     >
       {/* Button to open modal for new chat */}
-      <button
-        className="text-white bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
-        onClick={openModal}
-        style={{ borderRadius: "8px" }}
-      >
-        {" "}
-        New Chat{" "}
-      </button>
+      <div className="mb-4">
+        <div className="text-center mb-2">
+          <h2 className="text-black font-semibold text-lg">Your Chats</h2>
+        </div>
+        <button
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow"
+          style={{ borderRadius: "8px" }}
+          onClick={openModal}
+        >
+          + New Chat
+        </button>
+      </div>
+
       {/* Modal for entering chat name */}
       {showModal && (
         <ChatNameModal
@@ -114,28 +132,70 @@ const chatbotSidebar = ({
       )}
       {/* List of chats */}
       <div
-        className="overflow-y-auto h-96 bg-gray-600"
+        className="overflow-y-auto flex-1 space-y-2 pr-1"
         style={{ height: "calc(100% - 50px)" }}
       >
         {chats.map((chat, index) => (
           <div
             key={chat.id}
             onClick={() => setSelectedChatID(chat.id)}
-            className={`cursor-pointer py-2 hover:bg-gray-200 text-white bg-blue-700 rounded-lg m-2 p-2 ${
-              selectedChatID === chat.id ? "border-2 border-white" : ""
+            className={`flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors ${
+              selectedChatID === chat.id
+                ? "bg-blue-100 border border-blue-400"
+                : "bg-gray-50 hover:bg-blue-50"
             }`}
           >
-            {chat.chatName}
+            <span className="text-sm text-gray-800 font-medium truncate">
+              {chat.chatName}
+            </span>
             {/* Delete chat button */}
             <button
-              onClick={(e) => deleteChat(chat.id, e)}
+              onClick={(e) => confirmDeleteChat(chat.id, e)}
               className="text-red-500 hover:text-red-700 text-align-right float-right"
             >
-              X
+              ×
             </button>
           </div>
         ))}
       </div>
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsDeleteConfirmOpen(false)}
+          />
+          <div className="relative bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl z-50">
+            <h3 className="text-lg text-red-600 font-semibold mb-2">
+              Delete this chat?
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Are you sure you want to delete this chat? This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteConfirmOpen(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteChat}
+                className="btn btn-danger"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                ) : null}
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
