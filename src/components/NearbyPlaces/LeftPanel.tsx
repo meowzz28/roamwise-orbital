@@ -25,12 +25,14 @@ const LeftPanel = ({
   filters,
   setFilters,
 }: Props) => {
+  // Display labels for each type of place
   const typeLabels: { [key in PlaceType]: string } = {
     attraction: "Attractions",
     restaurant: "Restaurants",
     hotel: "Hotels",
   };
 
+  // Toggle a filter type: remove if selected, add if not
   const toggleFilter = (type: PlaceType) => {
     setFilters((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
@@ -40,6 +42,8 @@ const LeftPanel = ({
   return (
     <div className="absolute left-0 top-0 w-96 h-full bg-white shadow-md z-20 overflow-y-auto p-4">
       <h2 className="text-xl font-bold mb-4">Nearby Places</h2>
+
+      {/* Filter toggle buttons */}
       <div className="flex gap-2 mb-4">
         {Object.entries(typeLabels).map(([type, label]) => (
           <button
@@ -55,6 +59,7 @@ const LeftPanel = ({
           </button>
         ))}
       </div>
+      {/* Render filtered attractions */}
       {attractions.map((poi) => (
         <div
           key={poi.key}
@@ -62,11 +67,13 @@ const LeftPanel = ({
           onClick={() => onAttractionClick(poi)}
         >
           <div className="font-semibold">{poi.name}</div>
+          {/* Show rating if available */}
           {poi.rating && (
             <div className="text-yellow-500 text-sm">
               {poi.rating} ★ ({poi.user_ratings_total} reviews)
             </div>
           )}
+          {/* Display the type of place */}
           <div className="text-sm text-gray-500 capitalize">{poi.type}</div>
         </div>
       ))}

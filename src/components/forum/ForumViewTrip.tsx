@@ -28,6 +28,7 @@ function ViewTrip({ templateID }: { templateID: string }) {
   const [template, setTemplate] = useState<Template | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  // Fetch template data on mount and listen for updates
   useEffect(() => {
     const fetchData = async () => {
       const user = auth.currentUser;
@@ -49,6 +50,7 @@ function ViewTrip({ templateID }: { templateID: string }) {
     fetchData();
   }, [templateID]);
 
+  // Get all dates from start to end (inclusive)
   const getDays = (start: string, end: string) => {
     const days: Date[] = [];
     const startDate = new Date(start);
@@ -64,6 +66,7 @@ function ViewTrip({ templateID }: { templateID: string }) {
   return (
     <div className="p-4 border rounded bg-white shadow">
       <h3 className="text-lg font-semibold text-gray-700 mb-2">Shared Trip</h3>
+      {/* Toggle to show/hide trip details */}
       <div className="flex justify-between items-center mb-3">
         <button
           onClick={() => setShowDetails((prev) => !prev)}
@@ -72,6 +75,7 @@ function ViewTrip({ templateID }: { templateID: string }) {
           {showDetails ? "Hide Trip Details ▲" : "Show Trip Details ▼"}
         </button>
       </div>
+      {/* Collapsible trip details section */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
           showDetails ? "max-h-[5000px]" : "max-h-0"
@@ -93,12 +97,14 @@ function ViewTrip({ templateID }: { templateID: string }) {
               </div>
             </div>
 
+            {/* Display trip dates */}
             <ForumDateSection id={templateID} template={template} />
             <div className="mt-10">
               <h3 className="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">
                 Daily Plans ✈️
               </h3>
 
+              {/* Daily plans list */}
               <div className="max-h-[400px] overflow-y-auto space-y-4 pr-2">
                 {days.map((date, idx) => (
                   <ForumDailyPlan

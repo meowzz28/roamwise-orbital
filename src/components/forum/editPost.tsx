@@ -49,12 +49,14 @@ function EditPost() {
     []
   );
 
+  // Fetch user and post data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
           if (user) {
             try {
+              // Fetch user details
               const userDocRef = doc(db, "Users", user.uid);
               setUID(user.uid);
               const userDocSnap = await getDoc(userDocRef);
@@ -64,12 +66,14 @@ function EditPost() {
                 setError("User document does not exist.");
               }
 
+              // Fetch post data if postId is present
               if (postId) {
                 const postDocRef = doc(db, "Forum", postId);
                 const postDocSnap = await getDoc(postDocRef);
 
                 if (postDocSnap.exists()) {
                   const data = postDocSnap.data();
+                  // Only allow editing if user is the author
                   if (data.UID !== user.uid) {
                     toast.error("You are not authorized to edit this post.", {
                       position: "bottom-center",
@@ -93,6 +97,7 @@ function EditPost() {
                   setContext(data.Message || "");
                   setSelectedTemplateID(data.TemplateID);
 
+                  // Fetch templates available to the user
                   const snapshot = await getDocs(collection(db, "Templates"));
                   const filtered = snapshot.docs
                     .filter((doc) => doc.data().userUIDs?.includes(user.uid))
@@ -130,6 +135,7 @@ function EditPost() {
     fetchData();
   }, [postId, navigate]);
 
+  // Handle post update submission
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -161,6 +167,7 @@ function EditPost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
+        // Update post in Firestore
         await updateDoc(doc(db, "Forum", postId), {
           User: userDetails.firstName,
           UID: user.uid,
@@ -251,6 +258,7 @@ function EditPost() {
 
       <div className="bg-white p-4 rounded shadow-md mb-4">
         <form onSubmit={handlePost}>
+          {/* Topic input */}
           <div className="mb-3">
             <label htmlFor="topic" className="block mb-1 font-medium">
               Topic
@@ -264,6 +272,7 @@ function EditPost() {
               required
             />
           </div>
+          {/* Template selection (optional) */}
           <div className="mb-3">
             <label className="block font-semibold mb-1">
               Trip Template (optional)
@@ -281,7 +290,7 @@ function EditPost() {
               ))}
             </select>
           </div>
-
+          {/* Content textarea */}
           <div className="mb-3">
             <label htmlFor="context" className="block mb-1 font-medium">
               Context
@@ -294,7 +303,7 @@ function EditPost() {
               required
             />
           </div>
-
+          {/* Submit button */}
           <button
             type="submit"
             className="btn btn-primary"
@@ -315,7 +324,7 @@ function EditPost() {
           </button>
         </form>
       </div>
-
+      {/* Cancel button */}
       <button
         className="btn btn-outline-secondary"
         onClick={() => handleView(post.id)}

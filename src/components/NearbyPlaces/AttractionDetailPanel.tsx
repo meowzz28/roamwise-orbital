@@ -9,10 +9,12 @@ const AttractionDetailPanel = ({
 }) => {
   return (
     <div className="w-full h-full bg-white shadow-md overflow-y-auto p-4">
+      {/* Back button */}
       <button onClick={onClose} className="mb-4 text-blue-500">
         ← Back
       </button>
 
+      {/* Basic place info */}
       <h2 className="text-xl font-semibold">{place.name}</h2>
       <div className="text-yellow-500 text-sm mb-1">
         {place.rating} ★ ({place.user_ratings_total} reviews)
@@ -21,6 +23,7 @@ const AttractionDetailPanel = ({
         {place.types?.[0]?.replace("_", " ")}
       </div>
 
+      {/* Contact details */}
       <div className="text-sm mb-1">
         <strong>Address:</strong> {place.formatted_address || place.vicinity}
       </div>
@@ -42,6 +45,7 @@ const AttractionDetailPanel = ({
           </a>
         </div>
       )}
+      {/* Opening hours */}
       {place.opening_hours?.weekday_text && (
         <div className="text-sm mt-2">
           <strong>Opening Hours:</strong>
@@ -52,6 +56,7 @@ const AttractionDetailPanel = ({
           </ul>
         </div>
       )}
+      {/* Get directions button */}
       {place.geometry?.location && (
         <button
           onClick={onGetDirections}
@@ -61,6 +66,7 @@ const AttractionDetailPanel = ({
           Get Walking Directions
         </button>
       )}
+      {/* Reviews section */}
       {place.reviews && place.reviews.length > 0 && (
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">Reviews</h3>

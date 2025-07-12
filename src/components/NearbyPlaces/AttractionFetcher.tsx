@@ -38,8 +38,10 @@ const AttractionFetcher = ({ origin, onUpdate }: Props) => {
     let collected: Props["onUpdate"] extends (p: infer T) => void ? T : never =
       [];
 
+    // To track how many category fetches have completed
     let completedCount = 0;
 
+    // Perform a nearbySearch for each place type
     types.forEach(({ apiType, label }) => {
       const request: google.maps.places.PlaceSearchRequest = {
         location: origin.location,
@@ -69,6 +71,7 @@ const AttractionFetcher = ({ origin, onUpdate }: Props) => {
 
         completedCount++;
 
+        // Once all types have been processed, invoke the callback with results
         if (completedCount === types.length) {
           onUpdate(collected);
         }

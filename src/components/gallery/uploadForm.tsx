@@ -4,6 +4,8 @@ import ProgressBar from "./progressBar";
 
 const uploadForm = () => {
   const [file, setFile] = useState<File | null>(null);
+
+  // Validate selected file and update state
   const handleSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
     let file = e.target.files?.[0];
     if (
@@ -32,6 +34,7 @@ const uploadForm = () => {
             onChange={handleSubmit}
           />
         </label>
+        {/* Show file name and progress bar if file is selected */}
         <div className="text-sm text-gray-500 mt-2">
           {file && <div> {file.name} </div>}
           {file && <ProgressBar file={file} setFile={setFile} />}

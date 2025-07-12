@@ -38,10 +38,12 @@ const MapLogic = () => {
   const [selectedAttractionDetail, setSelectedAttractionDetail] =
     useState<google.maps.places.PlaceResult | null>(null);
 
+  // Google Maps APIs
   const map = useMap();
   const placesLib = useMapsLibrary("places");
   const [placesService, setPlacesService] =
     useState<google.maps.places.PlacesService | null>(null);
+
   const [showDirections, setShowDirections] = useState<{
     origin: google.maps.LatLngLiteral;
     destination: google.maps.LatLngLiteral;
@@ -52,12 +54,14 @@ const MapLogic = () => {
     "hotel",
   ]);
 
+  // Initialize PlacesService when map and library are ready
   useEffect(() => {
     if (placesLib && map) {
       setPlacesService(new placesLib.PlacesService(map));
     }
   }, [placesLib, map]);
 
+  // Get current location on first load
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -81,6 +85,7 @@ const MapLogic = () => {
     );
   }, []);
 
+  // Triggered by the "Use Current Location" button
   const goToCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -104,6 +109,7 @@ const MapLogic = () => {
     );
   };
 
+  // Handles place selection from the SearchBar
   const handlePlaceSelect = (location: google.maps.LatLngLiteral) => {
     const selectedPoi: Poi = {
       key: "selected-location",
@@ -116,6 +122,7 @@ const MapLogic = () => {
     setAttractions([]);
   };
 
+  // Handles attraction selection from LeftPanel or markers
   const handleAttractionClick = (poi: Poi) => {
     if (showDirections) {
       setShowDirections(null);
@@ -153,6 +160,7 @@ const MapLogic = () => {
     });
   };
 
+  // Handles showing walking directions to a destination
   const handleGetDirections = (destinationLoc: google.maps.LatLngLiteral) => {
     if (!origin) return;
     setShowDirections({
@@ -161,6 +169,7 @@ const MapLogic = () => {
     });
   };
 
+  // Apply filters to attractions list
   const filteredAttractions = attractions.filter(
     (a) => a.type !== "origin" && filters.includes(a.type as PlaceType)
   );
@@ -176,6 +185,7 @@ const MapLogic = () => {
           setZoom(ev.detail.zoom);
         }}
       >
+        {/* Button to re-center map to user's current location */}
         <button
           onClick={goToCurrentLocation}
           className="absolute top-20 right-4 z-10 bg-white border border-gray-300 shadow-md rounded px-4 py-2 text-sm hover:bg-gray-100"
@@ -183,6 +193,7 @@ const MapLogic = () => {
           Use Current Location
         </button>
 
+        {/* Sidebar panel (filters, details, or directions) */}
         <div className="absolute top-0 left-0 z-10 w-[380px] h-full bg-white shadow-md overflow-y-auto">
           {showDirections ? (
             <Directions
@@ -214,14 +225,17 @@ const MapLogic = () => {
           )}
         </div>
 
+        {/* Search input for new origin */}
         <SearchBar onPlaceSelect={handlePlaceSelect} />
 
+        {/* Map markers for all POIs */}
         <PoiMarker
           pois={[...(origin ? [origin] : []), ...filteredAttractions]}
           onAttractionClick={(place) => handleAttractionClick(place)}
           selectedAttraction={selectedAttraction}
         />
 
+        {/* Fetch nearby places based on origin */}
         <AttractionFetcher origin={origin} onUpdate={setAttractions} />
       </Map>
     </div>

@@ -38,6 +38,7 @@ function ForumSubComment({ postId, parentId }: Props) {
   );
 
   useEffect(() => {
+    // Get current user info and fetch subcomments on mount
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUID(user.uid);
@@ -56,6 +57,7 @@ function ForumSubComment({ postId, parentId }: Props) {
     return () => unsubscribe();
   }, []);
 
+  // Fetch all subcomments for this post and parent comment
   const fetchSubComments = async () => {
     const q = query(
       collection(db, "ForumSubComment"),
@@ -71,6 +73,7 @@ function ForumSubComment({ postId, parentId }: Props) {
     setSubComments(data);
   };
 
+  // Handle reply submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reply.trim()) return;
@@ -104,6 +107,7 @@ function ForumSubComment({ postId, parentId }: Props) {
     }
   };
 
+  // Handle subcomment deletion
   const handleDelete = async (id: string) => {
     try {
       const toastId = toast.loading("Deleting...", {
@@ -124,6 +128,7 @@ function ForumSubComment({ postId, parentId }: Props) {
 
   return (
     <div className="ml-4 mt-2">
+      {/* Render all subcomments */}
       {subComments.map((subComment) => (
         <div
           key={subComment.id}
@@ -140,6 +145,7 @@ function ForumSubComment({ postId, parentId }: Props) {
                 {")"}
               </span>
             </p>
+            {/* Show delete button if user is the author */}
             {UID === subComment.UID && (
               <button
                 className="p-1 text-red-500 text-sm"
@@ -157,6 +163,7 @@ function ForumSubComment({ postId, parentId }: Props) {
         </div>
       ))}
 
+      {/* Reply input form */}
       <form onSubmit={handleSubmit} className="mt-2">
         <input
           type="text"
@@ -169,6 +176,7 @@ function ForumSubComment({ postId, parentId }: Props) {
           Reply
         </button>
       </form>
+      {/* Delete confirmation modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div
