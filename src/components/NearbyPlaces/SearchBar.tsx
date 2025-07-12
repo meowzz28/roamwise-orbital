@@ -22,6 +22,7 @@ const SearchBar: React.FC<Props> = ({ onPlaceSelect }) => {
   const [placesService, setPlacesService] =
     useState<google.maps.places.PlacesService | null>(null);
 
+  // Initialize services once map and Places library are available
   useEffect(() => {
     if (placesLib && map) {
       setAutocompleteService(new placesLib.AutocompleteService());
@@ -29,6 +30,7 @@ const SearchBar: React.FC<Props> = ({ onPlaceSelect }) => {
     }
   }, [placesLib, map]);
 
+  // Fetch place predictions based on user input
   useEffect(() => {
     if (!autocompleteService || !input) return;
 
@@ -52,6 +54,7 @@ const SearchBar: React.FC<Props> = ({ onPlaceSelect }) => {
     );
   }, [input, autocompleteService]);
 
+  // Handle when a user selects a suggestion
   const handleSelect = (
     event: React.SyntheticEvent<Element, Event>,
     value: string | PlaceOption | null

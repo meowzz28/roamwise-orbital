@@ -31,12 +31,14 @@ function CreatePost() {
   );
   const [selectedTemplateID, setSelectedTemplateID] = useState("");
 
+  // Fetch user details and available templates on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
           if (user) {
             try {
+              // Fetch user details from Firestore
               const userDocRef = doc(db, "Users", user.uid);
               const userDocSnap = await getDoc(userDocRef);
               if (userDocSnap.exists()) {
@@ -45,6 +47,7 @@ function CreatePost() {
                 setError("User document does not exist.");
               }
 
+              // Fetch templates available to the user
               const snapshot = await getDocs(collection(db, "Templates"));
               const filtered = snapshot.docs
                 .filter((doc) => doc.data().userUIDs?.includes(user.uid))
@@ -76,6 +79,7 @@ function CreatePost() {
     fetchData();
   }, [navigate]);
 
+  // Handle post submission
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -102,6 +106,7 @@ function CreatePost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails) {
+        // Add new post to Firestore
         await addDoc(collection(db, "Forum"), {
           User: userDetails.firstName,
           UID: user.uid,
@@ -176,6 +181,7 @@ function CreatePost() {
 
       <div className="bg-white p-4 rounded shadow-md mb-4">
         <form onSubmit={handlePost}>
+          {/* Topic input */}
           <div className="mb-3">
             <label className="block mb-1 font-medium">Topic</label>
             <input
@@ -191,6 +197,7 @@ function CreatePost() {
             </p>
           </div>
 
+          {/* Template selection (optional) */}
           <div className="mb-3">
             <label className="block mb-1 font-medium">
               Trip Template (optional)
@@ -209,6 +216,7 @@ function CreatePost() {
             </select>
           </div>
 
+          {/* Content textarea */}
           <div className="mb-3">
             <label className="block mb-1 font-medium">Content</label>
             <textarea
@@ -221,6 +229,7 @@ function CreatePost() {
             />
           </div>
 
+          {/* Action buttons */}
           <div className="flex justify-between mt-4">
             <button
               type="button"

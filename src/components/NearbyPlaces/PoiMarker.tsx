@@ -24,9 +24,11 @@ const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
   const markersRef = useRef<Record<string, Marker>>({});
   const clusterer = useRef<MarkerClusterer | null>(null);
 
+  // Get user's location (used for drawing the surrounding circle)
   const origin = pois.find((poi) => poi.type === "origin");
   const circleCenter = origin ? origin.location : null;
 
+  // Initialize marker clusterer when the map is available
   useEffect(() => {
     if (!map) return;
     if (!clusterer.current) {
@@ -34,6 +36,7 @@ const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
     }
   }, [map]);
 
+  // Update cluster markers whenever the POIs change
   useEffect(() => {
     if (!clusterer.current) return;
     const currentMarkers = Object.values(markersRef.current);
@@ -41,6 +44,7 @@ const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
     clusterer.current.addMarkers(currentMarkers);
   }, [pois]);
 
+  // Track and update markers in the ref map
   const setMarkerRef = (marker: Marker | null, key: string) => {
     const existingMarker = markersRef.current[key];
 
@@ -54,6 +58,7 @@ const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
     }
   };
 
+  // Handle marker click: pan to location and optionally trigger attraction callback
   const handleClick = useCallback(
     (poi: Poi) => {
       if (!map) return;
@@ -82,6 +87,7 @@ const PoiMarker = ({ pois, onAttractionClick, selectedAttraction }: Props) => {
         clickable={false}
       />
 
+      {/* Render a marker for each POI */}
       {pois.map((poi) => (
         <AdvancedMarker
           key={poi.key}

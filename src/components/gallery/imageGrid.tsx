@@ -15,17 +15,21 @@ import { motion } from "framer-motion";
 const imageGrid = ({ setSelectedImg }) => {
   const [docs, setDocs] = useState<any[]>([]);
 
+  // Function to delete image from Firestore and Storage
   const deleteImage = (id: string, url: string) => async () => {
     const user = auth.currentUser;
     if (!user) return;
     try {
+      // Delete Firestore document
       await deleteDoc(doc(db, "Users", user.uid, "images", id));
+      // Delete image from Firebase Storage
       await deleteObject(ref(storage, url));
     } catch (error: any) {
       console.error("Error deleting image:", error.message);
     }
   };
 
+  // Realtime listener for user's uploaded images
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
@@ -52,7 +56,6 @@ const imageGrid = ({ setSelectedImg }) => {
             className="relative rounded overflow-hidden aspect-[4/3] shadow-md group"
             layout
             whileHover={{ opacity: 1 }}
-            s
             onClick={() => setSelectedImg(doc.url)}
           >
             <img

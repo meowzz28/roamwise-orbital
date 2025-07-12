@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const popUp = ({ setSelectedImg, selectedImg }) => {
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       setSelectedImg(null);
     }

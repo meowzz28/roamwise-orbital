@@ -30,6 +30,7 @@ const Directions = ({
   const selected = routes[routeIndex];
   const leg = selected?.legs[0];
 
+  // Initialize DirectionsService and DirectionsRenderer
   useEffect(() => {
     if (!routesLib || !map) return;
 
@@ -44,6 +45,7 @@ const Directions = ({
     };
   }, [routesLib, map]);
 
+  // Request directions when all dependencies are available
   useEffect(() => {
     if (!directionsService || !directionsRenderer || !map) return;
 
@@ -69,6 +71,7 @@ const Directions = ({
     map,
   ]);
 
+  // Update renderer when selected route index changes
   useEffect(() => {
     if (!directionsRenderer) return;
     directionsRenderer.setRouteIndex(routeIndex);
@@ -78,6 +81,7 @@ const Directions = ({
 
   return (
     <div className="w-full h-full bg-white shadow-md overflow-y-auto p-6 space-y-4 text-gray-800">
+      {/* Back button to clear route and return */}
       <button
         onClick={() => {
           directionsRenderer?.setMap(null);
@@ -88,16 +92,19 @@ const Directions = ({
         ← Back
       </button>
 
+      {/* Destination name */}
       {destinationPlace?.name && (
         <h2 className="text-2xl font-bold text-gray-900">
           {destinationPlace.name}
         </h2>
       )}
 
+      {/* Route summary */}
       <h3 className="text-lg font-semibold text-gray-900">
         Route: {selected.summary}
       </h3>
 
+      {/* Route details */}
       <div className="space-y-1 text-sm text-gray-700">
         <p>
           <strong>From:</strong> {leg.start_address}
@@ -116,6 +123,7 @@ const Directions = ({
         </p>
       </div>
 
+      {/* Option to switch between alternative routes */}
       {routes.length > 1 && (
         <div>
           <h3 className="text-md font-semibold mb-2">Other Route Options:</h3>

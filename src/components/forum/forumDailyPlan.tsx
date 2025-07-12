@@ -8,6 +8,7 @@ const ForumDailyPlan = ({ templateID, date }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // Listen for real-time updates to the daily plan document in Firestore
     const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
     const unsubscribe = onSnapshot(planRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -20,11 +21,13 @@ const ForumDailyPlan = ({ templateID, date }) => {
     return () => unsubscribe();
   }, [templateID, date]);
 
+  // Helper to get weekday name from date string
   const getWeekday = (dateStr: string) => {
     const dateObj = new Date(dateStr);
     return dateObj.toLocaleDateString("en-US", { weekday: "long" });
   };
 
+  // Auto-resize textarea to fit content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -43,9 +46,11 @@ const ForumDailyPlan = ({ templateID, date }) => {
       </div>
 
       {loading ? (
+        // Show loading state while fetching plan
         <p className="text-sm text-gray-500">Loading...</p>
       ) : (
         <>
+          {/* Read-only textarea showing the daily plan */}
           <textarea
             disabled={true}
             ref={textareaRef}

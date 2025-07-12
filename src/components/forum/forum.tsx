@@ -34,6 +34,7 @@ function Forum() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    // Fetch all forum posts and apply filter/search
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
@@ -57,6 +58,7 @@ function Forum() {
     return () => unsubscribe();
   }, []);
 
+  // Sorting functions for recent and likes
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -89,6 +91,7 @@ function Forum() {
           return b.Likes - a.Likes;
         };
 
+        // Sort and filter posts based on user selection
         const sortedPosts = forumData.sort(filter == "recent" ? recent : like);
         const filteredList = sortedPosts.filter((post) =>
           post.Topic.toLowerCase().includes(searchTerm.toLowerCase())
@@ -146,12 +149,14 @@ function Forum() {
 
   return (
     <div className="container bg-white 200 p-5 rounded-2xl shadow-lg">
+      {/* Header and create post button */}
       <div className="flex justify-between items-center mb-4  border-dark border-bottom">
         <h1 className="text-center text-2xl font-bold ">Community Forum💬</h1>
         <button className="btn btn-outline-success" onClick={handleCreate}>
           Create Post
         </button>
       </div>
+      {/* Filter and search controls */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
           <label htmlFor="filter" className="me-2 fw-bold">
@@ -175,6 +180,7 @@ function Forum() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+      {/* Posts table or empty state */}
       {posts.length > 0 ? (
         <div className="bg-shadow p-4 rounded shadow-md mb-4">
           <div className="table-responsive">
@@ -223,6 +229,7 @@ function Forum() {
           </div>
         </div>
       ) : (
+        // Show empty state if no posts
         <div className="bg-white p-5 rounded shadow-md text-center">
           <div className="mb-3">
             <i

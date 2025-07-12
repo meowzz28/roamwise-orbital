@@ -71,6 +71,7 @@ function ViewPost() {
   const [isDeletingComment, setIsDeletingComment] = useState(false);
 
   useEffect(() => {
+    // Fetch user and post data on mount
     const fetchData = async () => {
       try {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -131,6 +132,7 @@ function ViewPost() {
     fetchData();
   }, [postId, navigate]);
 
+  // Fetch all comments for the current post
   const fetchComments = async () => {
     if (!postId) return;
 
@@ -154,6 +156,7 @@ function ViewPost() {
         } as Comment;
       });
 
+      // Sort comments from newest to oldest
       commentsData.sort((a, b) => {
         const timeA = a.Time?.seconds || 0;
         const timeB = b.Time?.seconds || 0;
@@ -171,6 +174,7 @@ function ViewPost() {
     }
   };
 
+  // Delete post and its comments
   const handleDelete = async () => {
     if (!postId) {
       toast.error("Post ID is missing.", {
@@ -221,6 +225,7 @@ function ViewPost() {
     }
   };
 
+  // Submit a new comment
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) {
@@ -273,6 +278,7 @@ function ViewPost() {
     }
   };
 
+  // Delete a comment and its subcomments
   const handleDeleteComment = async (commentId: string) => {
     const toastId = toast.loading("Deleting comment...", {
       position: "bottom-center",
@@ -322,6 +328,7 @@ function ViewPost() {
     navigate(`/editPost/${postId}`);
   };
 
+  // Like/unlike the post using Firestore transaction
   const handleLike = async () => {
     if (!postId || !UID) {
       return;
@@ -401,6 +408,7 @@ function ViewPost() {
         </button>
       </div>
 
+      {/* Post Content */}
       <div className="bg-white p-4 rounded shadow-md mb-4">
         <div>
           <div className="flex justify-between mb-2">
@@ -426,6 +434,7 @@ function ViewPost() {
             </div>
           </div>
 
+          {/* Linked Trip (if any) */}
           {post.TemplateID ? (
             <div className="mb-4">
               <ViewTrip templateID={post.TemplateID} />
@@ -435,6 +444,7 @@ function ViewPost() {
           <div className="post-content whitespace-pre-wrap">{post.Message}</div>
         </div>
       </div>
+      {/* Delete Post Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div
@@ -475,6 +485,7 @@ function ViewPost() {
         </div>
       )}
 
+      {/* Edit/Delete controls */}
       {UID === post.UID && (
         <div className="mb-4 flex gap-3 justify-content-end">
           <button
@@ -492,6 +503,7 @@ function ViewPost() {
         </div>
       )}
 
+      {/* Comment Section */}
       <div className="bg-white p-4 rounded shadow-md mb-4">
         <h3 className="text-lg font-semibold mb-3">Comments</h3>
 
@@ -515,6 +527,7 @@ function ViewPost() {
               Post Comment
             </button>
           </form>
+          {/* Comment List */}
           {commentsLoading ? (
             <p>Loading comments...</p>
           ) : comments.length > 0 ? (
@@ -560,6 +573,7 @@ function ViewPost() {
           )}
         </div>
       </div>
+      {/* Delete Comment Modal */}
       {showDeletCommentConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div

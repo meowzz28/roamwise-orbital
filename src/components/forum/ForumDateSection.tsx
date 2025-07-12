@@ -4,6 +4,7 @@ const ForumDateSection = ({ id, template }) => {
   const [startDate, setStartDate] = useState(template.startDate);
   const [endDate, setEndDate] = useState(template.endDate);
 
+  // Update state if template dates change
   useEffect(() => {
     setStartDate(template.startDate);
     setEndDate(template.endDate);
@@ -16,6 +17,7 @@ const ForumDateSection = ({ id, template }) => {
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-6">
+        {/* Start Date (read-only) */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-black mb-1">
             Start Date
@@ -27,6 +29,7 @@ const ForumDateSection = ({ id, template }) => {
             className="disable w-full rounded-lg border border-blue-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
           />
         </div>
+        {/* End Date (read-only) */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-black mb-1">
             End Date
