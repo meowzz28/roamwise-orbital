@@ -15,6 +15,7 @@ const CreateNewTemplate = ({
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
+  // Handles template creation submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!templateName.trim()) return;
@@ -25,6 +26,7 @@ const CreateNewTemplate = ({
       return;
     }
     try {
+      // Delegate creation logic to parent handler
       const result = await onCreate(
         templateName.trim(),
         start,
@@ -52,6 +54,7 @@ const CreateNewTemplate = ({
       >
         <div className="relative p-4 w-full max-w-md max-h-full">
           <div className="bg-white rounded-lg shadow">
+            {/* Header with close button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 ">
               <h3 className="text-lg font-semibold text-gray-900 ">
                 Create New Template
@@ -61,6 +64,7 @@ const CreateNewTemplate = ({
                 onClick={onClose}
                 className="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg w-8 h-8 flex justify-center items-center "
               >
+                {/* Close icon */}
                 <svg
                   className="w-3 h-3"
                   xmlns="http://www.w3.org/2000/svg"
@@ -78,6 +82,7 @@ const CreateNewTemplate = ({
               </button>
             </div>
 
+            {/* Form fields */}
             <form className="p-4" onSubmit={handleSubmit}>
               <div className="mb-2">
                 <label
@@ -96,6 +101,7 @@ const CreateNewTemplate = ({
                   required
                 />
               </div>
+              {/* Optional image upload */}
               <div className="col-span-2 sm:col-span-1 mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   Template Image (optional)
@@ -110,6 +116,7 @@ const CreateNewTemplate = ({
                 />
               </div>
 
+              {/* Optional team assignment */}
               <div className="col-span-2 sm:col-span-1 mb-2">
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   Select Team (optional)
@@ -129,6 +136,7 @@ const CreateNewTemplate = ({
                 </select>
               </div>
 
+              {/* Start and end date pickers */}
               <div className="col-span-2 sm:col-span-1 mb-2">
                 <label
                   htmlFor="start-date"
@@ -167,6 +175,7 @@ const CreateNewTemplate = ({
                 />
               </div>
 
+              {/* Submit button with spinner */}
               <button
                 data-testid="create-template-btn"
                 type="submit"

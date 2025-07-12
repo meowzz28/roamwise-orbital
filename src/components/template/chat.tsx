@@ -38,6 +38,7 @@ function Chat({ teamID }: { teamID: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
 
+  // Load authenticated user's details and listen to messages
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -61,12 +62,8 @@ function Chat({ teamID }: { teamID: string }) {
 
     let unsubscribeMessages: (() => void) | null = null;
 
-    const messagesQuery = query(
-      collection(db, "Messages"),
-      where("teamID", "==", teamID)
-    );
-
     if (teamID) {
+      // Real-time listener for team-specific messages
       const messagesQuery = query(
         collection(db, "Messages"),
         where("teamID", "==", teamID)
@@ -78,12 +75,12 @@ function Chat({ teamID }: { teamID: string }) {
           ...doc.data(),
         })) as Message[];
 
+        // Sort messages by creation timestamp
         msgs.sort((a, b) => {
           if (!a.createdAt || !b.createdAt) return 0;
           return a.createdAt.seconds - b.createdAt.seconds;
         });
 
-        //console.log("Fetched messages:", msgs);
         setMessages(msgs);
       });
     }
@@ -96,6 +93,7 @@ function Chat({ teamID }: { teamID: string }) {
     };
   }, [teamID]);
 
+  // Handle sending a message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
@@ -120,6 +118,7 @@ function Chat({ teamID }: { teamID: string }) {
 
   return (
     <div className="flex flex-col h-full max-h-[85vh] border rounded-2xl shadow-md bg-white">
+      {/* Message list */}
       <div className="flex-1 overflow-auto p-4 space-y-2">
         {messages.length == 0 ? (
           <div className="text-center text-gray-400 mt-10">
@@ -131,6 +130,7 @@ function Chat({ teamID }: { teamID: string }) {
         <div ref={dummy}></div>
       </div>
 
+      {/* Chat input form */}
       <form onSubmit={sendMessage} className="flex p-4 border-t">
         <input
           value={formValue}

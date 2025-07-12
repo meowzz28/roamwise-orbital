@@ -68,6 +68,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
 
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
+  // Firestore real-time listener to load and update estimated budget
   useEffect(() => {
     if (!templateID) return;
 
@@ -82,6 +83,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
     return () => unsubscribe();
   }, [templateID]);
 
+  // Trigger Cloud Function to estimate budget using preferences and template data
   const handleEstimateBudget = async () => {
     if (!preferences.homeCountry?.trim()) {
       toast.error(
@@ -123,6 +125,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
     }
   };
 
+  // Format numbers into local currency strings
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -130,6 +133,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
     }).format(amount);
   };
 
+  // Map budget categories to visual color classes
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
       accommodation: "bg-blue-500",
@@ -144,6 +148,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
 
   return (
     <div className="flex flex-col gap-6 bg-blue-50 rounded-xl p-6 shadow-sm border border-blue-200 mt-6">
+      {/* Header section with title and button */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <h3 className="text-2xl font-semibold text-gray-800">
@@ -167,6 +172,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
         </div>
       </div>
 
+      {/* Preference inputs: Budget level, currency, home location */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <h4 className="font-medium mb-3">Budget Preferences</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -224,6 +230,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
         </div>
       </div>
 
+      {/* Render budget result if available */}
       {budgetData && (
         <div className="space-y-6">
           <div className="text-center bg-blue-50 rounded-lg p-6">
@@ -358,6 +365,7 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
         </div>
       )}
 
+      {/* Empty state fallback */}
       {!budgetData && !isLoading && (
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">No budget estimate available</p>

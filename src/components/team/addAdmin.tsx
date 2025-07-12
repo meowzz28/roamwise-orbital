@@ -42,6 +42,7 @@ const AddTeamAdmin = ({
   const [email, setEmail] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
+  // Handle form submission to promote a team member to admin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingAdmin(true);
@@ -64,6 +65,7 @@ const AddTeamAdmin = ({
       }
 
       if (team.user_email?.includes(email)) {
+        // Prevent duplicate admin promotion
         const userIndex = team.user_email.indexOf(email);
         const userUID = team.user_uid?.[userIndex];
 
@@ -80,6 +82,7 @@ const AddTeamAdmin = ({
         }
       }
 
+      // Find the user in the Users collection
       const querySnapshot = await getDocs(
         query(collection(db, "Users"), where("email", "==", email))
       );
@@ -101,6 +104,7 @@ const AddTeamAdmin = ({
       const userDocData = userDoc.data() as Users;
       const teamRef = doc(db, "Team", teamID);
 
+      // Promote the user to admin using a transaction
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(teamRef);
         if (docSnap.exists()) {
@@ -145,6 +149,7 @@ const AddTeamAdmin = ({
         className="relative p-4 w-full max-w-md max-h-full"
       >
         <div className="bg-white rounded-lg shadow">
+          {/* Modal header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
               Add New Admin
@@ -171,6 +176,7 @@ const AddTeamAdmin = ({
             </button>
           </div>
 
+          {/* Admin addition form */}
           <form className="p-4" onSubmit={handleSubmit}>
             <div className="mb-4">
               <label
@@ -189,6 +195,7 @@ const AddTeamAdmin = ({
                 required
               />
             </div>
+            {/* Submit button with loading state */}
             <button
               type="submit"
               className="btn btn-primary w-100 d-flex justify-content-center align-items-center"

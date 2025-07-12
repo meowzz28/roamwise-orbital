@@ -39,6 +39,7 @@ const Template = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  // Determine if the current user can delete the template
   useEffect(() => {
     const checkDeletePermission = async () => {
       if (!template || !userUID) return;
@@ -48,6 +49,7 @@ const Template = () => {
         return;
       }
 
+      // For team-based templates, only team admins can delete
       try {
         const teamRef = doc(db, "Team", template.teamID);
         const teamSnap = await getDoc(teamRef);
@@ -64,6 +66,7 @@ const Template = () => {
     checkDeletePermission();
   }, [template?.teamID, userUID]);
 
+  // Auth listener: get current user's UID and email
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -85,6 +88,7 @@ const Template = () => {
     return () => unsubscribe();
   }, []);
 
+  // Subscribe to template data from Firestore
   useEffect(() => {
     const fetchData = async () => {
       const user = auth.currentUser;
@@ -115,6 +119,7 @@ const Template = () => {
     fetchData();
   }, [templateID]);
 
+  // Get all date objects between start and end dates (inclusive)
   const getDays = (start: string, end: string) => {
     const days: Date[] = [];
     const startDate = new Date(start);
@@ -134,6 +139,7 @@ const Template = () => {
     setIsDeleteConfirmOpen(true);
   };
 
+  // Confirm and perform template deletion
   const confirmDelete = async () => {
     setIsDeleting(true);
     const toastId = toast.loading("Deleting trip...", {
@@ -166,6 +172,7 @@ const Template = () => {
     }
   };
 
+  // Get list of days in range
   const days = template ? getDays(template.startDate, template.endDate) : [];
 
   if (!authChecked || !template) {
@@ -202,6 +209,7 @@ const Template = () => {
           onClick={() => setIsChatOpen(false)}
         />
       )}
+      {/* Slide-in Team Chat Panel */}
       {template?.teamID && (
         <div>
           <div
@@ -240,6 +248,7 @@ const Template = () => {
       {/* Main Content */}
       <div className="flex-1 p-4 overflow-auto">
         <div className="p-4">
+          {/* Header Section: Navigation and Metadata */}
           <div className="mb-6">
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
@@ -273,6 +282,7 @@ const Template = () => {
                   </button>
                 )}
               </div>
+              {/* Show member list (truncated after 3) */}
               <h5>
                 Members:{" "}
                 {template && template.users.length > 0
@@ -281,6 +291,7 @@ const Template = () => {
                   : "None"}
               </h5>
             </div>
+            {/* Template Title */}
             <div className="flex justify-center">
               <div className="flex items-center gap-4">
                 <h1 className="text-5xl font-extrabold ">{template.topic}</h1>
@@ -288,11 +299,15 @@ const Template = () => {
               </div>
             </div>
           </div>
+
+          {/* Editable Dates Section */}
           <DateSection id={templateID} template={template} />
           <div className="mt-10">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">
               Daily Plans ✈️
             </h3>
+
+            {/* Daily Plans List */}
             <div className="space-y-4">
               {days.map((date, idx) => (
                 <DailyPlan
@@ -303,7 +318,11 @@ const Template = () => {
               ))}
             </div>
           </div>
+
+          {/* Budget Estimation Section */}
           <BudgetEstimation template={template} templateID={templateID!} />
+
+          {/* Confirm Delete Modal */}
           {isDeleteConfirmOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50">
               <div

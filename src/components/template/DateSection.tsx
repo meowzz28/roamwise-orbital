@@ -9,6 +9,7 @@ const DateSection = ({ id, template }) => {
   const [loading, setLoading] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
+  // Triggered when "Update Dates" is clicked
   const handleUpdate = async () => {
     if (new Date(startDate) > new Date(endDate)) {
       toast.error("Start date cannot be after end date.", {
@@ -19,6 +20,7 @@ const DateSection = ({ id, template }) => {
     setIsConfirmOpen(true);
   };
 
+  // If user confirms, update Firestore with new dates
   const confirmUpdate = async () => {
     setLoading(true);
     const toastId = toast.loading("Updating...", {
@@ -67,6 +69,7 @@ const DateSection = ({ id, template }) => {
         Plan Your Journey 🗓️
       </h2>
 
+      {/* Date Inputs */}
       <div className="flex flex-col sm:flex-row gap-6">
         <div className="flex-1">
           <label className="block text-sm font-medium text-black mb-1">
@@ -92,6 +95,7 @@ const DateSection = ({ id, template }) => {
         </div>
       </div>
 
+      {/* Update Button */}
       <div className="flex justify-end">
         <button
           onClick={handleUpdate}
@@ -102,6 +106,7 @@ const DateSection = ({ id, template }) => {
           {loading ? "Updating..." : "Update Dates"}
         </button>
       </div>
+      {/* Confirmation Modal */}
       {isConfirmOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div

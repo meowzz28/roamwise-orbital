@@ -42,6 +42,7 @@ const AddTeamMember = ({
   const [email, setEmail] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
+  // Handle form submission to add a member to the team
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddingMember(true);
@@ -50,6 +51,7 @@ const AddTeamMember = ({
       position: "bottom-center",
     });
     try {
+      // Look for user in Firestore by email
       const querySnapshot = await getDocs(
         query(collection(db, "Users"), where("email", "==", email))
       );
@@ -118,6 +120,7 @@ const AddTeamMember = ({
         return;
       }
 
+      // Get all templates under this team to update member access
       const templatesQuery = query(
         collection(db, "Templates"),
         where("teamID", "==", teamID)
@@ -125,6 +128,8 @@ const AddTeamMember = ({
       const templatesSnapshot = await getDocs(templatesQuery);
       const templateRefs = templatesSnapshot.docs.map((doc) => doc.ref);
       const teamRef = doc(db, "Team", teamID);
+
+      // Perform Firestore transaction to add member to team and templates
       await runTransaction(db, async (transaction) => {
         const docSnap = await transaction.get(teamRef);
         if (!docSnap.exists()) {
@@ -180,6 +185,7 @@ const AddTeamMember = ({
         className="relative p-4 w-full max-w-md max-h-full"
       >
         <div className="bg-white rounded-lg shadow">
+          {/* Modal header with close button */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
               Add New Member
@@ -206,6 +212,7 @@ const AddTeamMember = ({
             </button>
           </div>
 
+          {/* Email input and submit button */}
           <form className="p-4" onSubmit={handleSubmit}>
             <div className="mb-4">
               <label

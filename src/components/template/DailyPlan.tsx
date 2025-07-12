@@ -9,6 +9,7 @@ const DailyPlan = ({ templateID, date }) => {
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Fetch daily plan content from Firestore and listen for real-time updates
   useEffect(() => {
     const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
     const unsubscribe = onSnapshot(planRef, (docSnap) => {
@@ -22,6 +23,7 @@ const DailyPlan = ({ templateID, date }) => {
     return () => unsubscribe();
   }, [templateID, date]);
 
+  // Save the daily plan content to Firestore using a transaction
   const handleSave = async () => {
     setSaving(true);
     const toastId = toast.loading("Saving...", {
@@ -50,11 +52,13 @@ const DailyPlan = ({ templateID, date }) => {
     }
   };
 
+  // Convert a date string (YYYY-MM-DD) to weekday name (e.g., "Monday")
   const getWeekday = (dateStr: string) => {
     const dateObj = new Date(dateStr);
     return dateObj.toLocaleDateString("en-US", { weekday: "long" });
   };
 
+  // Auto-resize the textarea height based on content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -65,6 +69,7 @@ const DailyPlan = ({ templateID, date }) => {
 
   return (
     <div className="border rounded-2xl p-5 shadow-md border-blue-200 bg-blue-50 space-y-3 transition-all duration-200">
+      {/* Header with date and weekday */}
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-lg font-semibold text-gray-800">{date}</h4>
         <span className="text-sm text-blue-500 font-medium">
@@ -72,6 +77,7 @@ const DailyPlan = ({ templateID, date }) => {
         </span>
       </div>
 
+      {/* Display loading indicator or the editable textarea */}
       {loading ? (
         <p className="text-sm text-gray-500">Loading...</p>
       ) : (
