@@ -93,6 +93,29 @@ function ForumSubComment({ postId, parentId }: Props) {
         ParentCommentId: parentId,
         Time: serverTimestamp(),
       });
+
+      //To deal with the Notification
+      const parentCommentQuery = query(
+        collection(db, "ForumComment"),
+        where("PostId", "==", postId),
+        where("__name__", "==", parentId)
+      );
+      const parentSnap = await getDocs(parentCommentQuery);
+
+      if (!parentSnap.empty) {
+        const parent = parentSnap.docs[0].data();
+        const parentUID = parent.UID;
+
+        if (parentUID && parentUID !== UID) {
+          await addDoc(collection(db, "Notifications"), {
+            userId: parentUID,
+            trigger: UID,
+            message: `${userName} replied to your comment.`,
+            Time: serverTimestamp(),
+            read: false,
+          });
+        }
+      }
       toast.update(toastId, {
         render: "Reply posted",
         type: "success",
