@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { auth } from "./firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { User } from "firebase/auth";
 import { motion } from "framer-motion";
+import Notification from "./notifications";
 
 type Props = {
   user: User | null;
@@ -11,7 +12,7 @@ type Props = {
 const Navigationbar = ({ user }: Props) => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = React.useState(false);
-
+  const [showNoti, setShowNoti] = useState(false);
   const forceLogout = async () => {
     try {
       await auth.signOut();
@@ -31,10 +32,10 @@ const Navigationbar = ({ user }: Props) => {
           showMenu ? "block" : "hidden"
         }`}
       ></div>
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 ">
+      <div className="max-w-screen-xl mx-auto flex flex-wrap items-center justify-between p-4">
         <Link
           to="/"
-          className="rounded-md px-3 py-2 flex items-center hover:bg-gray-700"
+          className="rounded-md px-2 py-2 flex items-center hover:bg-gray-700"
           style={{ textDecoration: "none" }}
         >
           <span
@@ -49,50 +50,51 @@ const Navigationbar = ({ user }: Props) => {
           <div className="flex space-x-4">
             <Link
               to="/forum"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               Forum
             </Link>
             <Link
               to="/chatbot"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               Smart Planner
             </Link>
             <Link
               to="/templates"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               My Trips
             </Link>
             <Link
               to="/expenses"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               Trip Expenses
             </Link>
             <Link
               to="/team"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               Travel Buddies
             </Link>
             <Link
               to="/profile"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               My Profile
             </Link>
 
             <div className="nav-item dropdown">
               <a
-                className="hover:bg-gray-700 text-lg font-medium rounded-md  sunderline nav-link dropdown-toggle text-white text-lg"
+                style={{ textDecoration: "none" }}
+                className="hover:bg-gray-700 text-lg font-medium rounded-md   nav-link dropdown-toggle text-white text-lg"
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <u>Toolkit</u>
+                🛠️
               </a>
               <ul className="dropdown-menu bg-white text-gray-800 shadow-lg rounded-md overflow-hidden">
                 <li>
@@ -120,6 +122,26 @@ const Navigationbar = ({ user }: Props) => {
                   </Link>
                 </li>
               </ul>
+            </div>
+
+            <div className="relative">
+              <button
+                style={{ borderRadius: "7px" }}
+                className="hover:bg-gray-700 text-lg rounded-md font-medium  nav-link dropdown-toggle  text-white px-2 py-2 flex items-center"
+                onClick={() => setShowNoti((prev) => !prev)}
+                role="button"
+                aria-expanded={showNoti}
+              >
+                🔔
+              </button>
+
+              <div
+                className={`absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 ${
+                  showNoti ? "" : "hidden"
+                }`}
+              >
+                <Notification />
+              </div>
             </div>
 
             {!user && (
