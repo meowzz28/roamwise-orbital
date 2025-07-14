@@ -124,25 +124,7 @@ const Navigationbar = ({ user }: Props) => {
               </ul>
             </div>
 
-            <div className="relative">
-              <button
-                style={{ borderRadius: "7px" }}
-                className="hover:bg-gray-700 text-lg rounded-md font-medium  nav-link dropdown-toggle  text-white px-2 py-2 flex items-center"
-                onClick={() => setShowNoti((prev) => !prev)}
-                role="button"
-                aria-expanded={showNoti}
-              >
-                🔔
-              </button>
-
-              <div
-                className={`absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 ${
-                  showNoti ? "" : "hidden"
-                }`}
-              >
-                <Notification />
-              </div>
-            </div>
+            <Notification />
 
             {!user && (
               <motion.div
