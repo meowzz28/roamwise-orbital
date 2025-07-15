@@ -169,7 +169,7 @@ function TeamProfile({
     if (docSnap.exists()) {
       const updatedTeam = docSnap.data() as Team;
       setCurrentTeam(updatedTeam); // Use currentTeam as your local team state
-      console.log("Fetched updated team:", updatedTeam);
+      // console.log("Fetched updated team:", updatedTeam);
     }
   };
 

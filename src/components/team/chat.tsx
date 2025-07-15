@@ -38,7 +38,7 @@ function Chat({ teamID }: { teamID: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
 
-  // Track auth state and fetch user profile
+  // Load authenticated user's details and listen to messages
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -60,10 +60,10 @@ function Chat({ teamID }: { teamID: string }) {
       setAuthChecked(true);
     });
 
-    // Set up real-time listener for messages
     let unsubscribeMessages: (() => void) | null = null;
 
     if (teamID) {
+      // Real-time listener for team-specific messages
       const messagesQuery = query(
         collection(db, "Messages"),
         where("teamID", "==", teamID)
@@ -75,12 +75,12 @@ function Chat({ teamID }: { teamID: string }) {
           ...doc.data(),
         })) as Message[];
 
+        // Sort messages by creation timestamp
         msgs.sort((a, b) => {
           if (!a.createdAt || !b.createdAt) return 0;
           return a.createdAt.seconds - b.createdAt.seconds;
         });
 
-        //console.log("Fetched messages:", msgs);
         setMessages(msgs);
       });
     }
@@ -93,14 +93,14 @@ function Chat({ teamID }: { teamID: string }) {
     };
   }, [teamID]);
 
-  // Send message to Firestore
+  // Handle sending a message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
     const { uid } = auth.currentUser || {};
 
     if (!uid || !teamID) return;
-
+    console.log("!23");
     await addDoc(collection(db, "Messages"), {
       text: formValue.trim(),
       createdAt: serverTimestamp(),
@@ -111,14 +111,41 @@ function Chat({ teamID }: { teamID: string }) {
         : "Unknown User",
     });
 
+    //Notification
+    const teamRef = doc(db, "Team", teamID);
+    const teamSnap = await getDoc(teamRef);
+    const teamData = teamSnap.data();
+    if (teamSnap.exists()) {
+      const teamData = teamSnap.data();
+      const memberUIDs: string[] = teamData.user_uid || [];
+      console.log("Member UIDs in team:", memberUIDs);
+
+      const currentUser = auth.currentUser;
+      const senderUID = currentUser?.uid;
+      const senderName = userDetails ? userDetails.firstName : "Unknown User";
+      const notifyPromises = memberUIDs
+        .filter((uid) => uid !== senderUID)
+        .map((uid) =>
+          addDoc(collection(db, "Notifications"), {
+            userId: uid,
+            trigger: senderUID,
+            message: `${senderName} sent a message in ${teamData.Name}.`,
+            Time: serverTimestamp(),
+            read: false,
+            link: "/team",
+          })
+        );
+      await Promise.all(notifyPromises);
+    }
+
     setFormValue("");
     setIsSending(false);
     dummy.current?.scrollIntoView({ behavior: "auto" });
   };
 
   return (
-    <div className="flex flex-col h-full border rounded-lg shadow-md bg-white">
-      {/* Chat messages */}
+    <div className="flex flex-col h-full max-h-[85vh] border rounded-2xl shadow-md bg-white">
+      {/* Message list */}
       <div className="flex-1 overflow-auto p-4 space-y-2">
         {messages.length == 0 ? (
           <div className="text-center text-gray-400 mt-10">
@@ -130,7 +157,7 @@ function Chat({ teamID }: { teamID: string }) {
         <div ref={dummy}></div>
       </div>
 
-      {/* Input box */}
+      {/* Chat input form */}
       <form onSubmit={sendMessage} className="flex p-4 border-t">
         <input
           value={formValue}
@@ -142,7 +169,7 @@ function Chat({ teamID }: { teamID: string }) {
         <button
           type="submit"
           disabled={!formValue || isSending}
-          className="bg-blue-500 text-white px-4 rounded-r hover:bg-blue-600 disabled:bg-gray-300"
+          className="bg-blue-500 text-white px-2 rounded-r hover:bg-blue-600 disabled:bg-gray-300"
         >
           Send
         </button>

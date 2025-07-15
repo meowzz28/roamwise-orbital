@@ -100,7 +100,7 @@ function Chat({ teamID }: { teamID: string }) {
     const { uid } = auth.currentUser || {};
 
     if (!uid || !teamID) return;
-
+    console.log("!23");
     await addDoc(collection(db, "Messages"), {
       text: formValue.trim(),
       createdAt: serverTimestamp(),
@@ -110,6 +110,32 @@ function Chat({ teamID }: { teamID: string }) {
         ? `${userDetails.firstName}`.trim()
         : "Unknown User",
     });
+
+    //Notification
+    const teamRef = doc(db, "Team", teamID);
+    const teamSnap = await getDoc(teamRef);
+    const teamData = teamSnap.data();
+    if (teamSnap.exists()) {
+      const teamData = teamSnap.data();
+      const memberUIDs: string[] = teamData.user_uid || [];
+      console.log("Member UIDs in team:", memberUIDs);
+
+      const currentUser = auth.currentUser;
+      const senderUID = currentUser?.uid;
+      const senderName = userDetails ? userDetails.firstName : "Unknown User";
+      const notifyPromises = memberUIDs
+        .filter((uid) => uid !== senderUID)
+        .map((uid) =>
+          addDoc(collection(db, "Notifications"), {
+            userId: uid,
+            trigger: senderUID,
+            message: `${senderName} sent a message in .${teamData.Name}`,
+            Time: serverTimestamp(),
+            read: false,
+          })
+        );
+      await Promise.all(notifyPromises);
+    }
 
     setFormValue("");
     setIsSending(false);
