@@ -248,6 +248,14 @@ function ViewPost() {
           Time: serverTimestamp(),
         });
 
+        if (post && post.UID !== user.uid) {
+          await triggerNotification(
+            post.UID,
+            `${userDetails.firstName} commented on your post "${post.Topic}"`,
+            `/viewPost/${postId}`
+          );
+        }
+
         toast.update(toastId, {
           render: "Comment posted successfully!",
           type: "success",
@@ -330,7 +338,7 @@ function ViewPost() {
 
   // Like/unlike the post using Firestore transaction
   const handleLike = async () => {
-    if (!postId || !UID) {
+    if (!postId || !UID || !post) {
       return;
     }
     const postRef = doc(db, "Forum", postId);
@@ -361,11 +369,40 @@ function ViewPost() {
           LikedBy: updatedLikedBy,
         });
         setIsLiked(!isCurrentlyLiked);
+
+        if (!isCurrentlyLiked && UID !== post.UID) {
+          await triggerNotification(
+            post.UID,
+            `${userDetails?.firstName || "Someone"} liked your post: "${
+              post.Topic
+            }"`,
+            `/viewPost/${postId}`
+          );
+        }
       });
     } catch (error: any) {
       toast.error(`Error liking post: ${error.message}`, {
         position: "bottom-center",
       });
+    }
+  };
+
+  const triggerNotification = async (
+    recipientUID: string,
+    message: string,
+    link: string
+  ) => {
+    try {
+      await addDoc(collection(db, "Notifications"), {
+        userId: recipientUID,
+        trigger: UID,
+        message,
+        read: false,
+        Time: serverTimestamp(),
+        link,
+      });
+    } catch (error) {
+      console.error("Failed to create notification:", error);
     }
   };
 
