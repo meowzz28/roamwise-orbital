@@ -132,6 +132,7 @@ function Chat({ teamID }: { teamID: string }) {
             message: `${senderName} sent a message in ${teamData.Name}.`,
             Time: serverTimestamp(),
             read: false,
+            link: "/team",
           })
         );
       await Promise.all(notifyPromises);
