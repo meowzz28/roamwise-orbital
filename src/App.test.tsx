@@ -11,7 +11,17 @@ vi.mock("./components/firebase", () => ({
       return () => {};
     },
   },
+  db: {},
 }));
+
+vi.mock("firebase/firestore", () => ({
+  collection: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  orderBy: vi.fn(),
+  onSnapshot: vi.fn(() => () => {}),
+}));
+
 describe("App Component", () => {
   it("Renders RoamWise after loading", async () => {
     await act(async () => {
