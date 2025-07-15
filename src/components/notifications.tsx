@@ -129,7 +129,6 @@ const Notification = () => {
   };
 
   const markAsRead = async (noti: Notifications) => {
-    setJustMarkedAsRead(true);
     if (noti.link) {
       navigate(noti.link);
     }
@@ -139,12 +138,10 @@ const Notification = () => {
         await updateDoc(doc(db, "Notifications", noti.id), {
           read: true,
         });
-        setUnreadCount((prev) => Math.max(prev - 1, 0));
       } catch (err) {
         console.error("Failed to mark notification as read:", err);
       }
     }
-    setTimeout(() => setJustMarkedAsRead(false), 1000);
   };
 
   const clearNoti = async () => {
