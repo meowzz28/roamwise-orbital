@@ -113,6 +113,7 @@ function ForumSubComment({ postId, parentId }: Props) {
             message: `${userName} replied to your comment.`,
             Time: serverTimestamp(),
             read: false,
+            link: `/viewPost/${postId}`,
           });
         }
       }

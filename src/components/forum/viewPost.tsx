@@ -251,7 +251,8 @@ function ViewPost() {
         if (post && post.UID !== user.uid) {
           await triggerNotification(
             post.UID,
-            `${userDetails.firstName} commented on your post "${post.Topic}"`
+            `${userDetails.firstName} commented on your post "${post.Topic}"`,
+            `/viewPost/${postId}`
           );
         }
 
@@ -374,7 +375,8 @@ function ViewPost() {
             post.UID,
             `${userDetails?.firstName || "Someone"} liked your post: "${
               post.Topic
-            }"`
+            }"`,
+            `/viewPost/${postId}`
           );
         }
       });
@@ -385,7 +387,11 @@ function ViewPost() {
     }
   };
 
-  const triggerNotification = async (recipientUID: string, message: string) => {
+  const triggerNotification = async (
+    recipientUID: string,
+    message: string,
+    link: string
+  ) => {
     try {
       await addDoc(collection(db, "Notifications"), {
         userId: recipientUID,
@@ -393,6 +399,7 @@ function ViewPost() {
         message,
         read: false,
         Time: serverTimestamp(),
+        link,
       });
     } catch (error) {
       console.error("Failed to create notification:", error);
