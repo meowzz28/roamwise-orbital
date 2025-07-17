@@ -84,7 +84,7 @@ describe("Team Component", () => {
       );
     });
 
-    const createButton = screen.getByText("Form New Team");
+    const createButton = screen.getByText("Form New Group");
     await act(async () => {
       fireEvent.click(createButton);
     });
@@ -106,10 +106,10 @@ describe("Team Component", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Travel Buddies 👥")).toBeInTheDocument();
+      expect(screen.getByText("Groups 👥")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Form New Team"));
+    fireEvent.click(screen.getByText("Form New Group"));
 
     const input = screen.getByPlaceholderText("eg. Team Japan");
     fireEvent.change(input, { target: { value: "Team Rocket" } });

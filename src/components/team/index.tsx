@@ -200,7 +200,7 @@ function Team() {
         <div className="w-1/3 border-r flex flex-col">
           <div className="p-4 border-b ">
             <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-800 text-center">
-              Travel Buddies 👥
+              Groups 👥
             </h1>
             <div className="row">
               <input
@@ -214,7 +214,7 @@ function Team() {
                 onClick={() => setShowModal(true)}
                 className="col-5 m-2 px-3 py-2 btn btn-outline-success "
               >
-                Form New Team
+                Form New Group
               </button>
             </div>
           </div>
@@ -222,7 +222,7 @@ function Team() {
           {/* Scrollable list */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {filteredList.length === 0 ? (
-              <p className="text-gray-500">No teams found.</p>
+              <p className="text-gray-500">No groups found.</p>
             ) : (
               filteredList.map((team) => (
                 <div
@@ -277,7 +277,7 @@ function Team() {
               <Chat teamID={selectedTeamID} />
             ) : (
               <div className="text-center text-gray-400 mt-10">
-                Select a team to start chatting
+                Select a group to start chatting
               </div>
             )}
           </div>
