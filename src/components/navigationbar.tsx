@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { auth } from "./firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { User } from "firebase/auth";
 import { motion } from "framer-motion";
 import Notification from "./notifications";
+import {
+  UserCircle,
+  ChevronDown,
+  Settings,
+  LogOut,
+  User as UserIcon,
+} from "lucide-react";
 
 type Props = {
   user: User | null;
@@ -11,31 +18,58 @@ type Props = {
 
 const Navigationbar = ({ user }: Props) => {
   const navigate = useNavigate();
-  const [showMenu, setShowMenu] = React.useState(false);
-  const [showNoti, setShowNoti] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle clicks outside dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowUserDropdown(false);
+      }
+      if (
+        toolsDropdownRef.current &&
+        !toolsDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowToolsDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const forceLogout = async () => {
     try {
       await auth.signOut();
       localStorage.clear();
       sessionStorage.clear();
       navigate("/login");
+      setShowUserDropdown(false);
     } catch (error) {
-      console.error("Error forcefully logging out:", error.message);
+      console.error("Error forcefully logging out:", error);
     }
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+    setShowUserDropdown(false);
   };
 
   return (
     <nav className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-md border-b border-gray-300">
-      {" "}
-      <div
-        className={`w-full sm:flex sm:items-center ${
-          showMenu ? "block" : "hidden"
-        }`}
-      ></div>
       <div className="max-w-screen-xl mx-auto flex flex-wrap items-center justify-between p-4">
         <Link
           to="/"
-          className="rounded-md px-2 py-2 flex items-center hover:bg-gray-700"
+          className="rounded-md px-2 py-2 flex items-center hover:bg-gray-700 transition duration-300"
           style={{ textDecoration: "none" }}
         >
           <span
@@ -47,81 +81,73 @@ const Navigationbar = ({ user }: Props) => {
         </Link>
 
         <div className="hidden sm:ml-6 sm:block">
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4">
             <Link
               to="/forum"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
               Forum
             </Link>
             <Link
               to="/chatbot"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
-              Smart Planner
+              Planner
             </Link>
             <Link
               to="/templates"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
-              My Trips
+              Trips
             </Link>
             <Link
               to="/expenses"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
-              Trip Expenses
+              Expenses
             </Link>
             <Link
               to="/team"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
-              Travel Buddies
-            </Link>
-            <Link
-              to="/profile"
-              className="rounded-md px-2 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
-            >
-              My Profile
+              Groups
             </Link>
 
-            <div className="nav-item dropdown">
-              <a
-                style={{ textDecoration: "none" }}
-                className="hover:bg-gray-700 text-lg font-medium rounded-md   nav-link dropdown-toggle text-white text-lg"
-                href="#"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
+            {/* Tools Dropdown */}
+            <div className="relative" ref={toolsDropdownRef}>
+              <button
+                onClick={() => setShowToolsDropdown(!showToolsDropdown)}
+                className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white flex items-center gap-1"
               >
-                🛠️
-              </a>
-              <ul className="dropdown-menu bg-white text-gray-800 shadow-lg rounded-md overflow-hidden">
-                <li>
+                <Settings className="w-5 h-5" />
+                Tools
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showToolsDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden z-50">
                   <Link
-                    className="dropdown-item px-4 py-2 hover:bg-indigo-100 transition"
                     to="/weather"
+                    className="block px-4 py-2 text-black hover:bg-gray-100 transition text-lg"
+                    onClick={() => setShowToolsDropdown(false)}
                   >
                     Weather ☁️
                   </Link>
-                </li>
-                <li>
                   <Link
-                    className="dropdown-item px-4 py-2 hover:bg-indigo-100 transition"
                     to="/currency"
+                    className="block px-4 py-2 text-black hover:bg-gray-100 transition text-lg"
+                    onClick={() => setShowToolsDropdown(false)}
                   >
-                    Currency 💲
+                    Currency Rate 💲
                   </Link>
-                </li>
-                <li>
                   <Link
-                    className="dropdown-item px-4 py-2 hover:bg-indigo-100 transition"
                     to="/nearby"
+                    className="block px-4 py-2 text-black hover:bg-gray-100 transition text-lg"
+                    onClick={() => setShowToolsDropdown(false)}
                   >
                     Explore 📍
                   </Link>
-                </li>
-              </ul>
+                </div>
+              )}
             </div>
 
             <Notification />
@@ -133,20 +159,45 @@ const Navigationbar = ({ user }: Props) => {
               >
                 <Link
                   to="/login"
-                  className="relative top-2 rounded-md px-3 py-2 text-white text-lg font-medium  hover:bg-gray-700"
+                  className="rounded-md px-3 py-2 text-white text-lg font-medium hover:bg-gray-700 transition duration-300"
                 >
                   Login
                 </Link>
               </motion.div>
             )}
+
             {user && (
-              <button
-                className="btn btn-danger"
-                style={{ borderRadius: "5px" }}
-                onClick={forceLogout}
-              >
-                <span className="  font-medium  text-lg">Logout</span>
-              </button>
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  className="rounded-md px-3 py-2 text-white text-lg font-medium hover:bg-gray-700 transition duration-300 flex items-center gap-2"
+                >
+                  <UserCircle className="w-5 h-5" />
+                  <span className="hidden md:inline">Account</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {showUserDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition text-lg flex items-center gap-2"
+                      >
+                        <UserIcon className="w-5 h-5" />
+                        My Profile
+                      </button>
+                      <div className="border-t border-gray-200 mx-2"></div>
+                      <button
+                        onClick={forceLogout}
+                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-100 transition text-lg flex items-center gap-2"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

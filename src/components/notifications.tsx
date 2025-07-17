@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { Bell, ChevronDown } from "lucide-react";
 
 type Notifications = {
   id: string;
@@ -33,6 +34,24 @@ const Notification = () => {
   const [showNoti, setShowNoti] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [justMarkedAsRead, setJustMarkedAsRead] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowNoti(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const navigate = useNavigate();
 
   // Fetch user's noti
@@ -167,17 +186,18 @@ const Notification = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
-        style={{ borderRadius: "7px" }}
-        className="hover:bg-gray-700 text-lg rounded-md font-medium  nav-link dropdown-toggle  text-white px-2 py-2 flex items-center"
+        className="relative rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white flex items-center gap-1"
         onClick={() => setShowNoti((prev) => !prev)}
         role="button"
         aria-expanded={showNoti}
       >
-        🔔
+        <Bell className="w-5 h-5" />
+        <span>Notifications</span>
+        <ChevronDown className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount}
           </span>
         )}
@@ -189,7 +209,7 @@ const Notification = () => {
         }`}
       >
         <div className="p-4">
-          <h2 className="text-lg font-bold mb-2">Notifications</h2>
+          <h4 className="text-lg font-bold mb-2">Notifications</h4>
           {list.length === 0 ? (
             <p>No notifications found.</p>
           ) : (
@@ -217,23 +237,19 @@ const Notification = () => {
                   </li>
                 ))}
               </div>
-              <div className="row">
-                <div className="col-6 mt-3 text-center">
-                  <button
-                    onClick={markAllAsRead}
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Mark all as read
-                  </button>
-                </div>
-                <div className="col-6 mt-3 text-center">
-                  <button
-                    onClick={clearNoti}
-                    className="text-sm text-gray-600 hover:underline"
-                  >
-                    Clear all
-                  </button>
-                </div>
+              <div className="flex justify-between mt-3 px-1 text-center">
+                <button
+                  onClick={markAllAsRead}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Mark all as read
+                </button>
+                <button
+                  onClick={clearNoti}
+                  className="text-sm text-gray-600 hover:underline"
+                >
+                  Clear all
+                </button>
               </div>
             </div>
           )}
