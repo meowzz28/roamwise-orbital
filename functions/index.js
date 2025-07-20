@@ -3,6 +3,7 @@ import { logger } from 'firebase-functions';
 import admin from 'firebase-admin';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
+import vision from '@google-cloud/vision';
 
 dotenv.config();
 admin.initializeApp();
@@ -11,6 +12,142 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
+const visionClient = new vision.ImageAnnotatorClient();
+
+export const parseReceiptWithAI = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    console.log("Authenticated user:", request.auth.uid);
+
+    const { base64Image } = request.data;
+
+    if (!base64Image) {
+      throw new HttpsError('invalid-argument', 'No image provided.');
+    }
+
+    let ocrText = '';
+    
+    try {
+      const [result] = await visionClient.textDetection({
+        image: { content: base64Image },
+      });
+
+      if (result.textAnnotations && result.textAnnotations.length > 0) {
+        ocrText = result.textAnnotations[0].description || '';
+      } else if (result.fullTextAnnotation) {
+        ocrText = result.fullTextAnnotation.text || '';
+      } else {
+        throw new Error('No text detected in image');
+      }
+
+      logger.info("OCR extraction successful");
+      logger.info("OCR Text length:", ocrText.length);
+      logger.info("OCR Text preview:", ocrText.substring(0, 200) + '...');
+      
+    } catch (visionError) {
+      logger.error('Vision API error:', visionError);
+      throw new HttpsError('internal', 'Failed to extract text from image');
+    }
+
+    if (!ocrText || typeof ocrText !== 'string' || !ocrText.trim()) {
+      throw new HttpsError('invalid-argument', 'OCR failed to detect any readable text.');
+    }
+
+    const cleanedOcrText = ocrText.trim().replace(/\0/g, ''); 
+    
+    if (cleanedOcrText.length === 0) {
+      throw new HttpsError('invalid-argument', 'OCR text is empty after cleaning.');
+    }
+
+    const gptPrompt = `
+You are a receipt parsing expert. Given raw OCR text from a receipt, extract this structured information:
+
+{
+  "vendor": string,
+  "date": "YYYY-MM-DD",
+  "amount": number,
+  "currency": string,
+  "category":string,
+  "items": [
+    { "name": string, "price": number }
+  ]
+}
+
+Notes:
+- "amount" is the total expense.
+- "currency" is the 3-letter code (e.g. "USD", "SGD", "MYR").
+- There may be multiple languages on the receipt.
+- If information is missing or uncertain, make your best guess.
+- Return only valid JSON, no markdown formatting.
+-category includes only accommodation, transport, food and others
+
+Here is the receipt OCR text:
+---
+${cleanedOcrText}
+---
+
+Return only raw JSON. Do NOT wrap the response in markdown (no \`\`\`\` or formatting).`;
+
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: 'You extract structured receipt data from OCR text. Return only valid JSON.' },
+          { role: 'user', content: gptPrompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 1000,
+      });
+    } catch (openaiError) {
+      logger.error('OpenAI API error:', openaiError);
+      throw new HttpsError('internal', 'Failed to process receipt with AI');
+    }
+
+    const responseText = completion.choices[0]?.message?.content;
+
+    if (!responseText) {
+      throw new HttpsError('internal', 'No response from AI service');
+    }
+
+    logger.info('GPT Response:', responseText);
+
+    let parsedResult;
+    try {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in AI response');
+      }
+      const jsonString = jsonMatch[0];
+      parsedResult = JSON.parse(jsonString);
+      
+      if (!parsedResult.vendor || !parsedResult.amount || !parsedResult.currency) {
+        throw new Error('Invalid JSON structure from AI response');
+      }
+      
+    } catch (parseError) {
+      logger.error('JSON parsing error:', parseError);
+      logger.error('Raw response:', responseText);
+      throw new HttpsError('internal', 'Failed to parse AI response');
+    }
+
+    return parsedResult;
+    
+  } catch (err) {
+    logger.error('Receipt parsing error:', err);
+    
+    if (err instanceof HttpsError) {
+      throw err;
+    }
+    
+    throw new HttpsError('internal', 'Failed to parse receipt.');
+  }
+});
+
+//Estimate Budget
 export const estimateBudget = onCall(  async (request) => {
   try {
     if (!request.auth) {

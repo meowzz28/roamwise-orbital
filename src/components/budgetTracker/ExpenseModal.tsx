@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { auth, db, storage } from "../firebase";
-import {
-  doc,
-  setDoc,
-  onSnapshot,
-  collection,
-  addDoc,
-} from "firebase/firestore";
+import { auth, db, functions } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import app from "../firebase";
+import { httpsCallable, getFunctions } from "firebase/functions";
+import { getAuth } from "firebase/auth";
 
 const allCurrencies = [
   { code: "USD", name: "US Dollar", symbol: "$" },
@@ -195,6 +192,77 @@ const ExpenseModal: React.FC<Props> = ({
   const [currency, setCurrency] = useState("USD");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [currencySearch, setCurrencySearch] = useState("");
+  const functions = getFunctions(app);
+  const parseReceipt = httpsCallable(functions, "parseReceiptWithAI");
+
+  //  Helper to format the GPT date output
+  const formatDate = (input: string): string => {
+    const d = new Date(input);
+    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      toast.error("Please sign in to use this feature", {
+        position: "bottom-center",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+
+      const toastId = toast.loading("Parsing receipt...", {
+        position: "bottom-center",
+      });
+
+      try {
+        const res = await parseReceipt({ base64Image: base64 });
+        const data = res.data as any;
+
+        if (data.vendor) setDescription(data.vendor);
+        if (data.amount) setTotalSpending(parseFloat(data.amount));
+        if (data.date) setDate(formatDate(data.date));
+        if (data.currency) {
+          const match = allCurrencies.find((c) => c.code === data.currency);
+          if (match) setCurrency(match.code);
+        }
+        if (
+          data.category &&
+          ["transport", "food", "accomodation", "others"].includes(
+            data.category
+          )
+        ) {
+          setCategory(data.category);
+        }
+        toast.update(toastId, {
+          render: "Receipt parsed successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+          position: "bottom-center",
+        });
+      } catch (err) {
+        console.error(err);
+        toast.update(toastId, {
+          render: "Failed to parse receipt.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+          position: "bottom-center",
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Handle form submission to add expense
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,6 +358,30 @@ const ExpenseModal: React.FC<Props> = ({
 
           {/* Expense form */}
           <form className="p-4" onSubmit={handleSubmit}>
+            {/* OCR */}
+            <div className="mb-4">
+              <label className="block mb-2 text-sm font-medium text-gray-900">
+                Autofill with Receipt (optional)
+              </label>
+
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  id="receipt-upload"
+                />
+                <label
+                  htmlFor="receipt-upload"
+                  className="w-full p-2.5 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-600"
+                >
+                  Upload Image of Receipt Here
+                </label>
+              </div>
+            </div>
+
+            {/*Category*/}
             <div className="mb-4 relative">
               <label
                 htmlFor="category"
@@ -323,7 +415,7 @@ const ExpenseModal: React.FC<Props> = ({
               </button>
               {showDropdown && (
                 <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                  {["transport", "food", "accomodation", "others"].map(
+                  {["transport", "food", "accommodation", "others"].map(
                     (item) => (
                       <li
                         key={item}
@@ -426,6 +518,7 @@ const ExpenseModal: React.FC<Props> = ({
                   id="spending"
                   min="0"
                   step="0.01"
+                  value={totalSpending || ""}
                   onChange={(e) => setTotalSpending(Number(e.target.value))}
                   className="w-full p-2.5 text-sm rounded-lg border border-gray-300"
                   placeholder="e.g. 1200.00"
