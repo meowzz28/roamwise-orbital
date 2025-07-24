@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import BudgetMainPage from "./BudgetMainPage";
 
+// Firebase mocks
 vi.mock("../firebase", () => ({
   auth: {
     onAuthStateChanged: (cb: any) => {
@@ -43,7 +44,7 @@ vi.mock("firebase/firestore", async () => {
     }),
     where: vi.fn(),
     orderBy: vi.fn(),
-    collection: vi.fn((db, name) => {
+    collection: vi.fn((_, name) => {
       if (name === "Templates") return "mockTemplatesCollection";
       if (name === "Expenses") return "mockExpensesCollection";
       return "mockCollection";
@@ -81,6 +82,7 @@ vi.mock("firebase/firestore", async () => {
   };
 });
 
+// Child mocks
 vi.mock("./DonutChart", () => ({
   __esModule: true,
   default: () => <div data-testid="mock-donut-chart" />,
@@ -101,50 +103,34 @@ vi.mock("./ExpenseModal", () => ({
   ),
 }));
 
+// TESTS
 describe("BudgetMainPage", () => {
-  it("renders trip options after auth and Firestore load", async () => {
+  it("shows Add Expense modal after selecting trip and currency", async () => {
     render(
       <BrowserRouter>
         <BudgetMainPage />
       </BrowserRouter>
     );
 
-    const option = await screen.findByRole("option", { name: "Japan Trip" });
-    expect(option).toBeInTheDocument();
-  });
+    // Open trip dropdown and select trip
+    const tripDropdownButton = await screen.findByTestId("select-template");
+    fireEvent.click(tripDropdownButton);
+    const tripOption = await screen.findByText("Japan Trip");
+    fireEvent.click(tripOption);
 
-  it("shows Add Expense modal after selecting trip and clicking button", async () => {
-    render(
-      <BrowserRouter>
-        <BudgetMainPage />
-      </BrowserRouter>
-    );
+    // Open currency dropdown and select MYR
+    const currencyDropdownButton = screen.getByTestId("select-currency");
+    fireEvent.click(currencyDropdownButton);
+    const currencyOption = await screen.findByText(/MYR — Malaysian Ringgit/i);
+    fireEvent.click(currencyOption);
 
-    const select = await screen.findByTestId("select-template");
-    await waitFor(() =>
-      expect(
-        screen.getByRole("option", { name: "Japan Trip" })
-      ).toBeInTheDocument()
-    );
-
-    fireEvent.change(select, { target: { value: "template1" } });
-    await waitFor(() => expect(select).toHaveValue("template1"));
-
-    const select_curr = await screen.findByTestId("select-currency");
-    await waitFor(() =>
-      expect(
-        screen.getByRole("option", { name: "Japan Trip" })
-      ).toBeInTheDocument()
-    );
-
-    fireEvent.change(select_curr, { target: { value: "MYR" } });
-    await waitFor(() => expect(select_curr).toHaveValue("MYR"));
-
+    // Click the Add Expense button
     const addButton = await screen.findByRole("button", {
       name: /\+ add expense/i,
     });
     fireEvent.click(addButton);
 
+    // Modal should appear
     const modal = await screen.findByTestId("mock-expense-modal");
     expect(modal).toBeInTheDocument();
   });

@@ -83,10 +83,10 @@ const Navigationbar = ({ user }: Props) => {
         <div className="hidden sm:ml-6 sm:block">
           <div className="flex items-center space-x-4">
             <Link
-              to="/forum"
+              to="/templates"
               className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
             >
-              Forum
+              Trips
             </Link>
             <Link
               to="/chatbot"
@@ -94,12 +94,7 @@ const Navigationbar = ({ user }: Props) => {
             >
               Planner
             </Link>
-            <Link
-              to="/templates"
-              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
-            >
-              Trips
-            </Link>
+
             <Link
               to="/expenses"
               className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
@@ -112,7 +107,12 @@ const Navigationbar = ({ user }: Props) => {
             >
               Groups
             </Link>
-
+            <Link
+              to="/forum"
+              className="rounded-md px-3 py-2 text-white text-lg font-medium border-b-4 border-transparent transition duration-300 ease-in-out hover:border-white"
+            >
+              Forum
+            </Link>
             {/* Tools Dropdown */}
             <div className="relative" ref={toolsDropdownRef}>
               <button

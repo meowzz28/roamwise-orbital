@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import CreatePost from "./createPost";
 import { toast } from "react-toastify";
 
 vi.mock("../firebase", () => ({
@@ -13,9 +12,32 @@ vi.mock("../firebase", () => ({
     currentUser: { uid: "testUID" },
   },
   db: {},
+  storage: {}, // in case your code imports storage from here
 }));
 
+vi.mock("firebase/app", () => {
+  return {
+    initializeApp: vi.fn(),
+    getApp: vi.fn(() => ({
+      name: "[DEFAULT]",
+      options: {},
+    })),
+  };
+});
+
+vi.mock("firebase/storage", () => {
+  return {
+    getStorage: vi.fn(() => ({})),
+    ref: vi.fn(() => ({})),
+    uploadBytes: vi.fn(() => Promise.resolve()),
+    getDownloadURL: vi.fn(() =>
+      Promise.resolve("https://fakeurl.com/image.jpg")
+    ),
+  };
+});
+
 const mockNavigate = vi.fn();
+import CreatePost from "./createPost";
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");

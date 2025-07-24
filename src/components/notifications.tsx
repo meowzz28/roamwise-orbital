@@ -62,6 +62,12 @@ const Notification = () => {
       if (user) {
         onlineSince.current = Date.now();
         unsubscribe = fetchNotiList(user.uid);
+      } else {
+        // Clear state on logout
+        setList([]);
+        setUnreadCount(0);
+        setShowNoti(false);
+        shownNotiIds.current.clear();
       }
     });
 

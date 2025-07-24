@@ -16,6 +16,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ViewTrip from "./ForumViewTrip";
 import ForumSubComment from "./forumSubComment";
+import { ThumbsUp, ThumbsUpIcon, BookMarked, Bookmark } from "lucide-react";
 
 type UserDetails = {
   email: string;
@@ -32,12 +33,15 @@ type ForumPost = {
   Message: string;
   Likes: number;
   LikedBy: string[];
+  Saves: number;
+  SavedBy: string[];
   Time?: {
     seconds: number;
     nanoseconds: number;
   };
 
   TemplateID: string;
+  imageUrls?: string[];
 };
 
 type Comment = {
@@ -69,6 +73,7 @@ function ViewPost() {
   const [showDeletCommentConfirm, setShowDeletCommentConfirm] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [isDeletingComment, setIsDeletingComment] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     // Fetch user and post data on mount
@@ -99,10 +104,14 @@ function ViewPost() {
                     Message: data.Message || "",
                     Likes: data.Likes || 0,
                     LikedBy: data.LikedBy || [],
+                    Saves: data.Saves || 0,
+                    SavedBy: data.SavedBy || [],
                     Time: data.Time,
                     TemplateID: data.TemplateID,
+                    imageUrls: data.ImageURLs,
                   });
                   setIsLiked(data.LikedBy?.includes(user.uid) || false);
+                  setIsSaved(data.SavedBy?.includes(user.uid) || false);
                   await fetchComments();
                 } else {
                   setError("Post not found.");
@@ -215,7 +224,7 @@ function ViewPost() {
       console.error("Error deleting post:", error);
       toast.update(toastId, {
         render: `Error: ${error.message}`,
-        type: "success",
+        type: "error",
         isLoading: false,
         autoClose: 3000,
         position: "bottom-center",
@@ -387,6 +396,72 @@ function ViewPost() {
     }
   };
 
+  const handleSave = async () => {
+    if (!postId || !UID || !post) {
+      return;
+    }
+    const postRef = doc(db, "Forum", postId);
+    const userRef = doc(db, "Users", UID);
+    try {
+      await runTransaction(db, async (transaction) => {
+        const postDoc = await transaction.get(postRef);
+        const userDoc = await transaction.get(userRef);
+        if (!postDoc.exists()) {
+          throw new Error("Post does not exist.");
+        }
+        if (!userDoc.exists()) {
+          throw new Error("User does not exist.");
+        }
+        const rawSaves = postDoc.data().Saves;
+        const saves =
+          typeof rawSaves === "number" && !isNaN(rawSaves) ? rawSaves : 0;
+        const savedBy = postDoc.data().SavedBy || [];
+        const isCurrentlySaved = savedBy.includes(UID);
+        const newLikes = isCurrentlySaved ? Math.max(saves - 1, 0) : saves + 1;
+        const updatedSavedBy = isCurrentlySaved
+          ? savedBy.filter((id: string) => id !== UID)
+          : [...savedBy, UID];
+
+        transaction.update(postRef, {
+          Saves: newLikes,
+          SavedBy: updatedSavedBy,
+        });
+
+        const userData = userDoc.data();
+        const savedPosts: string[] = userData.SavedPosts || [];
+
+        const updatedSavedPosts = isCurrentlySaved
+          ? savedPosts.filter((id) => id !== postId)
+          : [...savedPosts, postId];
+
+        transaction.update(userRef, {
+          SavedPosts: updatedSavedPosts,
+        });
+
+        setPost({
+          ...(post as ForumPost),
+          Saves: newLikes,
+          SavedBy: updatedSavedBy,
+        });
+        setIsSaved(!isCurrentlySaved);
+
+        if (!isCurrentlySaved && UID !== post.UID) {
+          await triggerNotification(
+            post.UID,
+            `${userDetails?.firstName || "Someone"} saved your post: "${
+              post.Topic
+            }"`,
+            `/viewPost/${postId}`
+          );
+        }
+      });
+    } catch (error: any) {
+      toast.error(`Error liking post: ${error.message}`, {
+        position: "bottom-center",
+      });
+    }
+  };
+
   const triggerNotification = async (
     recipientUID: string,
     message: string,
@@ -462,11 +537,22 @@ function ViewPost() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleLike}
-                className={`btn ${
+                className={`d-flex align-items-center gap-2 btn ${
                   isLiked ? "btn-primary" : "btn-outline-primary"
+                } me-2`}
+              >
+                <ThumbsUpIcon size={18} />
+                {`Likes: ${post.Likes}`}
+              </button>
+
+              <button
+                onClick={handleSave}
+                className={`d-flex align-items-center gap-2 btn ${
+                  isSaved ? "btn-success" : "btn-outline-success"
                 }`}
               >
-                {isLiked ? "Likes: " + post.Likes : "Likes: " + post.Likes}
+                {isSaved ? <BookMarked size={18} /> : <Bookmark size={18} />}
+                {isSaved ? `Saved: ${post.Saves}` : `Save: ${post.Saves}`}
               </button>
             </div>
           </div>
@@ -479,6 +565,18 @@ function ViewPost() {
           ) : null}
 
           <div className="post-content whitespace-pre-wrap">{post.Message}</div>
+          {post.imageUrls && post.imageUrls.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {post.imageUrls.map((url, idx) => (
+                <img
+                  key={idx}
+                  src={url}
+                  alt={`Post Image ${idx + 1}`}
+                  className="w-full h-auto rounded shadow"
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {/* Delete Post Modal */}

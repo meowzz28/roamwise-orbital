@@ -8,6 +8,7 @@ import PopUp from "./gallery/popUp";
 import { ref, deleteObject, listAll } from "firebase/storage";
 import { storage } from "./firebase";
 import { toast } from "react-toastify";
+import { User, Image, Bookmark } from "lucide-react";
 
 type UserDetails = {
   email: string;
@@ -16,6 +17,22 @@ type UserDetails = {
   pic: string;
 };
 
+type ForumPost = {
+  id: string;
+  index?: number;
+  UID?: string;
+  User: string;
+  Topic: string;
+  Message: string;
+  Likes: number;
+  Saves?: number;
+  LikedBy: string[];
+  SavedBy?: string[];
+  Time?: {
+    seconds: number;
+    nanoseconds: number;
+  };
+};
 function Profile() {
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
@@ -24,6 +41,9 @@ function Profile() {
   const [activeTab, setActiveTab] = useState("profile");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [savedPosts, setSavedPosts] = useState<string[]>([]);
+  const [savedPostData, setSavedPostData] = useState<ForumPost[]>([]);
+  const [loadingSavedPosts, setLoadingSavedPosts] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -48,6 +68,66 @@ function Profile() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const fetchSaved = async () => {
+      setLoadingSavedPosts(true);
+      const user = auth.currentUser;
+      if (!user) {
+        setLoadingSavedPosts(false);
+        return;
+      }
+      const docSnap = await getDoc(doc(db, "Users", user.uid));
+      if (docSnap.exists()) {
+        const savedIds: string[] = docSnap.data().SavedPosts || [];
+        setSavedPosts(savedIds);
+
+        const postDataPromises = savedIds.map(async (id) => {
+          const postSnap = await getDoc(doc(db, "Forum", id));
+          if (postSnap.exists()) {
+            return { id, topic: postSnap.data().Topic || "Untitled" };
+          }
+          return { id, topic: "Unknown Post" };
+        });
+
+        const posts = await Promise.all(
+          savedIds.map(async (id) => {
+            const postSnap = await getDoc(doc(db, "Forum", id));
+            if (postSnap.exists()) {
+              const data = postSnap.data();
+              return {
+                id,
+                User: data.User || "Unknown",
+                Topic: data.Topic || "Untitled",
+                Message: data.Message || "",
+                Likes: data.Likes || 0,
+                LikedBy: data.LikedBy || [],
+                Saves: data.Saves || 0,
+                SavedBy: data.SavedBy || [],
+                UID: data.UID || "",
+                Time: data.Time || null,
+              } as ForumPost;
+            } else {
+              return {
+                id,
+                User: "Unknown",
+                Topic: "Unknown Post",
+                Message: "",
+                Likes: 0,
+                LikedBy: [],
+              };
+            }
+          })
+        );
+        setSavedPostData(posts);
+      }
+      setLoadingSavedPosts(false);
+    };
+
+    if (activeTab === "saved") {
+      fetchSaved();
+    }
+  }, [activeTab]);
 
   const confirmDelete = async () => {
     const toastId = toast.loading("Deleting user's data...", {
@@ -129,7 +209,7 @@ function Profile() {
       <div className="row">
         {/* Sidebar Tabs */}
         <div className="col-2 pe-3 border-end d-flex flex-column gap-4">
-          {["profile", "memories"].map((tab) => (
+          {["profile", "memories", "saved"].map((tab) => (
             <div
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -138,9 +218,27 @@ function Profile() {
                   ? "bg-primary text-white shadow"
                   : "text-secondary hover:bg-gray-200"
               }`}
-              style={{ cursor: "pointer" }}
             >
-              {tab === "profile" ? "Profile 👤" : "Memories 📸 "}
+              {tab === "profile" && (
+                <div className="flex items-center gap-2">
+                  <User size={18} />
+                  <span>Profile</span>
+                </div>
+              )}
+
+              {tab === "memories" && (
+                <div className="flex items-center gap-2">
+                  <Image size={18} />
+                  <span>Memories</span>
+                </div>
+              )}
+
+              {tab === "saved" && (
+                <div className="flex items-center gap-2">
+                  <Bookmark size={18} />
+                  <span>Saved Posts</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -149,9 +247,11 @@ function Profile() {
         <div className="col">
           {activeTab === "profile" && (
             <div className="fade-in">
-              <h2 className="text-xl font-semibold text-center border-bottom pb-2 mb-4">
-                My Profile👤
+              <h2 className="text-xl font-semibold text-center flex justify-center items-center gap-2 pb-2 mb-4 border-b">
+                My Profile
+                <User className="w-5 h-5 text-primary" />
               </h2>
+
               <div className="d-flex flex-column align-items-center">
                 {userDetails.pic && (
                   <img
@@ -220,8 +320,9 @@ function Profile() {
           )}
           {activeTab === "memories" && (
             <div className="fade-in">
-              <h2 className="text-xl font-semibold text-center border-bottom pb-2 mb-4">
-                Your Memories📸
+              <h2 className="text-xl font-semibold text-center flex justify-center items-center gap-2 pb-2 mb-4 border-b">
+                Your Memories
+                <Image className="w-5 h-6 text-primary" />
               </h2>
               <UploadForm />
               <ImageGrid setSelectedImg={setSelectedImg} />
@@ -230,6 +331,66 @@ function Profile() {
                   selectedImg={selectedImg}
                   setSelectedImg={setSelectedImg}
                 />
+              )}
+            </div>
+          )}
+          {activeTab === "saved" && (
+            <div className="fade-in">
+              <h2 className="text-xl font-semibold text-center flex justify-center items-center gap-2 pb-2 mb-4 border-b">
+                Saved Posts
+                <Bookmark className="w-5 h-5 text-primary" />
+              </h2>
+              {loadingSavedPosts ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status" />
+                  <p className="mt-2 text-muted">Loading saved posts...</p>
+                </div>
+              ) : savedPosts.length === 0 ? (
+                <p className="text-gray-500 text-center">
+                  You haven't saved any posts yet.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {savedPostData.map((post) => (
+                    <div
+                      key={post.id}
+                      onClick={() => navigate(`/viewPost/${post.id}`)}
+                      className="p-4 bg-white rounded-lg shadow hover:shadow-md hover:scale-[1.01] cursor-pointer transition-all"
+                    >
+                      {/* Owner info */}
+                      <div className="flex items-center mb-2">
+                        <div className="bg-primary text-white rounded-full h-10 w-10 flex items-center justify-center text-lg font-bold me-3">
+                          {post.User?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {post.User || "Unknown"}
+                        </div>
+                      </div>
+
+                      {/* Topic */}
+                      <h3 className="text-lg font-semibold mb-1 truncate">
+                        {post.Topic || "Untitled"}
+                      </h3>
+
+                      {/* Message snippet */}
+                      <p className="text-gray-700 text-sm line-clamp-3">
+                        {post.Message || "No message available."}
+                      </p>
+
+                      {/* Stats */}
+                      <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                        <span>{post.Likes ?? 0} likes</span>
+                        <span>
+                          {post.Time?.seconds
+                            ? new Date(
+                                post.Time.seconds * 1000
+                              ).toLocaleString()
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

@@ -252,22 +252,32 @@ function Team() {
                 onClick={() => setShowProfile((prev) => !prev)}
                 className="btn btn-primary text-xl font-semibold  hover:underline"
               >
-                {showProfile ? "Hide Details ▲" : "Show Details ▼"}
+                {showProfile ? "Manage Team ▲" : "Manage Team ▼"}
               </button>
             </div>
           )}
 
           {showProfile && selectedTeamID && selectedTeam && (
-            <div className="mb-4 border rounded bg-gray-50 p-4">
-              <TeamProfile
-                teamID={selectedTeamID}
-                team={selectedTeam}
-                uid={uid}
-                onQuit={() => {
-                  setSelectedTeamID(null);
-                  fetchTeamList();
-                }}
-              />
+            <div
+              className={`transition-all duration-500 ease-in-out transform ${
+                showProfile
+                  ? "max-h-[1000px] opacity-100 scale-100 translate-y-0"
+                  : "max-h-0 opacity-0 scale-95 -translate-y-2"
+              } overflow-hidden`}
+            >
+              {selectedTeamID && selectedTeam && (
+                <div className="mb-4 border rounded bg-white shadow-md p-4">
+                  <TeamProfile
+                    teamID={selectedTeamID}
+                    team={selectedTeam}
+                    uid={uid}
+                    onQuit={() => {
+                      setSelectedTeamID(null);
+                      fetchTeamList();
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 

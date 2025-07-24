@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 type UserDetails = {
   email: string;
@@ -30,6 +31,7 @@ function CreatePost() {
     []
   );
   const [selectedTemplateID, setSelectedTemplateID] = useState("");
+  const [images, setImages] = useState<File[]>([]);
 
   // Fetch user details and available templates on mount
   useEffect(() => {
@@ -105,6 +107,22 @@ function CreatePost() {
     });
     try {
       const user = auth.currentUser;
+
+      const imageURLs: string[] = [];
+
+      if (images.length > 0) {
+        const storage = getStorage();
+        for (const image of images) {
+          const imageRef = ref(
+            storage,
+            `forum_images/${Date.now()}_${image.name}`
+          );
+          const snapshot = await uploadBytes(imageRef, image);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          imageURLs.push(downloadURL);
+        }
+      }
+
       if (user && userDetails) {
         // Add new post to Firestore
         await addDoc(collection(db, "Forum"), {
@@ -115,7 +133,10 @@ function CreatePost() {
           TemplateID: selectedTemplateID || null,
           Likes: 0,
           LikedBy: [],
+          Saves: 0,
+          SavedBy: [],
           Time: serverTimestamp(),
+          ImageURLs: imageURLs,
         });
 
         toast.update(toastId, {
@@ -214,6 +235,44 @@ function CreatePost() {
                 </option>
               ))}
             </select>
+          </div>
+          {/* Image Upload */}
+          <div className="mb-3">
+            <label className="block mb-1 font-medium">
+              Upload Image (optional)
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+                setImages((prev) => [...prev, ...selectedFiles]);
+              }}
+              className="form-control w-full p-2 border rounded"
+            />
+            {images.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm text-green-600">Uploaded Images:</p>
+                <ul>
+                  {images.map((file, idx) => (
+                    <li key={idx} className="flex items-center justify-between">
+                      {file?.name}
+                      <button
+                        onClick={() =>
+                          setImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="ml-2 px-2 py-1 text-red-500 hover:text-red-700 rounded focus:outline-none"
+                        aria-label={`Remove ${file.name}`}
+                        title="Remove"
+                      >
+                        ✖
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Content textarea */}

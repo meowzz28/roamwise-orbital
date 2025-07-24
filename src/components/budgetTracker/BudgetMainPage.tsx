@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { auth, db } from "../firebase";
 import {
   doc,
@@ -216,6 +216,12 @@ const BudgetMainPage = () => {
   const [currency, setCurrency] = useState("");
   const [originalExpenses, setOriginalExpenses] = useState<Expenses[]>([]);
   const [convertedExpenses, setConvertedExpenses] = useState<Expenses[]>([]);
+  const [showTripDropdown, setShowTripDropdown] = useState(false);
+  const [tripSearch, setTripSearch] = useState("");
+  const [currencySearch, setCurrencySearch] = useState("");
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const tripDropdownRef = useRef<HTMLDivElement | null>(null);
+  const currencyDropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Listen for auth state and fetch user/templates from Firestore
   useEffect(() => {
@@ -342,6 +348,30 @@ const BudgetMainPage = () => {
     convertExpenses();
   }, [currency, originalExpenses]);
 
+  //To close the dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        tripDropdownRef.current &&
+        !tripDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowTripDropdown(false);
+      }
+
+      if (
+        currencyDropdownRef.current &&
+        !currencyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCurrencyDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   if (!authChecked) {
     return (
       <div className="container text-center p-5">
@@ -388,42 +418,115 @@ const BudgetMainPage = () => {
               <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
                 Budget & Expense Tracker 💵
               </h1>
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <label className="block mb-2 font-medium text-gray-700">
                   Select a Trip:
                 </label>
-                <select
-                  data-testid="select-template"
-                  value={selectedTripId}
-                  onChange={(e) => setSelectedTripId(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                <div
+                  className="relative inline-block w-full"
+                  ref={tripDropdownRef}
                 >
-                  <option value="">-- Choose a trip --</option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.topic}
-                    </option>
-                  ))}
-                </select>
+                  {/* Dropdown trigger */}
+                  <button
+                    data-testid="select-template"
+                    type="button"
+                    onClick={() => setShowTripDropdown((prev) => !prev)}
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
+                  >
+                    {templates.find((t) => t.id === selectedTripId)?.topic ||
+                      "-- Choose a trip --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
+                  </button>
+
+                  {/* Dropdown list */}
+                  {showTripDropdown && (
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                      {/* Search input */}
+                      <input
+                        type="text"
+                        value={tripSearch}
+                        onChange={(e) => setTripSearch(e.target.value)}
+                        placeholder="Search trip..."
+                        className="w-full p-2 text-sm border-b border-gray-200 focus:outline-none"
+                      />
+                      <ul className="max-h-60 overflow-y-auto text-sm">
+                        {templates
+                          .filter((template) =>
+                            template.topic
+                              .toLowerCase()
+                              .includes(tripSearch.toLowerCase())
+                          )
+                          .map((template) => (
+                            <li
+                              key={template.id}
+                              onClick={() => {
+                                setSelectedTripId(template.id);
+                                setShowTripDropdown(false);
+                                setTripSearch("");
+                              }}
+                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {template.topic}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="mb-2">
                 <label className="block mb-2 font-medium text-gray-700">
                   Select a Display Currency:
                 </label>
-                <div>
-                  <select
+
+                <div className="relative" ref={currencyDropdownRef}>
+                  <button
                     data-testid="select-currency"
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                    type="button"
+                    onClick={() => setShowCurrencyDropdown((prev) => !prev)}
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
                   >
-                    <option value="">-- Choose a currency --</option>
-                    {allCurrencies.map((curr) => (
-                      <option key={curr.code} value={curr.code}>
-                        {curr.code + ": " + curr.name}
-                      </option>
-                    ))}
-                  </select>
+                    {allCurrencies.find((c) => c.code === currency)?.symbol}{" "}
+                    {currency || "-- Choose a currency --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
+                  </button>
+
+                  {showCurrencyDropdown && (
+                    <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <input
+                        type="text"
+                        value={currencySearch}
+                        onChange={(e) => setCurrencySearch(e.target.value)}
+                        placeholder="Search currency..."
+                        className="w-full p-2 text-sm border-b border-gray-200 focus:outline-none"
+                      />
+                      <ul className="max-h-60 overflow-y-auto">
+                        {allCurrencies
+                          .filter((curr) =>
+                            `${curr.code} ${curr.name}`
+                              .toLowerCase()
+                              .includes(currencySearch.toLowerCase())
+                          )
+                          .map((curr) => (
+                            <li
+                              key={curr.code}
+                              onClick={() => {
+                                setCurrency(curr.code);
+                                setShowCurrencyDropdown(false);
+                                setCurrencySearch("");
+                              }}
+                              className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                            >
+                              {curr.symbol} {curr.code} — {curr.name}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -437,54 +540,122 @@ const BudgetMainPage = () => {
               <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
                 Budget & Expense Tracker 💵
               </h1>
-              <div className="mb-1">
+              <div className="mb-2 relative">
                 <label className="block mb-2 font-medium text-gray-700">
                   Select a Trip:
                 </label>
-                <select
-                  data-testid="select-template"
-                  value={selectedTripId}
-                  onChange={(e) => setSelectedTripId(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-4 py-2 w-full"
+                <div
+                  className="relative inline-block w-full"
+                  ref={tripDropdownRef}
                 >
-                  <option value="">-- Choose a trip --</option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.topic}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  {/* Dropdown trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setShowTripDropdown((prev) => !prev)}
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
+                  >
+                    {templates.find((t) => t.id === selectedTripId)?.topic ||
+                      "-- Choose a trip --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
+                  </button>
 
-              <div>
-                <div className="mb-2">
-                  <label className="block mb-2 font-medium text-gray-700">
-                    Select a Display Currency:
-                  </label>
-                  <div>
-                    <select
-                      data-testid="select-currency"
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-4 py-2 w-full"
-                    >
-                      <option value="">-- Choose a currency --</option>
-                      {allCurrencies.map((curr) => (
-                        <option key={curr.code} value={curr.code}>
-                          {curr.code + ": " + curr.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Dropdown list */}
+                  {showTripDropdown && (
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                      {/* Search input */}
+                      <input
+                        type="text"
+                        value={tripSearch}
+                        onChange={(e) => setTripSearch(e.target.value)}
+                        placeholder="Search trip..."
+                        className="w-full p-2 text-sm border-b border-gray-200 focus:outline-none"
+                      />
+                      <ul className="max-h-60 overflow-y-auto text-sm">
+                        {templates
+                          .filter((template) =>
+                            template.topic
+                              .toLowerCase()
+                              .includes(tripSearch.toLowerCase())
+                          )
+                          .map((template) => (
+                            <li
+                              key={template.id}
+                              onClick={() => {
+                                setSelectedTripId(template.id);
+                                setShowTripDropdown(false);
+                                setTripSearch("");
+                              }}
+                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {template.topic}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-                <button
-                  style={{ borderRadius: "8px" }}
-                  className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-md"
-                  onClick={() => setShowModal(true)}
-                >
-                  + Add Expense
-                </button>
               </div>
+              <div className="mb-3">
+                <label className="block mb-2 font-medium text-gray-700">
+                  Select a Display Currency:
+                </label>
+
+                <div className="relative" ref={currencyDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrencyDropdown((prev) => !prev)}
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
+                  >
+                    {allCurrencies.find((c) => c.code === currency)?.symbol}{" "}
+                    {currency || "-- Choose a currency --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
+                  </button>
+
+                  {showCurrencyDropdown && (
+                    <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                      <input
+                        type="text"
+                        value={currencySearch}
+                        onChange={(e) => setCurrencySearch(e.target.value)}
+                        placeholder="Search currency..."
+                        className="w-full p-2 text-sm border-b border-gray-200 focus:outline-none"
+                      />
+                      <ul className="max-h-60 overflow-y-auto">
+                        {allCurrencies
+                          .filter((curr) =>
+                            `${curr.code} ${curr.name}`
+                              .toLowerCase()
+                              .includes(currencySearch.toLowerCase())
+                          )
+                          .map((curr) => (
+                            <li
+                              key={curr.code}
+                              onClick={() => {
+                                setCurrency(curr.code);
+                                setShowCurrencyDropdown(false);
+                                setCurrencySearch("");
+                              }}
+                              className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                            >
+                              {curr.symbol} {curr.code} — {curr.name}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <button
+                style={{ borderRadius: "8px" }}
+                className="w-full mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium px-6 py-3 shadow-sm"
+                onClick={() => setShowModal(true)}
+              >
+                + Add Expense
+              </button>
             </div>
 
             <div className="flex-1 bg-white shadow-sm rounded-2xl border border-gray-100 p-6">

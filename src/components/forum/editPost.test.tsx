@@ -7,10 +7,9 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
-import EditPost from "./editPost";
+import { act } from "react";
 
 const mockNavigate = vi.fn();
-
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");
   return {
@@ -18,6 +17,7 @@ vi.mock("react-router-dom", async () => {
     useNavigate: () => mockNavigate,
   };
 });
+import EditPost from "./editPost";
 
 vi.mock("../firebase", () => ({
   auth: {
@@ -28,6 +28,13 @@ vi.mock("../firebase", () => ({
     currentUser: { uid: "testUID" },
   },
   db: {},
+}));
+
+vi.mock("firebase/storage", () => ({
+  getStorage: vi.fn(),
+  ref: vi.fn(),
+  uploadBytes: vi.fn(() => Promise.resolve()),
+  getDownloadURL: vi.fn(() => Promise.resolve("https://example.com/image.jpg")),
 }));
 
 vi.mock("firebase/firestore", async () => {
@@ -56,6 +63,7 @@ vi.mock("firebase/firestore", async () => {
               Likes: 0,
               LikedBy: [],
               TemplateID: "",
+              imageUrls: [],
             };
           }
           return {};
@@ -80,9 +88,17 @@ vi.mock("firebase/firestore", async () => {
     collection: vi.fn(),
   };
 });
+vi.mock("react-toastify", () => ({
+  toast: {
+    error: vi.fn(),
+    loading: vi.fn(() => "toast-id"),
+    update: vi.fn(),
+  },
+}));
 
 describe("EditPost Component", () => {
   it("Renders post data and submits updated content", async () => {
+    mockNavigate.mockClear();
     render(
       <MemoryRouter initialEntries={["/editPost/123"]}>
         <Routes>
@@ -114,7 +130,9 @@ describe("EditPost Component", () => {
       }
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /update post/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /update post/i }));
+    });
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/viewPost/123");

@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import ChatMessage from "./TripChat";
+import DateSeparator from "./dateSeparator";
 
 type Message = {
   id: string;
@@ -151,7 +152,30 @@ function Chat({ teamID }: { teamID: string }) {
             No chat to preview
           </div>
         ) : (
-          messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)
+          (() => {
+            let lastDate = "";
+            return messages.map((msg) => {
+              const messageDate = msg.createdAt
+                ? new Date(msg.createdAt.seconds * 1000)
+                : null;
+              if (!messageDate) return null;
+              const formattedDate = messageDate.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+
+              const showDate = formattedDate !== lastDate;
+              lastDate = formattedDate;
+
+              return (
+                <React.Fragment key={msg.id}>
+                  {showDate && <DateSeparator date={formattedDate} />}
+                  <ChatMessage message={msg} />
+                </React.Fragment>
+              );
+            });
+          })()
         )}
         <div ref={dummy}></div>
       </div>
@@ -160,9 +184,12 @@ function Chat({ teamID }: { teamID: string }) {
       <form onSubmit={sendMessage} className="flex p-4 border-t">
         <input
           value={formValue}
+          disabled={isSending}
           onChange={(e) => setFormValue(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1 p-2 border rounded-l focus:outline-none"
+          placeholder={isSending ? "Sending..." : "Type a message..."}
+          className={`form-control me-2 rounded ${
+            isSending ? "bg-light text-muted" : ""
+          }`}
         />
 
         <button
