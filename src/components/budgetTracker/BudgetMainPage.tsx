@@ -431,14 +431,14 @@ const BudgetMainPage = () => {
                     data-testid="select-template"
                     type="button"
                     onClick={() => setShowTripDropdown((prev) => !prev)}
-                    className="w-full px-4 py-2 text-sm text-left border border-gray-300 bg-white rounded-lg shadow-sm"
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
                   >
                     {templates.find((t) => t.id === selectedTripId)?.topic ||
                       "-- Choose a trip --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
                   </button>
-                  <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    ▼
-                  </div>
 
                   {/* Dropdown list */}
                   {showTripDropdown && (
@@ -552,14 +552,14 @@ const BudgetMainPage = () => {
                   <button
                     type="button"
                     onClick={() => setShowTripDropdown((prev) => !prev)}
-                    className="w-full px-4 py-2 text-sm text-left border border-gray-300 bg-white rounded-lg shadow-sm"
+                    className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg bg-white relative"
                   >
                     {templates.find((t) => t.id === selectedTripId)?.topic ||
                       "-- Choose a trip --"}
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ▼
+                    </span>
                   </button>
-                  <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    ▼
-                  </div>
 
                   {/* Dropdown list */}
                   {showTripDropdown && (
