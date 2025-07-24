@@ -11,6 +11,15 @@ const FloatingAIWidget = () => {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [hasDragged, setHasDragged] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  const [resizeStartPos, setResizeStartPos] = useState({ x: 0, y: 0 });
+  const [resizeStartSize, setResizeStartSize] = useState({
+    width: 0,
+    height: 0,
+  });
+  const [resizeDirection, setResizeDirection] = useState("");
+  const [size, setSize] = useState({ width: 320, height: 384 });
+
   // Load saved chat messages from localStorage (persist session)
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem("aiWidgetMessages");
@@ -22,37 +31,94 @@ const FloatingAIWidget = () => {
   // Capture initial mouse position and calculate offset for dragging
   const handleMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
+
+    const topLeftX = open ? position.x - size.width + 56 : position.x;
+    const topLeftY = open ? position.y - size.height + 56 : position.y;
+
     setOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
+      x: e.clientX - topLeftX,
+      y: e.clientY - topLeftY,
     });
+
     setHasDragged(false);
   };
 
+  const handleResizeStart = (e, direction) => {
+    e.stopPropagation();
+    setResizing(true);
+    setResizeDirection(direction);
+    setResizeStartPos({ x: e.clientX, y: e.clientY });
+    setResizeStartSize({ width: size.width, height: size.height });
+  };
+
   // Update widget position as mouse moves
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!dragging) return;
-    const newX = e.clientX - offset.x;
-    const newY = e.clientY - offset.y;
-    if (Math.abs(newX - position.x) > 5 || Math.abs(newY - position.y) > 5) {
-      setHasDragged(true);
+  const handleMouseMove = (e) => {
+    if (dragging && !resizing) {
+      const newLeft = e.clientX - offset.x;
+      const newTop = e.clientY - offset.y;
+
+      const maxX = window.innerWidth - (open ? size.width : 56);
+      const maxY = window.innerHeight - (open ? size.height : 56);
+
+      const clampedLeft = Math.max(0, Math.min(newLeft, maxX));
+      const clampedTop = Math.max(0, Math.min(newTop, maxY));
+
+      const newX = open ? clampedLeft + size.width - 56 : clampedLeft;
+      const newY = open ? clampedTop + size.height - 56 : clampedTop;
+
+      if (Math.abs(newX - position.x) > 5 || Math.abs(newY - position.y) > 5) {
+        setHasDragged(true);
+      }
+
+      setPosition({ x: newX, y: newY });
     }
-    setPosition({ x: newX, y: newY });
+    if (resizing) {
+      const deltaX = e.clientX - resizeStartPos.x;
+      const deltaY = e.clientY - resizeStartPos.y;
+
+      // Calculate new size with minimum constraints
+      let newWidth = resizeStartSize.width;
+      let newHeight = resizeStartSize.height;
+      let newX = position.x;
+      let newY = position.y;
+
+      if (resizeDirection.includes("left")) {
+        newWidth = Math.max(280, resizeStartSize.width - deltaX);
+      }
+      if (resizeDirection.includes("top")) {
+        newHeight = Math.max(300, resizeStartSize.height - deltaY);
+      }
+
+      setSize({ width: newWidth, height: newHeight });
+    }
   };
 
   const handleMouseUp = () => {
     setDragging(false);
+    setResizing(false);
+    setResizeDirection("");
   };
 
-  // Register mousemove and mouseup listeners globally for drag behavior
+  // Register mousemove and mouseup listeners globally
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  });
+    if (dragging || resizing) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [
+    dragging,
+    resizing,
+    offset,
+    position,
+    size,
+    resizeStartPos,
+    resizeStartSize,
+    resizeDirection,
+  ]);
 
   // Persist chat messages to localStorage on update
   useEffect(() => {
@@ -86,12 +152,15 @@ const FloatingAIWidget = () => {
     <div
       className="fixed z-50"
       style={{
-        left: open ? `${position.x - 320 + 56}px` : `${position.x}px`,
-        top: open ? `${position.y - 384 + 56}px` : `${position.y}px`,
+        left: open ? `${position.x - size.width + 56}px` : `${position.x}px`,
+        top: open ? `${position.y - size.height + 56}px` : `${position.y}px`,
       }}
     >
       {open ? (
-        <div className="w-80 h-96 bg-white shadow-lg rounded-lg flex flex-col border border-gray-300">
+        <div
+          className=" bg-white shadow-lg rounded-lg flex flex-col border border-gray-300"
+          style={{ width: size.width, height: size.height }}
+        >
           <div
             className="flex justify-between items-center px-4 py-2 bg-blue-600 text-white rounded-t-lg cursor-move"
             onMouseDown={handleMouseDown}
@@ -99,6 +168,14 @@ const FloatingAIWidget = () => {
             <span>RoamWise AI Assistant</span>
             <button onClick={() => setOpen(false)}>×</button>
           </div>
+          <div
+            onMouseDown={(e) => handleResizeStart(e, "top")}
+            className="absolute top-0 left-2 right-2 h-2 cursor-n-resize hover:bg-blue-200/30 transition-colors"
+          />
+          <div
+            onMouseDown={(e) => handleResizeStart(e, "top-left")}
+            className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize"
+          />
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-2 text-sm">
             {messages.map((msg, i) => (
               <div
