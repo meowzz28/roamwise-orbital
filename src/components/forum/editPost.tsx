@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 type UserDetails = {
   email: string;
@@ -31,6 +32,7 @@ type ForumPost = {
     seconds: number;
     nanoseconds: number;
   };
+  imageUrls?: string[];
 };
 
 function EditPost() {
@@ -48,6 +50,8 @@ function EditPost() {
   const [templates, setTemplates] = useState<{ id: string; topic: string }[]>(
     []
   );
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
 
   // Fetch user and post data on mount
   useEffect(() => {
@@ -73,6 +77,7 @@ function EditPost() {
 
                 if (postDocSnap.exists()) {
                   const data = postDocSnap.data();
+
                   // Only allow editing if user is the author
                   if (data.UID !== user.uid) {
                     toast.error("You are not authorized to edit this post.", {
@@ -91,12 +96,13 @@ function EditPost() {
                     Likes: data.Likes || 0,
                     Time: data.Time,
                     TemplateID: data.TemplateID || "",
+                    imageUrls: data.ImageURLs,
                   });
 
                   setTopic(data.Topic || "");
                   setContext(data.Message || "");
                   setSelectedTemplateID(data.TemplateID);
-
+                  setImageUrls(data.ImageURLs || []);
                   // Fetch templates available to the user
                   const snapshot = await getDocs(collection(db, "Templates"));
                   const filtered = snapshot.docs
@@ -167,6 +173,19 @@ function EditPost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
+        const uploadedUrls: string[] = [];
+        const storage = getStorage();
+        for (const image of images) {
+          const imageRef = ref(
+            storage,
+            `forumImages/${Date.now()}_${image.name}`
+          );
+          await uploadBytes(imageRef, image);
+          const url = await getDownloadURL(imageRef);
+          uploadedUrls.push(url);
+        }
+        const finalImageUrls = [...imageUrls, ...uploadedUrls];
+
         // Update post in Firestore
         await updateDoc(doc(db, "Forum", postId), {
           User: userDetails.firstName,
@@ -175,8 +194,10 @@ function EditPost() {
           Topic: topic,
           Time: serverTimestamp(),
           TemplateID: selectedTemplateID || null,
+          ImageURLs: finalImageUrls,
         });
 
+        setImages([]);
         toast.update(toastId, {
           render: "Post updated successfully!",
           type: "success",
@@ -257,7 +278,12 @@ function EditPost() {
       </div>
 
       <div className="bg-white p-4 rounded shadow-md mb-4">
-        <form onSubmit={handlePost}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handlePost(e);
+          }}
+        >
           {/* Topic input */}
           <div className="mb-3">
             <label htmlFor="topic" className="block mb-1 font-medium">
@@ -290,6 +316,72 @@ function EditPost() {
               ))}
             </select>
           </div>
+          {/* Existing image preview */}
+          {imageUrls.length > 0 && (
+            <div className="mb-3">
+              <label className="block font-medium mb-1">Existing Images</label>
+              <div className="flex flex-wrap gap-3">
+                {imageUrls.map((url, idx) => (
+                  <div key={idx} className="relative w-24 h-24">
+                    <img
+                      src={url}
+                      alt={`Uploaded ${idx}`}
+                      className="object-cover rounded w-full h-full"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImageUrls((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1 text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New image upload */}
+          <div className="mb-3">
+            <label className="block mb-1 font-medium">
+              Upload Image (optional)
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+                setImages((prev) => [...prev, ...selectedFiles]);
+              }}
+              className="form-control w-full p-2 border rounded"
+            />
+            {images.length > 0 && (
+              <div className="mt-2">
+                <p className="text-sm text-green-600">Uploaded Images:</p>
+                <ul>
+                  {images.map((file, idx) => (
+                    <li key={idx} className="flex items-center justify-between">
+                      {file?.name}
+                      <button
+                        onClick={() =>
+                          setImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="ml-2 px-2 py-1 text-red-500 hover:text-red-700 rounded focus:outline-none"
+                        aria-label={`Remove ${file.name}`}
+                        title="Remove"
+                      >
+                        ✖
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
           {/* Content textarea */}
           <div className="mb-3">
             <label htmlFor="context" className="block mb-1 font-medium">

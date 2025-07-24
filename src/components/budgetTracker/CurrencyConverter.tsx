@@ -2,9 +2,9 @@ import { useEffect, useState, ChangeEvent } from "react";
 import CurrencySelect from "./CurrencySelect";
 
 const CurrencyConverter = () => {
-  const [amount, setAmount] = useState<number>(100);
-  const [fromCurrency, setFromCurrency] = useState("USD");
-  const [toCurrency, setToCurrency] = useState("SGD");
+  const [amount, setAmount] = useState<string>("0");
+  const [fromCurrency, setFromCurrency] = useState("SGD");
+  const [toCurrency, setToCurrency] = useState("USD");
   const [result, setResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -16,6 +16,7 @@ const CurrencyConverter = () => {
 
   // Function to fetch the exchange rate and update the result
   const getExchangeRate = async () => {
+    const numericAmount = Number(amount || 0);
     const API_KEY = import.meta.env.VITE_API_KEY_CURRENCY;
     const API_URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/pair/${fromCurrency}/${toCurrency}`;
     if (isLoading) return;
@@ -24,7 +25,7 @@ const CurrencyConverter = () => {
       const response = await fetch(API_URL);
       if (!response.ok) throw Error("Something went wrong!");
       const data = await response.json();
-      const rate = (data.conversion_rate * amount).toFixed(2);
+      const rate = (data.conversion_rate * numericAmount).toFixed(2);
       setResult(`${amount} ${fromCurrency} = ${rate} ${toCurrency}`);
     } catch (error) {
       setResult("Something went wrong!");
@@ -52,7 +53,8 @@ const CurrencyConverter = () => {
             Live Currency Exchange Rate💲
           </h1>
           {/* Horizontal input section */}
-          <div className="d-flex flex-wrap gap-3 ">
+          <div className="flex flex-wrap gap-4 mb-4">
+            {" "}
             {/* Amount input */}
             <div className="form-group">
               <label htmlFor="amount" className="form-label">
@@ -64,12 +66,11 @@ const CurrencyConverter = () => {
                 className="form-control"
                 value={amount}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setAmount(Number(e.target.value))
+                  setAmount(e.target.value)
                 }
                 required
               />
             </div>
-
             {/* From Currency */}
             <div className=" form-group">
               <label className="form-label">From</label>
@@ -78,7 +79,6 @@ const CurrencyConverter = () => {
                 handleCurrency={(e) => setFromCurrency(e.target.value)}
               />
             </div>
-
             {/* Swap Icon */}
             <div
               className="d-flex align-items-center justify-content-center p-2 cursor-pointer"
@@ -97,7 +97,6 @@ const CurrencyConverter = () => {
                 />
               </svg>
             </div>
-
             {/* To Currency */}
             <div className="form-group">
               <label className="form-label">To</label>

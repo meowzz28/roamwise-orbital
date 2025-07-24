@@ -11,7 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 
-const home = () => {
+const Home = () => {
   const navigate = useNavigate();
 
   const features = [
@@ -19,31 +19,37 @@ const home = () => {
       icon: <MessageSquare className="w-5 h-5" />,
       title: "Forum",
       description: "Share your recent trips with fellow travelers",
+      path: "/forum",
     },
     {
       icon: <MapPin className="w-5 h-5" />,
       title: "Smart Planner",
       description: "Get ideas and advice for your trip with our AI Assistant",
+      path: "/chatbot",
     },
     {
       icon: <Calendar className="w-5 h-5" />,
       title: "My Trips",
       description: "Plan your trips with our collaborative planner",
+      path: "/templates",
     },
     {
       icon: <DollarSign className="w-5 h-5" />,
       title: "Trip Expenses",
       description: "Track your expenses for your trips",
+      path: "/expenses",
     },
     {
       icon: <Users className="w-5 h-5" />,
       title: "Travel Buddies",
       description: "Form groups to collaborate with friends when planning",
+      path: "/team",
     },
     {
       icon: <Settings className="w-5 h-5" />,
       title: "Tools",
       description: "Use our tools for planning (e.g., Explore Nearby)",
+      path: null,
     },
   ];
 
@@ -71,7 +77,14 @@ const home = () => {
                 {features.map((feature, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300"
+                    onClick={() => {
+                      if (feature.path) navigate(feature.path);
+                    }}
+                    className={`flex items-start gap-4 p-4 rounded-xl transition-all duration-300 ${
+                      feature.path
+                        ? "bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                        : "bg-gray-100 opacity-80 cursor-not-allowed"
+                    }`}
                   >
                     <div className="flex-shrink-0 p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg text-white">
                       {feature.icon}
@@ -128,4 +141,4 @@ const home = () => {
   );
 };
 
-export default home;
+export default Home;

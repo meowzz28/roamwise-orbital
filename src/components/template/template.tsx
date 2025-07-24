@@ -314,6 +314,7 @@ const Template = () => {
                   key={idx}
                   templateID={templateID}
                   date={date.toISOString().split("T")[0]}
+                  day={idx + 1}
                 />
               ))}
             </div>

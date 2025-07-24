@@ -96,20 +96,17 @@ describe("Forum Component", () => {
       );
     });
 
-    const filterSelect = screen.getByLabelText(/Filter by/i);
+    const filterSelect = screen.getByLabelText(/Order by/i);
 
     await act(async () => {
-      const select = filterSelect as HTMLSelectElement;
-      select.value = "likes";
-      select.dispatchEvent(new Event("change", { bubbles: true }));
+      fireEvent.change(filterSelect, { target: { value: "likes" } });
     });
-    const rows = screen.getAllByRole("row");
 
-    const firstPostRow = rows[1];
-    const secondPostRow = rows[2];
-
-    expect(firstPostRow).toHaveTextContent("More Liked Topic");
-    expect(secondPostRow).toHaveTextContent("Less Liked Topic");
+    await waitFor(() => {
+      const postTitles = screen.getAllByRole("heading", { level: 3 }); // <h3> is used for post titles
+      expect(postTitles[0]).toHaveTextContent("More Liked Topic");
+      expect(postTitles[1]).toHaveTextContent("Less Liked Topic");
+    });
   });
 
   it("Filters posts based on search input", async () => {

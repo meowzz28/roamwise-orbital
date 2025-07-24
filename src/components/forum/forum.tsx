@@ -160,7 +160,7 @@ function Forum() {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
           <label htmlFor="filter" className="me-2 fw-bold">
-            Filter by:
+            Order by:
           </label>
           <select
             id="filter"
@@ -182,51 +182,35 @@ function Forum() {
       </div>
       {/* Posts table or empty state */}
       {posts.length > 0 ? (
-        <div className="bg-shadow p-4 rounded shadow-md mb-4">
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead className="table-light">
-                <tr>
-                  <th className="col-md-2">Posted by</th>
-                  <th className="col-md-5">Topic</th>
-                  <th className="col-md-2">Likes</th>
-                  <th className="col-md-3">Last update</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.map((post) => (
-                  <tr
-                    key={post.id}
-                    onClick={() => handleViewPost(post.id)}
-                    className="cursor-pointer transition-transform duration-300 hover:scale-[1.008] hover:bg-gray-100"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <div className="bg-light rounded-circle p-2 me-2 text-primary fw-bold">
-                          {post.User.charAt(0).toUpperCase()}
-                        </div>
-                        <span>{post.User}</span>
-                      </div>
-                    </td>
-                    <td className="font-semibold">{post.Topic}</td>
-                    <td>
-                      <span>{post.Likes}</span>
-                    </td>
-                    <td>
-                      {post.Time?.seconds ? (
-                        <span className="text-gray-600 text-sm">
-                          {new Date(post.Time.seconds * 1000).toLocaleString()}
-                        </span>
-                      ) : (
-                        <span className="badge bg-secondary">N/A</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {posts.map((post) => (
+            <div
+              key={post.id}
+              onClick={() => handleViewPost(post.id)}
+              className="p-4 bg-white rounded-lg shadow hover:shadow-md hover:scale-[1.01] cursor-pointer transition-all"
+            >
+              <div className="flex items-center mb-2">
+                <div className="bg-primary text-white rounded-full h-10 w-10 flex items-center justify-center text-lg font-bold me-3">
+                  {post.User.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-sm text-gray-600">{post.User}</div>
+              </div>
+              <h3 className="text-lg font-semibold mb-1 truncate ">
+                {post.Topic}
+              </h3>
+              <p className="text-gray-700 text-sm line-clamp-3">
+                {post.Message}
+              </p>
+              <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                <span>{post.Likes} likes</span>
+                <span>
+                  {post.Time?.seconds
+                    ? new Date(post.Time.seconds * 1000).toLocaleString()
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         // Show empty state if no posts
