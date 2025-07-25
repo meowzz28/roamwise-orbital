@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import TemplatesPage from "./templatesPage";
+import TemplatesPage from "../components/template/templatesPage";
 import { act } from "@testing-library/react";
 import { addDoc } from "firebase/firestore";
 
@@ -15,7 +15,7 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("../firebase", () => ({
+vi.mock("../components/firebase", () => ({
   auth: {
     onAuthStateChanged: (cb: any) => {
       cb({ uid: "testUID" });

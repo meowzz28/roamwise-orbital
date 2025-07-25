@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { act } from "react";
-import Forum from "./forum";
+import Forum from "../components/forum/forum";
 
 const mockNavigate = vi.fn();
 
@@ -15,7 +15,7 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("../firebase", () => ({
+vi.mock("../components/firebase", () => ({
   auth: {
     onAuthStateChanged: (cb: any) => {
       cb({ uid: "testUID" });

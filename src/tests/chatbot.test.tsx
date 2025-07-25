@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ChatBot from "./chatbot";
+import ChatBot from "../components/chatbot/chatbot";
 import { vi } from "vitest";
 
-vi.mock("../firebase", () => ({
+vi.mock("../components/firebase", () => ({
   auth: { currentUser: { uid: "test-user" } },
   db: {},
 }));

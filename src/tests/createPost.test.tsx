@@ -3,7 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { toast } from "react-toastify";
 
-vi.mock("../firebase", () => ({
+vi.mock("../components/firebase", () => ({
   auth: {
     onAuthStateChanged: (cb: any) => {
       cb({ uid: "testUID" });
@@ -37,7 +37,7 @@ vi.mock("firebase/storage", () => {
 });
 
 const mockNavigate = vi.fn();
-import CreatePost from "./createPost";
+import CreatePost from "../components/forum/createPost";
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");

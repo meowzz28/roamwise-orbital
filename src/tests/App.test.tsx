@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
-import App from "./App";
+import App from "../App";
 import { act } from "react";
 
-vi.mock("./components/firebase", () => ({
+vi.mock("../components/firebase", () => ({
   auth: {
     onAuthStateChanged: (callback: any) => {
       callback({ uid: "123" });
