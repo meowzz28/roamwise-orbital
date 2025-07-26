@@ -1,10 +1,11 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import BudgetMainPage from "./BudgetMainPage";
+import BudgetMainPage from "../components/budgetTracker/BudgetMainPage";
 
 // Firebase mocks
-vi.mock("../firebase", () => ({
+vi.mock("../components/firebase", () => ({
+  default: {},
   auth: {
     onAuthStateChanged: (cb: any) => {
       cb({ uid: "testUID" });
@@ -16,8 +17,13 @@ vi.mock("../firebase", () => ({
   storage: {},
 }));
 
-const mockTemplatesQuery = {};
-const mockExpensesQuery = {};
+vi.mock("firebase/functions", () => ({
+  getFunctions: vi.fn(() => ({})), // return dummy functions instance
+  httpsCallable: vi.fn(() => vi.fn(() => Promise.resolve({ data: {} }))), // mock the callable function
+}));
+
+const mockTemplatesQuery = "mockTemplatesCollection";
+const mockExpensesQuery = "mockExpensesCollection";
 
 vi.mock("firebase/firestore", async () => {
   const actual = await vi.importActual<any>("firebase/firestore");
@@ -36,12 +42,7 @@ vi.mock("firebase/firestore", async () => {
         }),
       })
     ),
-    query: vi.fn((collectionRef) => {
-      if (collectionRef === "mockTemplatesCollection")
-        return mockTemplatesQuery;
-      if (collectionRef === "mockExpensesCollection") return mockExpensesQuery;
-      return {};
-    }),
+    query: vi.fn((collectionRef) => collectionRef),
     where: vi.fn(),
     orderBy: vi.fn(),
     collection: vi.fn((_, name) => {
@@ -83,7 +84,7 @@ vi.mock("firebase/firestore", async () => {
 });
 
 // Child mocks
-vi.mock("./DonutChart", () => ({
+vi.mock("../components/budgetTracker/DonutChart", () => ({
   __esModule: true,
   default: () => <div data-testid="mock-donut-chart" />,
 }));
@@ -93,7 +94,7 @@ vi.mock("./CurrencyConverter", () => ({
   default: () => <div data-testid="mock-currency-converter" />,
 }));
 
-vi.mock("./ExpenseModal", () => ({
+vi.mock("../components/budgetTracker/ExpenseModal", () => ({
   __esModule: true,
   default: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="mock-expense-modal">
@@ -131,7 +132,8 @@ describe("BudgetMainPage", () => {
     fireEvent.click(addButton);
 
     // Modal should appear
-    const modal = await screen.findByTestId("mock-expense-modal");
-    expect(modal).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("mock-expense-modal")).toBeInTheDocument();
+    });
   });
 });
