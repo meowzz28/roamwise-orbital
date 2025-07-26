@@ -9,11 +9,11 @@ import {
   where,
   orderBy,
 } from "firebase/firestore";
-import ExpenseModal from "./ExpenseModal";
+import ExpenseModal from "./expenseModal";
 import { useNavigate } from "react-router-dom";
-import DonutChart from "./DonutChart";
-import ExpensesList from "./ExpensesList";
-import CurrencyConverter from "./CurrencyConverter";
+import DonutChart from "./donutChart";
+import ExpensesList from "./expensesList";
+import CurrencyConverter from "./currencyConverter";
 
 const allCurrencies = [
   { code: "USD", name: "US Dollar", symbol: "$" },

@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import CurrencyConverter from "./budgetTracker/CurrencyConverter";
+import CurrencyConverter from "./BudgetTracker/currencyConverter";
 import Weather from "./Weather/Weather";
 import {
   MessageSquare,

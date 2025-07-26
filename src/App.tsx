@@ -6,7 +6,7 @@ import "./index.css";
 import { ToastContainer } from "react-toastify";
 import { auth } from "./components/firebase";
 import { User } from "firebase/auth";
-import AppRoutes from "./routes/AppRoutes";
+import AppRoutes from "./routes/appRoutes";
 import Navbar from "./components/navigationbar";
 
 function App() {

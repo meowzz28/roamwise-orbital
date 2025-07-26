@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { httpsCallable, getFunctions } from "firebase/functions";
 import app, { db } from "../firebase";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
-import CurrencySelector from "./CurrencySelector";
+import CurrencySelector from "./currencySelector";
 import { toast } from "react-toastify";
 
 type BudgetData = {

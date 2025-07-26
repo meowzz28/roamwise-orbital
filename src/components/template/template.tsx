@@ -8,7 +8,7 @@ import { FaPlaneDeparture } from "react-icons/fa";
 import Chat from "./chat";
 import DateSection from "./DateSection";
 import DailyPlan from "./DailyPlan";
-import BudgetEstimation from "./BudgetEstimate";
+import BudgetEstimation from "./budgetEstimate";
 
 type Template = {
   id: string;

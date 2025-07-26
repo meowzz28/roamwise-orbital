@@ -1,5 +1,5 @@
 import { useEffect, useState, ChangeEvent } from "react";
-import CurrencySelect from "./CurrencySelect";
+import CurrencySelect from "./currencySelect";
 
 const CurrencyConverter = () => {
   const [amount, setAmount] = useState<string>("0");
