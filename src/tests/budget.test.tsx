@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import BudgetMainPage from "../components/budgetTracker/budgetMainPage";
+import BudgetMainPage from "../components/BudgetTracker/budgetMainPage";
 
 // Firebase mocks
 vi.mock("../components/firebase", () => ({

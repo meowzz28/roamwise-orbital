@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { act } from "react";
-import Forum from "../components/forum/forum";
+import Forum from "../components/Forum/forum";
 
 const mockNavigate = vi.fn();
 

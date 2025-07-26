@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ChatBot from "../components/chatbot/chatbot";
+import ChatBot from "../components/Chatbot/chatbot";
 import { vi } from "vitest";
 
 vi.mock("../components/firebase", () => ({

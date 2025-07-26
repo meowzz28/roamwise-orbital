@@ -37,7 +37,7 @@ vi.mock("firebase/storage", () => {
 });
 
 const mockNavigate = vi.fn();
-import CreatePost from "../components/forum/createPost";
+import CreatePost from "../components/Forum/createPost";
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");

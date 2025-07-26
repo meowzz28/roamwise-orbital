@@ -17,7 +17,7 @@ vi.mock("react-router-dom", async () => {
     useNavigate: () => mockNavigate,
   };
 });
-import EditPost from "../components/forum/editPost";
+import EditPost from "../components/Forum/editPost";
 
 vi.mock("../components/firebase", () => ({
   auth: {
