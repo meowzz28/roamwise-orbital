@@ -3,7 +3,7 @@ import { auth, db } from "../firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import { FaPlaneDeparture } from "react-icons/fa";
 import { toast } from "react-toastify";
-import ForumDateSection from "./ForumDateSection";
+import ForumDateSection from "./forumDateSection";
 import ForumDailyPlan from "./forumDailyPlan";
 
 type Template = {

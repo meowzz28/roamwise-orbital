@@ -14,9 +14,9 @@ import {
 } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import ViewTrip from "./ForumViewTrip";
+import ViewTrip from "./forumViewTrip";
 import ForumSubComment from "./forumSubComment";
-import { ThumbsUp, ThumbsUpIcon, BookMarked, Bookmark } from "lucide-react";
+import { ThumbsUpIcon, BookMarked, Bookmark } from "lucide-react";
 
 type UserDetails = {
   email: string;

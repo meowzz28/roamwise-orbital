@@ -1,6 +1,6 @@
 import React from "react";
 import { APIProvider } from "@vis.gl/react-google-maps";
-import MapLogic from "./MapLogic";
+import MapLogic from "./mapLogic";
 
 const Nearby = () => {
   return (

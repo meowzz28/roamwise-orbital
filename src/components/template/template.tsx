@@ -6,8 +6,8 @@ import { deleteObject, ref } from "firebase/storage";
 import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
 import Chat from "./chat";
-import DateSection from "./DateSection";
-import DailyPlan from "./DailyPlan";
+import DateSection from "./dateSection";
+import DailyPlan from "./dailyPlan";
 import BudgetEstimation from "./budgetEstimate";
 
 type Template = {

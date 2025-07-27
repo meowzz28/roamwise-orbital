@@ -9,7 +9,7 @@ import {
 import { auth, db } from "../firebase";
 import { toast } from "react-toastify";
 import fetchChats from "../../hooks/fetchChats";
-import ChatNameModal from "./ChatNameModal";
+import ChatNameModal from "./chatNameModal";
 
 type ChatMessage = {
   message: string;

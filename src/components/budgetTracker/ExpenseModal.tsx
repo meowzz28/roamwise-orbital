@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { auth, db, functions } from "../firebase";
+import { auth, db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";

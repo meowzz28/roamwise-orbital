@@ -7,10 +7,10 @@ import {
 } from "@vis.gl/react-google-maps";
 import PoiMarker from "./poiMarker";
 import SearchBar from "./searchBar";
-import AttractionFetcher from "./AttractionFetcher";
-import LeftPanel from "./LeftPanel";
-import AttractionDetailPanel from "./AttractionDetailPanel";
-import Directions from "./Directions";
+import AttractionFetcher from "./attractionFetcher";
+import LeftPanel from "./leftPanel";
+import AttractionDetailPanel from "./attractionDetailPanel";
+import Directions from "./directions";
 
 type PlaceType = "attraction" | "restaurant" | "hotel";
 

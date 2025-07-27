@@ -10,7 +10,7 @@ import {
   onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
-import ChatMessage from "./ChatMessage";
+import ChatMessage from "./chatMessage";
 import DateSeparator from "./dateSeparator";
 
 type Message = {
