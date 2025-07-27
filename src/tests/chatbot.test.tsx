@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import ChatBot from "../components/Chatbot/chatbot";
 import { vi } from "vitest";
 

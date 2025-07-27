@@ -84,17 +84,17 @@ vi.mock("firebase/firestore", async () => {
 });
 
 // Child mocks
-vi.mock("../components/budgetTracker/DonutChart", () => ({
+vi.mock("../components/BudgetTracker/donutChart", () => ({
   __esModule: true,
   default: () => <div data-testid="mock-donut-chart" />,
 }));
 
-vi.mock("./CurrencyConverter", () => ({
+vi.mock("./currencyConverter", () => ({
   __esModule: true,
   default: () => <div data-testid="mock-currency-converter" />,
 }));
 
-vi.mock("../components/budgetTracker/ExpenseModal", () => ({
+vi.mock("../components/BudgetTracker/expenseModal", () => ({
   __esModule: true,
   default: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="mock-expense-modal">

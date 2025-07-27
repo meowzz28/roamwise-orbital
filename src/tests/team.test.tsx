@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { act } from "react";
-import Team from "../components/team/index";
+import Team from "../components/Team/index";
 import { addDoc } from "firebase/firestore";
 
 vi.mock("../components/firebase", () => ({
