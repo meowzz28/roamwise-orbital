@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import SideBar from "./chatbotSidebar";
 import ChatBot from "./chatbot";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
+import {
+  getCurrentUserDetails,
+  UserDetails,
+} from "../../services/chatbotService";
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -25,13 +21,8 @@ const ChatPage = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
-          } else {
-            console.log("User document does not exist.");
-          }
+          const details = await getCurrentUserDetails();
+          setUserDetails(details);
         } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
@@ -48,9 +39,7 @@ const ChatPage = () => {
   const handleChatChange = (chatId: string | null) => {
     if (selectedChatID !== chatId) {
       setLoading(true);
-
       setSelectedChatID(null);
-
       setTimeout(() => {
         setSelectedChatID(chatId);
         setLoading(false);

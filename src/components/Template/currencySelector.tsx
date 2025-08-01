@@ -1,56 +1,8 @@
 import React, { useState } from "react";
-
-export const allCurrencies = [
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "MYR", name: "Malaysian Ringgit", symbol: "RM" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "C$" },
-  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-  { code: "SEK", name: "Swedish Krona", symbol: "kr" },
-  { code: "NZD", name: "New Zealand Dollar", symbol: "NZ$" },
-  { code: "IDR", name: "Indonesian Rupiah", symbol: "Rp" },
-  { code: "INR", name: "Indian Rupee", symbol: "₹" },
-  { code: "KRW", name: "South Korean Won", symbol: "₩" },
-  { code: "ZAR", name: "South African Rand", symbol: "R" },
-  { code: "MXN", name: "Mexican Peso", symbol: "$" },
-  { code: "BRL", name: "Brazilian Real", symbol: "R$" },
-  { code: "HKD", name: "Hong Kong Dollar", symbol: "HK$" },
-  { code: "NOK", name: "Norwegian Krone", symbol: "kr" },
-  { code: "DKK", name: "Danish Krone", symbol: "kr" },
-  { code: "THB", name: "Thai Baht", symbol: "฿" },
-  { code: "TRY", name: "Turkish Lira", symbol: "₺" },
-  { code: "RUB", name: "Russian Ruble", symbol: "₽" },
-  { code: "PLN", name: "Polish Zloty", symbol: "zł" },
-  { code: "PHP", name: "Philippine Peso", symbol: "₱" },
-  { code: "TWD", name: "New Taiwan Dollar", symbol: "NT$" },
-  { code: "CZK", name: "Czech Koruna", symbol: "Kč" },
-  { code: "HUF", name: "Hungarian Forint", symbol: "Ft" },
-  { code: "ILS", name: "Israeli New Shekel", symbol: "₪" },
-  { code: "SAR", name: "Saudi Riyal", symbol: "﷼" },
-  { code: "AED", name: "United Arab Emirates Dirham", symbol: "د.إ" },
-  { code: "EGP", name: "Egyptian Pound", symbol: "E£" },
-  { code: "PKR", name: "Pakistani Rupee", symbol: "₨" },
-  { code: "VND", name: "Vietnamese Dong", symbol: "₫" },
-  { code: "NGN", name: "Nigerian Naira", symbol: "₦" },
-  { code: "ARS", name: "Argentine Peso", symbol: "$" },
-  { code: "CLP", name: "Chilean Peso", symbol: "$" },
-  { code: "COP", name: "Colombian Peso", symbol: "$" },
-  { code: "KES", name: "Kenyan Shilling", symbol: "KSh" },
-  { code: "TZS", name: "Tanzanian Shilling", symbol: "TSh" },
-  { code: "GHS", name: "Ghanaian Cedi", symbol: "₵" },
-  { code: "XOF", name: "West African CFA Franc", symbol: "CFA" },
-  { code: "XAF", name: "Central African CFA Franc", symbol: "FCFA" },
-];
-
-type CurrencySelectorProps = {
-  selected: string;
-  onSelect: (currencyCode: string) => void;
-};
+import {
+  allCurrencies,
+  CurrencySelectorProps,
+} from "../../services/templateService";
 
 const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   selected,

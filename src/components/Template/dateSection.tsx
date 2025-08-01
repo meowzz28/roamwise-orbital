@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { doc, runTransaction } from "firebase/firestore";
-import { db } from "../firebase";
 import { toast } from "react-toastify";
+import { updateTemplateDates } from "../../services/templateService";
 
 const DateSection = ({ id, template }) => {
   const [startDate, setStartDate] = useState(template.startDate);
@@ -27,23 +26,7 @@ const DateSection = ({ id, template }) => {
       position: "bottom-center",
     });
     try {
-      const templateRef = doc(db, "Templates", id);
-      await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(templateRef);
-        if (docSnap.exists()) {
-          transaction.update(templateRef, {
-            startDate: startDate,
-            endDate: endDate,
-          });
-        } else {
-          toast.update(toastId, {
-            render: "Failed to update",
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-          });
-        }
-      });
+      await updateTemplateDates(id, startDate, endDate);
       toast.update(toastId, {
         render: "Dates updated successfully!",
         type: "success",

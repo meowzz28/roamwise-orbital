@@ -8,15 +8,12 @@ import {
   MessageInput,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
-import { getDoc, doc, updateDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
 import useAIResponse from "../../hooks/useAIResponse";
-
-type ChatMessage = {
-  message: string;
-  sender: "user" | "assistant";
-  direction?: "incoming" | "outgoing";
-};
+import {
+  getChatMessages,
+  updateChatMessages,
+  ChatMessage,
+} from "../../services/chatbotService";
 
 const chatbot = ({ selectedChatID }) => {
   // Custom hook for AI response and typing state
@@ -24,53 +21,24 @@ const chatbot = ({ selectedChatID }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load messages from Firestore for the selected chat
-  const loadMessages = async () => {
-    setIsLoading(true);
-    setMessages([]);
-    const user = auth.currentUser;
-    if (!user || !selectedChatID) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const query = await getDoc(
-        doc(db, "Users", user.uid, "chats", selectedChatID)
-      );
-      if (query.exists()) {
-        setMessages(query.data().messages || []);
-      } else {
-        setMessages([]);
-      }
-    } catch (error) {
-      console.error("Error fetching messages: ", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Reload messages when selectedChatID changes
   useEffect(() => {
-    if (selectedChatID) {
-      loadMessages();
-    } else {
+    const loadMessages = async () => {
+      setIsLoading(true);
       setMessages([]);
-    }
-  }, [selectedChatID]);
+      try {
+        if (selectedChatID) {
+          const msgs = await getChatMessages(selectedChatID);
+          setMessages(msgs);
+        }
+      } catch {
+        setMessages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Update Firestore with new messages
-  const updateFireStore = async (updatedMessages: ChatMessage[]) => {
-    const user = auth.currentUser;
-    if (!user || !selectedChatID) return;
-    try {
-      await updateDoc(doc(db, "Users", user.uid, "chats", selectedChatID), {
-        messages: updatedMessages,
-      });
-    } catch (error) {
-      console.error("Error updating Firestore: ", error);
-    }
-  };
+    loadMessages();
+  }, [selectedChatID]);
 
   // Handle sending a new message
   const handleSend = async (message: string) => {
@@ -91,7 +59,7 @@ const chatbot = ({ selectedChatID }) => {
       };
       const finalMessages = [...newMessages, assistantMessage];
       setMessages(finalMessages);
-      await updateFireStore(finalMessages);
+      await updateChatMessages(selectedChatID, finalMessages);
     } else {
       const errorMessage: ChatMessage = {
         message: "Sorry, something went wrong. Please try again.",

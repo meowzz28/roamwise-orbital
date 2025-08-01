@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { doc, onSnapshot, runTransaction } from "firebase/firestore";
-import { db } from "../firebase";
 import { toast } from "react-toastify";
+import {
+  listenToDailyPlan,
+  saveDailyPlan,
+} from "../../services/templateService";
 
 const DailyPlan = ({ templateID, date, day }) => {
   const [text, setText] = useState("");
@@ -11,16 +13,11 @@ const DailyPlan = ({ templateID, date, day }) => {
 
   // Fetch daily plan content from Firestore and listen for real-time updates
   useEffect(() => {
-    const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
-    const unsubscribe = onSnapshot(planRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setText(docSnap.data().text || "");
-      } else {
-        setText("");
-      }
+    const unsubscribe = listenToDailyPlan(templateID, date, (fetchedText) => {
+      setText(fetchedText);
       setLoading(false);
     });
-    return () => unsubscribe();
+    return unsubscribe;
   }, [templateID, date]);
 
   // Save the daily plan content to Firestore using a transaction
@@ -30,10 +27,7 @@ const DailyPlan = ({ templateID, date, day }) => {
       position: "bottom-center",
     });
     try {
-      const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
-      await runTransaction(db, async (transaction) => {
-        transaction.set(planRef, { text }, { merge: true });
-      });
+      await saveDailyPlan(templateID, date, text);
       toast.update(toastId, {
         render: "Plan saved successfully!",
         type: "success",

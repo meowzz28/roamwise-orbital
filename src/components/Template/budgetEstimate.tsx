@@ -1,58 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { httpsCallable, getFunctions } from "firebase/functions";
-import app, { db } from "../firebase";
-import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import app from "../firebase";
 import CurrencySelector from "./currencySelector";
 import { toast } from "react-toastify";
-
-type BudgetData = {
-  totalBudgetPerPerson: number;
-  currency: string;
-  budgetLevel: string;
-  breakdown: {
-    flights?: number;
-    accommodation: number;
-    food: number;
-    activities: number;
-    transportation: number;
-    miscellaneous: number;
-  };
-  dailyBreakdown: Array<{
-    date: string;
-    estimatedCost: number;
-    breakdown: {
-      accommodation: number;
-      food: number;
-      activities: number;
-      transportation: number;
-    };
-    activityDetails?: Array<{
-      name: string;
-      estimatedCost: number;
-    }>;
-  }>;
-  budgetTips: string[];
-  disclaimer: string;
-};
-
-type Template = {
-  id: string;
-  topic: string;
-  startDate: string;
-  endDate: string;
-  users: string[];
-};
-
-type BudgetPreferences = {
-  budgetLevel: "budget" | "mid-range" | "luxury";
-  homeCountry: string;
-  currency: string;
-};
-
-interface BudgetEstimationProps {
-  template: Template;
-  templateID: string;
-}
+import {
+  BudgetData,
+  BudgetPreferences,
+  BudgetEstimationProps,
+  subscribeToBudget,
+} from "../../services/templateService";
 
 const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
   template,
@@ -72,15 +28,9 @@ const BudgetEstimation: React.FC<BudgetEstimationProps> = ({
   useEffect(() => {
     if (!templateID) return;
 
-    const budgetRef = doc(db, "BudgetEstimates", templateID);
-    const unsubscribe = onSnapshot(budgetRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data() as BudgetData;
-        setBudgetData(data);
-      }
-    });
+    const unsubscribe = subscribeToBudget(templateID, setBudgetData);
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, [templateID]);
 
   // Trigger Cloud Function to estimate budget using preferences and template data
