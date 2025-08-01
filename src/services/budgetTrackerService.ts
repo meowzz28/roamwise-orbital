@@ -195,6 +195,15 @@ export type DonutChartProps = {
   expenses: Expenses[];
 };
 
+export type Expense = {
+  id: string;
+  description: string;
+  totalSpending: number;
+  category: string;
+  currency: string;
+  date: string;
+};
+
 
 export type Expenses = {
   id: string;

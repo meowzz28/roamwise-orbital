@@ -1,15 +1,6 @@
 import React, { useState } from "react";
-import { deleteExpense } from "../../services/budgetTrackerService";
+import { deleteExpense, Expense } from "../../services/budgetTrackerService";
 import { toast } from "react-toastify";
-
-type Expense = {
-  id: string;
-  description: string;
-  totalSpending: number;
-  category: string;
-  currency: string;
-  date: string;
-};
 
 type ExpenseListProps = {
   expenses: Expense[];

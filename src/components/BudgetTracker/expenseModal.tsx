@@ -5,8 +5,7 @@ import { motion } from "framer-motion";
 import app from "../firebase";
 import { httpsCallable, getFunctions } from "firebase/functions";
 import { getAuth } from "firebase/auth";
-import { allCurrencies } from "../../services/budgetTrackerService";
-import { addExpense } from "../../services/budgetTrackerService";
+import { allCurrencies, addExpense } from "../../services/budgetTrackerService";
 
 type Props = {
   setIsCreating: React.Dispatch<React.SetStateAction<boolean>>;
