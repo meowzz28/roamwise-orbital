@@ -1,12 +1,13 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { FormEvent, useState } from "react";
-import { auth } from "./firebase";
 import { toast } from "react-toastify";
 import SignInwithGoogle from "./signInWithGoogle";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
 import { Link } from "react-router-dom";
+import {
+  signInWithEmail,
+  subscribeToAuthChanges,
+} from "../services/authService";
 
 function Login() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ function Login() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmail(email, password);
       console.log("User logged in Successfully");
       navigate("/");
       toast.success("User logged in Successfully", {
@@ -36,12 +37,11 @@ function Login() {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = subscribeToAuthChanges((user) => {
       if (user) {
         navigate("/");
       }
     });
-
     return () => unsubscribe();
   }, [navigate]);
 

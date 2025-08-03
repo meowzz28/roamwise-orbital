@@ -23,8 +23,9 @@ function Register() {
       });
       return;
     }
+    let loadingToastId: any;
     try {
-      const loadingToastId = toast.loading("Creating your user...", {
+      loadingToastId = toast.loading("Creating your user...", {
         position: "bottom-center",
       });
       await createUserWithEmailAndPassword(auth, email, password);
@@ -48,11 +49,21 @@ function Register() {
 
       await auth.signOut();
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
+      if (loadingToastId) {
+        toast.update(loadingToastId, {
+          render: error.message,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+          position: "bottom-center",
+        });
+      } else {
+        toast.error(error.message, {
+          position: "bottom-center",
+        });
+      }
       console.log(error.message);
-      toast.error(error.message, {
-        position: "bottom-center",
-      });
     }
   };
 

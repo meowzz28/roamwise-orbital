@@ -1,38 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "./firebase";
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import { auth } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import UploadForm from "./Gallery/uploadForm";
 import ImageGrid from "./Gallery/imageGrid";
 import PopUp from "./Gallery/popUp";
-import { ref, deleteObject, listAll } from "firebase/storage";
-import { storage } from "./firebase";
 import { toast } from "react-toastify";
 import { User, Image, Bookmark } from "lucide-react";
+import {
+  getCurrentUserDetails,
+  deleteCurrentUserAndData,
+  getSavedPostIds,
+  getForumPostData,
+  UserDetails,
+  ForumPost,
+} from "../services/authService";
 
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
-
-type ForumPost = {
-  id: string;
-  index?: number;
-  UID?: string;
-  User: string;
-  Topic: string;
-  Message: string;
-  Likes: number;
-  Saves?: number;
-  LikedBy: string[];
-  SavedBy?: string[];
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
 function Profile() {
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
@@ -49,13 +31,9 @@ function Profile() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
-          } else {
-            console.log("User document does not exist.");
-          }
+          const data = await getCurrentUserDetails();
+          if (data) setUserDetails(data);
+          else console.log("User document does not exist.");
         } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
@@ -77,50 +55,13 @@ function Profile() {
         setLoadingSavedPosts(false);
         return;
       }
-      const docSnap = await getDoc(doc(db, "Users", user.uid));
-      if (docSnap.exists()) {
-        const savedIds: string[] = docSnap.data().SavedPosts || [];
-        setSavedPosts(savedIds);
+      const savedIds = await getSavedPostIds();
+      setSavedPosts(savedIds);
 
-        const postDataPromises = savedIds.map(async (id) => {
-          const postSnap = await getDoc(doc(db, "Forum", id));
-          if (postSnap.exists()) {
-            return { id, topic: postSnap.data().Topic || "Untitled" };
-          }
-          return { id, topic: "Unknown Post" };
-        });
-
-        const posts = await Promise.all(
-          savedIds.map(async (id) => {
-            const postSnap = await getDoc(doc(db, "Forum", id));
-            if (postSnap.exists()) {
-              const data = postSnap.data();
-              return {
-                id,
-                User: data.User || "Unknown",
-                Topic: data.Topic || "Untitled",
-                Message: data.Message || "",
-                Likes: data.Likes || 0,
-                LikedBy: data.LikedBy || [],
-                Saves: data.Saves || 0,
-                SavedBy: data.SavedBy || [],
-                UID: data.UID || "",
-                Time: data.Time || null,
-              } as ForumPost;
-            } else {
-              return {
-                id,
-                User: "Unknown",
-                Topic: "Unknown Post",
-                Message: "",
-                Likes: 0,
-                LikedBy: [],
-              };
-            }
-          })
-        );
-        setSavedPostData(posts);
-      }
+      const posts = await Promise.all(
+        savedIds.map((id) => getForumPostData(id))
+      );
+      setSavedPostData(posts);
       setLoadingSavedPosts(false);
     };
 
@@ -133,36 +74,16 @@ function Profile() {
     const toastId = toast.loading("Deleting user's data...", {
       position: "bottom-center",
     });
-
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const folderRef = ref(storage, `images/${user.uid}`);
-        const listResult = await listAll(folderRef);
-        const deletePromises = listResult.items.map((fileRef) =>
-          deleteObject(fileRef)
-        );
-        await Promise.all(deletePromises);
-        await deleteDoc(doc(db, "Users", user.uid));
-        await user.delete();
-        toast.update(toastId, {
-          render: `User deleted successfully!`,
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-          position: "bottom-center",
-        });
-        navigate("/login");
-      } else {
-        console.error("No user is currently logged in.");
-        toast.update(toastId, {
-          render: "No user is currently logged in.",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-          position: "bottom-center",
-        });
-      }
+      await deleteCurrentUserAndData();
+      toast.update(toastId, {
+        render: `User deleted successfully!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+        position: "bottom-center",
+      });
+      navigate("/login");
     } catch (error) {
       console.error("Error delete account:", error.message);
       toast.update(toastId, {

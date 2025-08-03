@@ -1,9 +1,8 @@
-import { sendPasswordResetEmail } from "firebase/auth";
 import React, { FormEvent, useState } from "react";
-import { auth } from "./firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { resetPassword } from "../services/authService";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -16,12 +15,11 @@ function ResetPassword() {
     }
 
     try {
-      await sendPasswordResetEmail(auth, email).then((data) => {
-        toast.warn("Check you email", {
-          position: "bottom-center",
-        });
-        navigate("/login");
+      await resetPassword(email);
+      toast.warn("Check your email", {
+        position: "bottom-center",
       });
+      navigate("/login");
     } catch (error: any) {
       console.log(error.message);
       toast.error(error.message, {
