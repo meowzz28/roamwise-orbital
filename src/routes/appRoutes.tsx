@@ -13,7 +13,6 @@ import { User } from "firebase/auth";
 import EditPost from "../components/Forum/editPost";
 import Templates from "../components/Template/templatesPage";
 import Template from "../components/Template/template";
-import ViewTeam from "../components/Team/viewTeam";
 import Tracker from "../components/BudgetTracker/budgetMainPage";
 import FloatingAIWidget from "../components/floatingAIWidget";
 import CurrencyConverter from "../components/BudgetTracker/currencyConverter";
@@ -44,7 +43,6 @@ function AppRoutes({ user }: Props) {
             <Route path="/team" element={<Team />} />
             <Route path="/currency" element={<CurrencyConverter />} />
             <Route path="/weather" element={<Weather />} />
-            <Route path="/viewTeam/:teamID" element={<ViewTeam />} />
             <Route path="/register" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/chatbot" element={<ChatPage />} />

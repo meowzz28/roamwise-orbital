@@ -1,39 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import {
-  doc,
-  collection,
-  serverTimestamp,
-  getDoc,
-  getDocs,
-  updateDoc,
-} from "firebase/firestore";
+import { auth } from "../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  photo: string;
-};
-
-type ForumPost = {
-  id: string;
-  UID: string;
-  User: string;
-  Topic: string;
-  Likes: number;
-  LikedBy: string[];
-  Message: string;
-  TemplateID?: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  imageUrls?: string[];
-};
+import {
+  getCurrentUserDetails,
+  UserDetails,
+  ForumPostType as ForumPost,
+  fetchEditPost,
+  fetchTemplate,
+  updatePost,
+} from "../../services/forumService";
 
 function EditPost() {
   const navigate = useNavigate();
@@ -61,20 +37,13 @@ function EditPost() {
           if (user) {
             try {
               // Fetch user details
-              const userDocRef = doc(db, "Users", user.uid);
               setUID(user.uid);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                setUserDetails(userDocSnap.data() as UserDetails);
-              } else {
-                setError("User document does not exist.");
-              }
+              const userData = await getCurrentUserDetails();
+              setUserDetails(userData);
 
               // Fetch post data if postId is present
               if (postId) {
-                const postDocRef = doc(db, "Forum", postId);
-                const postDocSnap = await getDoc(postDocRef);
-
+                const postDocSnap = await fetchEditPost(postId);
                 if (postDocSnap.exists()) {
                   const data = postDocSnap.data();
 
@@ -94,6 +63,8 @@ function EditPost() {
                     Message: data.Message || "",
                     LikedBy: data.LikedBy || [],
                     Likes: data.Likes || 0,
+                    SavedBy: data.SavedBy || [],
+                    Saves: data.saves || 0,
                     Time: data.Time,
                     TemplateID: data.TemplateID || "",
                     imageUrls: data.ImageURLs,
@@ -104,14 +75,7 @@ function EditPost() {
                   setSelectedTemplateID(data.TemplateID);
                   setImageUrls(data.ImageURLs || []);
                   // Fetch templates available to the user
-                  const snapshot = await getDocs(collection(db, "Templates"));
-                  const filtered = snapshot.docs
-                    .filter((doc) => doc.data().userUIDs?.includes(user.uid))
-                    .map((doc) => ({
-                      id: doc.id,
-                      topic: doc.data().topic || "Untitled",
-                    }));
-                  setTemplates(filtered);
+                  fetchTemplate(UID).then((data) => setTemplates(data));
                 } else {
                   setError("Post not found.");
                 }
@@ -137,7 +101,6 @@ function EditPost() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [postId, navigate]);
 
@@ -173,29 +136,16 @@ function EditPost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
-        const uploadedUrls: string[] = [];
-        const storage = getStorage();
-        for (const image of images) {
-          const imageRef = ref(
-            storage,
-            `forumImages/${Date.now()}_${image.name}`
-          );
-          await uploadBytes(imageRef, image);
-          const url = await getDownloadURL(imageRef);
-          uploadedUrls.push(url);
-        }
-        const finalImageUrls = [...imageUrls, ...uploadedUrls];
-
-        // Update post in Firestore
-        await updateDoc(doc(db, "Forum", postId), {
-          User: userDetails.firstName,
-          UID: user.uid,
-          Message: context,
-          Topic: topic,
-          Time: serverTimestamp(),
-          TemplateID: selectedTemplateID || null,
-          ImageURLs: finalImageUrls,
-        });
+        updatePost(
+          images,
+          imageUrls,
+          postId,
+          userDetails,
+          UID,
+          context,
+          topic,
+          selectedTemplateID
+        );
 
         setImages([]);
         toast.update(toastId, {

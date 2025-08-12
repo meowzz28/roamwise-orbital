@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
+import { listenToDailyPlan } from "../../services/forumService";
 
 const ForumDailyPlan = ({ templateID, date }) => {
   const [text, setText] = useState("");
@@ -9,13 +8,8 @@ const ForumDailyPlan = ({ templateID, date }) => {
 
   useEffect(() => {
     // Listen for real-time updates to the daily plan document in Firestore
-    const planRef = doc(db, "Templates", templateID, "DailyPlans", date);
-    const unsubscribe = onSnapshot(planRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setText(docSnap.data().text || "");
-      } else {
-        setText("");
-      }
+    const unsubscribe = listenToDailyPlan(templateID, date, (data) => {
+      setText(data);
       setLoading(false);
     });
     return () => unsubscribe();

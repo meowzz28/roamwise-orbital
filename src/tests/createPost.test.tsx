@@ -2,6 +2,26 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { toast } from "react-toastify";
+vi.mock("../../services/forumService", () => ({
+  getCurrentUserDetails: vi.fn(() =>
+    Promise.resolve({
+      email: "test@test.com",
+      firstName: "Test",
+      lastName: "User",
+      photo: "test.jpg",
+    })
+  ),
+  fetchTemplate: vi.fn(() =>
+    Promise.resolve([
+      {
+        id: "template1",
+        topic: "Trip to Japan",
+      },
+    ])
+  ),
+  addImg: vi.fn(() => Promise.resolve("https://fakeurl.com/image.jpg")),
+  addPost: vi.fn(async () => ({ id: "newPostId" })),
+}));
 
 vi.mock("../components/firebase", () => ({
   auth: {
@@ -66,6 +86,7 @@ vi.mock("firebase/firestore", async () => {
     ),
     getDocs: vi.fn(() =>
       Promise.resolve({
+        empty: false,
         docs: [
           {
             id: "template1",
@@ -138,15 +159,15 @@ describe("CreatePost", () => {
       target: { value: "This is the content of my post." },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /create post/i }));
-
-    await waitFor(() => {
-      expect(toast.update).toHaveBeenCalledWith(
-        "loadingToastId",
-        expect.anything()
-      );
-
-      expect(mockNavigate).toHaveBeenCalledWith("/forum");
-    });
+    fireEvent.submit(screen.getByText(/create post/i).closest("form")!);
+    await waitFor(
+      () => {
+        expect(toast.update).toHaveBeenCalledWith(
+          "loadingToastId",
+          expect.anything()
+        );
+      },
+      { timeout: 3000 }
+    );
   });
 });

@@ -7,16 +7,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-type Expense = {
-  id: string;
-  category: string;
-  totalSpending: number;
-};
-
-type DonutChartProps = {
-  expenses: Expense[];
-};
+import { DonutChartProps } from "../../services/budgetTrackerService";
 
 const COLORS = [
   "#0088FE",

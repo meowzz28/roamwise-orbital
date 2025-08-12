@@ -1,32 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { auth, db, storage } from "../firebase";
-import { doc, onSnapshot, getDoc, deleteDoc } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
+import { auth } from "../firebase";
 import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
-import Chat from "./chat";
+import Chat from "../Chat/chat";
 import DateSection from "./dateSection";
 import DailyPlan from "./dailyPlan";
 import BudgetEstimation from "./budgetEstimate";
 
-type Template = {
-  id: string;
-  userEmails: string[];
-  userUIDs: string[];
-  users: string[];
-  topic: string;
-  startDate: string;
-  endDate: string;
-  imageURL: string;
-  teamID?: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
+import {
+  Template,
+  fetchUserEmail,
+  subscribeToTemplate,
+  canUserDeleteTemplate,
+  deleteTemplateAndAssets,
+} from "../../services/templateService";
 
-const Template = () => {
+const template = () => {
   const PlaneIcon = FaPlaneDeparture as React.ElementType;
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
@@ -41,29 +31,14 @@ const Template = () => {
 
   // Determine if the current user can delete the template
   useEffect(() => {
-    const checkDeletePermission = async () => {
-      if (!template || !userUID) return;
+    if (!template || !userUID) return;
 
-      if (!template.teamID) {
-        setCanDelete(true);
-        return;
-      }
-
-      // For team-based templates, only team admins can delete
-      try {
-        const teamRef = doc(db, "Team", template.teamID);
-        const teamSnap = await getDoc(teamRef);
-        if (teamSnap.exists()) {
-          const teamData = teamSnap.data();
-          setCanDelete(teamData.admin?.includes(userUID) || false);
-        }
-      } catch (error) {
-        console.error("Error checking delete permission:", error);
+    canUserDeleteTemplate(template, userUID)
+      .then(setCanDelete)
+      .catch((err) => {
+        console.error("Error checking delete permission:", err);
         setCanDelete(false);
-      }
-    };
-
-    checkDeletePermission();
+      });
   }, [template?.teamID, userUID]);
 
   // Auth listener: get current user's UID and email
@@ -72,11 +47,9 @@ const Template = () => {
       if (user) {
         setUserUID(user.uid);
         try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserEmail(docSnap.data().email);
-          }
+          setUserUID(user.uid);
+          const email = await fetchUserEmail(user.uid);
+          if (email) setUserEmail(email);
         } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
@@ -90,33 +63,23 @@ const Template = () => {
 
   // Subscribe to template data from Firestore
   useEffect(() => {
-    const fetchData = async () => {
-      const user = auth.currentUser;
-      try {
-        if (templateID) {
-          const templateDocRef = doc(db, "Templates", templateID);
-          onSnapshot(templateDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-              if (!docSnap.data().userUIDs.includes(user?.uid)) {
-                toast.error("You are not authorized to edit this post.", {
-                  position: "bottom-center",
-                });
-                navigate("/templates");
-                return;
-              }
-              setTemplate(docSnap.data() as Template);
-            } else {
-              navigate("/templates");
-            }
-          });
-        }
-      } catch (error: any) {
-        toast.error("Error Fetching Data", {
+    if (!templateID) return;
+
+    const unsubscribe = subscribeToTemplate(
+      templateID,
+      (tpl) => {
+        if (!tpl) return navigate("/templates");
+        setTemplate(tpl);
+      },
+      () => {
+        toast.error("You are not authorized to edit this post.", {
           position: "bottom-center",
         });
+        navigate("/templates");
       }
-    };
-    fetchData();
+    );
+
+    return () => unsubscribe();
   }, [templateID]);
 
   // Get all date objects between start and end dates (inclusive)
@@ -145,19 +108,14 @@ const Template = () => {
     const toastId = toast.loading("Deleting trip...", {
       position: "bottom-center",
     });
-    if (!templateID) return;
     try {
-      await deleteDoc(doc(db, "BudgetEstimates", templateID));
-      await deleteDoc(doc(db, "Templates", templateID));
+      await deleteTemplateAndAssets(templateID!, template?.imageURL);
       toast.update(toastId, {
         render: "Trip deleted successfully!",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
-      if (template?.imageURL) {
-        await deleteObject(ref(storage, template.imageURL));
-      }
       navigate("/templates");
     } catch (error: any) {
       toast.update(toastId, {
@@ -370,4 +328,4 @@ const Template = () => {
   );
 };
 
-export default Template;
+export default template;

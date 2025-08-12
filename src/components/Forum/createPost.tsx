@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import {
-  doc,
-  collection,
-  addDoc,
-  getDoc,
-  getDocs,
-  serverTimestamp,
-} from "firebase/firestore";
+import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  photo: string;
-};
+import {
+  UserDetails,
+  getCurrentUserDetails,
+  fetchTemplate,
+  addImg,
+  addPost,
+} from "../../services/forumService";
 
 function CreatePost() {
   const navigate = useNavigate();
@@ -41,23 +32,10 @@ function CreatePost() {
           if (user) {
             try {
               // Fetch user details from Firestore
-              const userDocRef = doc(db, "Users", user.uid);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                setUserDetails(userDocSnap.data() as UserDetails);
-              } else {
-                setError("User document does not exist.");
-              }
-
+              const userData = await getCurrentUserDetails();
+              setUserDetails(userData);
               // Fetch templates available to the user
-              const snapshot = await getDocs(collection(db, "Templates"));
-              const filtered = snapshot.docs
-                .filter((doc) => doc.data().userUIDs?.includes(user.uid))
-                .map((doc) => ({
-                  id: doc.id,
-                  topic: doc.data().topic || "Untitled",
-                }));
-              setTemplates(filtered);
+              await fetchTemplate(user.uid).then((temp) => setTemplates(temp));
             } catch (err: any) {
               setError(`Error fetching user data: ${err.message}`);
               console.error("Error:", err);
@@ -77,7 +55,6 @@ function CreatePost() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [navigate]);
 
@@ -111,47 +88,25 @@ function CreatePost() {
       const imageURLs: string[] = [];
 
       if (images.length > 0) {
-        const storage = getStorage();
         for (const image of images) {
-          const imageRef = ref(
-            storage,
-            `forum_images/${Date.now()}_${image.name}`
-          );
-          const snapshot = await uploadBytes(imageRef, image);
-          const downloadURL = await getDownloadURL(snapshot.ref);
-          imageURLs.push(downloadURL);
+          addImg(image).then((url) => imageURLs.push(url));
         }
       }
 
       if (user && userDetails) {
         // Add new post to Firestore
-        await addDoc(collection(db, "Forum"), {
-          User: userDetails.firstName,
-          UID: user.uid,
-          Message: context,
-          Topic: topic,
-          TemplateID: selectedTemplateID || null,
-          Likes: 0,
-          LikedBy: [],
-          Saves: 0,
-          SavedBy: [],
-          Time: serverTimestamp(),
-          ImageURLs: imageURLs,
-        });
-
-        toast.update(toastId, {
-          render: "Post created successfully!",
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-          position: "bottom-center",
-        });
-
+        await addPost(
+          userDetails,
+          context,
+          topic,
+          selectedTemplateID,
+          imageURLs,
+          user.uid
+        );
         navigate("/forum");
-      } else {
         toast.update(toastId, {
-          render: "Something went wrong. Please try again.",
-          type: "error",
+          render: "Post created successfully",
+          type: "success",
           isLoading: false,
           autoClose: 3000,
         });

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { auth } from "./firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { User } from "firebase/auth";
 import { motion } from "framer-motion";
 import Notification from "./notifications";
+import { signOut } from "../services/authService";
 import {
   UserCircle,
   ChevronDown,
@@ -18,7 +18,6 @@ type Props = {
 
 const Navigationbar = ({ user }: Props) => {
   const navigate = useNavigate();
-  const [showMenu, setShowMenu] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -49,7 +48,7 @@ const Navigationbar = ({ user }: Props) => {
 
   const forceLogout = async () => {
     try {
-      await auth.signOut();
+      await signOut();
       localStorage.clear();
       sessionStorage.clear();
       navigate("/login");

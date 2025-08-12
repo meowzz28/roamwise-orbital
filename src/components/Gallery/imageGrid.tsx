@@ -1,29 +1,18 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { storage, auth, db } from "../firebase";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
 import { motion } from "framer-motion";
+import {
+  deleteImageById,
+  listenToUserImages,
+} from "../../services/galleryService";
 
 const imageGrid = ({ setSelectedImg }) => {
   const [docs, setDocs] = useState<any[]>([]);
 
   // Function to delete image from Firestore and Storage
   const deleteImage = (id: string, url: string) => async () => {
-    const user = auth.currentUser;
-    if (!user) return;
     try {
-      // Delete Firestore document
-      await deleteDoc(doc(db, "Users", user.uid, "images", id));
-      // Delete image from Firebase Storage
-      await deleteObject(ref(storage, url));
+      await deleteImageById(id, url);
     } catch (error: any) {
       console.error("Error deleting image:", error.message);
     }
@@ -31,20 +20,8 @@ const imageGrid = ({ setSelectedImg }) => {
 
   // Realtime listener for user's uploaded images
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const q = query(
-      collection(db, "Users", user.uid, "images"),
-      orderBy("createdAt", "desc")
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let docs: any[] = [];
-      snapshot.forEach((doc) => {
-        docs.push({ ...doc.data(), id: doc.id });
-      });
-      setDocs(docs);
-    });
+    const unsubscribe = listenToUserImages(setDocs);
+    return unsubscribe; // cleanup
   }, []);
 
   return (

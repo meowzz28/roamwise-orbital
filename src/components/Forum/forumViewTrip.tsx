@@ -1,27 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { auth, db } from "../firebase";
-import { doc, onSnapshot } from "firebase/firestore";
 import { FaPlaneDeparture } from "react-icons/fa";
 import { toast } from "react-toastify";
 import ForumDateSection from "./forumDateSection";
 import ForumDailyPlan from "./forumDailyPlan";
-
-type Template = {
-  id: string;
-  users: string[];
-  userEmails: string[];
-  userUIDs: string[];
-  topic: string;
-  startDate: string;
-  endDate: string;
-  imageURL: string;
-  teamName?: string;
-  teamID?: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
+import { Template, listenToTrip } from "../../services/forumService";
 
 function ViewTrip({ templateID }: { templateID: string }) {
   const PlaneIcon = FaPlaneDeparture as React.ElementType;
@@ -30,24 +12,13 @@ function ViewTrip({ templateID }: { templateID: string }) {
 
   // Fetch template data on mount and listen for updates
   useEffect(() => {
-    const fetchData = async () => {
-      const user = auth.currentUser;
-      try {
-        if (templateID) {
-          const templateDocRef = doc(db, "Templates", templateID);
-          onSnapshot(templateDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-              setTemplate(docSnap.data() as Template);
-            }
-          });
-        }
-      } catch (error: any) {
-        toast.error("Error Fetching Data", {
-          position: "bottom-center",
-        });
-      }
-    };
-    fetchData();
+    if (!templateID) return;
+    try {
+      const unsubscribe = listenToTrip(templateID, setTemplate);
+      return () => unsubscribe(); // cleanup listener
+    } catch (error) {
+      toast.error("Error Fetching Data", { position: "bottom-center" });
+    }
   }, [templateID]);
 
   // Get all dates from start to end (inclusive)

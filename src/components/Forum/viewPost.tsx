@@ -1,60 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import {
-  doc,
-  collection,
-  addDoc,
-  serverTimestamp,
-  getDoc,
-  deleteDoc,
-  query,
-  where,
-  getDocs,
-  runTransaction,
-} from "firebase/firestore";
+import { auth } from "../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ViewTrip from "./forumViewTrip";
 import ForumSubComment from "./forumSubComment";
 import { ThumbsUpIcon, BookMarked, Bookmark } from "lucide-react";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  photo: string;
-};
-
-type ForumPost = {
-  id: string;
-  UID: string;
-  User: string;
-  Topic: string;
-  Message: string;
-  Likes: number;
-  LikedBy: string[];
-  Saves: number;
-  SavedBy: string[];
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-
-  TemplateID: string;
-  imageUrls?: string[];
-};
-
-type Comment = {
-  id: string;
-  UID: string;
-  User: string;
-  Message: string;
-  PostId: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
+import {
+  Comment,
+  UserDetails,
+  ForumPostType as ForumPost,
+  getCurrentUserDetails,
+  fetchPost,
+  fetchComment,
+  deletePost,
+  triggerNotification,
+  postComment,
+  deleteComment,
+  likeUpdate,
+  saveUpdate,
+} from "../../services/forumService";
 
 function ViewPost() {
   const navigate = useNavigate();
@@ -82,40 +46,12 @@ function ViewPost() {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
           if (user) {
             try {
-              const userDocRef = doc(db, "Users", user.uid);
-              setUID(user.uid);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                setUserDetails(userDocSnap.data() as UserDetails);
-              } else {
-                setError("User document does not exist.");
-              }
-              if (postId) {
-                const postDocRef = doc(db, "Forum", postId);
-                const postDocSnap = await getDoc(postDocRef);
+              const userData = await getCurrentUserDetails();
+              setUserDetails(userData);
 
-                if (postDocSnap.exists()) {
-                  const data = postDocSnap.data();
-                  setPost({
-                    id: postId,
-                    UID: data.UID,
-                    User: data.User || "",
-                    Topic: data.Topic || "",
-                    Message: data.Message || "",
-                    Likes: data.Likes || 0,
-                    LikedBy: data.LikedBy || [],
-                    Saves: data.Saves || 0,
-                    SavedBy: data.SavedBy || [],
-                    Time: data.Time,
-                    TemplateID: data.TemplateID,
-                    imageUrls: data.ImageURLs,
-                  });
-                  setIsLiked(data.LikedBy?.includes(user.uid) || false);
-                  setIsSaved(data.SavedBy?.includes(user.uid) || false);
-                  await fetchComments();
-                } else {
-                  setError("Post not found.");
-                }
+              if (postId) {
+                await fetchPost(postId, UID, setPost, setIsLiked, setIsSaved);
+                await fetchComments();
               } else {
                 setError("Post ID is missing.");
               }
@@ -144,35 +80,10 @@ function ViewPost() {
   // Fetch all comments for the current post
   const fetchComments = async () => {
     if (!postId) return;
-
     try {
       setCommentsLoading(true);
-      const commentsQuery = query(
-        collection(db, "ForumComment"),
-        where("PostId", "==", postId)
-      );
 
-      const querySnapshot = await getDocs(commentsQuery);
-      const commentsData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          UID: data.UID,
-          User: data.User || "",
-          Message: data.Message || "",
-          PostId: data.PostId || "",
-          Time: data.Time,
-        } as Comment;
-      });
-
-      // Sort comments from newest to oldest
-      commentsData.sort((a, b) => {
-        const timeA = a.Time?.seconds || 0;
-        const timeB = b.Time?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setComments(commentsData);
+      fetchComment(postId, setComments);
     } catch (err: any) {
       console.error("Error fetching comments:", err);
       toast.error(`Error loading comments: ${err.message}`, {
@@ -196,20 +107,7 @@ function ViewPost() {
       position: "bottom-center",
     });
     try {
-      const commentsQuery = query(
-        collection(db, "ForumComment"),
-        where("PostId", "==", postId)
-      );
-
-      const commentsSnapshot = await getDocs(commentsQuery);
-
-      const commentDeletionPromises = commentsSnapshot.docs.map((doc) =>
-        deleteDoc(doc.ref)
-      );
-
-      await Promise.all(commentDeletionPromises);
-
-      await deleteDoc(doc(db, "Forum", postId));
+      deletePost(postId);
 
       toast.update(toastId, {
         render: `Post deleted successfully!`,
@@ -249,19 +147,14 @@ function ViewPost() {
     try {
       const user = auth.currentUser;
       if (user && userDetails && postId) {
-        await addDoc(collection(db, "ForumComment"), {
-          User: userDetails.firstName,
-          UID: user.uid,
-          Message: comment,
-          PostId: postId,
-          Time: serverTimestamp(),
-        });
+        postComment(user.uid, userDetails, postId, comment);
 
         if (post && post.UID !== user.uid) {
           await triggerNotification(
             post.UID,
             `${userDetails.firstName} commented on your post "${post.Topic}"`,
-            `/viewPost/${postId}`
+            `/viewPost/${postId}`,
+            UID
           );
         }
 
@@ -302,27 +195,15 @@ function ViewPost() {
     });
     try {
       setIsDeletingComment(true);
-      await deleteDoc(doc(db, "ForumComment", commentId));
-      const subCommentsQuery = query(
-        collection(db, "ForumSubComment"),
-        where("ParentCommentId", "==", commentId)
-      );
-      const subCommentsSnapshot = await getDocs(subCommentsQuery);
-      const subDeletePromises = subCommentsSnapshot.docs.map((doc) =>
-        deleteDoc(doc.ref)
-      );
-      await Promise.all(subDeletePromises);
-
+      deleteComment(commentId);
       toast.update(toastId, {
         render: "Comment deleted successfully!",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
-
       setShowDeletCommentConfirm(false);
       setCommentToDelete(null);
-
       fetchComments();
     } catch (error: any) {
       console.error("Error deleting comment:", error);
@@ -347,48 +228,11 @@ function ViewPost() {
 
   // Like/unlike the post using Firestore transaction
   const handleLike = async () => {
-    if (!postId || !UID || !post) {
+    if (!postId || !UID || !post || !userDetails) {
       return;
     }
-    const postRef = doc(db, "Forum", postId);
     try {
-      await runTransaction(db, async (transaction) => {
-        const postDoc = await transaction.get(postRef);
-        if (!postDoc.exists()) {
-          throw new Error("Post does not exist.");
-        }
-
-        const likedBy = postDoc.data().LikedBy || [];
-        const isCurrentlyLiked = likedBy.includes(UID);
-        const newLikes = isCurrentlyLiked
-          ? postDoc.data().Likes - 1
-          : postDoc.data().Likes + 1;
-
-        const updatedLikedBy = isCurrentlyLiked
-          ? likedBy.filter((id: string) => id !== UID)
-          : [...likedBy, UID];
-
-        transaction.update(postRef, {
-          Likes: newLikes,
-          LikedBy: updatedLikedBy,
-        });
-        setPost({
-          ...(post as ForumPost),
-          Likes: newLikes,
-          LikedBy: updatedLikedBy,
-        });
-        setIsLiked(!isCurrentlyLiked);
-
-        if (!isCurrentlyLiked && UID !== post.UID) {
-          await triggerNotification(
-            post.UID,
-            `${userDetails?.firstName || "Someone"} liked your post: "${
-              post.Topic
-            }"`,
-            `/viewPost/${postId}`
-          );
-        }
-      });
+      likeUpdate(postId, UID, setPost, post, setIsLiked, userDetails);
     } catch (error: any) {
       toast.error(`Error liking post: ${error.message}`, {
         position: "bottom-center",
@@ -397,87 +241,15 @@ function ViewPost() {
   };
 
   const handleSave = async () => {
-    if (!postId || !UID || !post) {
+    if (!postId || !UID || !post || !userDetails) {
       return;
     }
-    const postRef = doc(db, "Forum", postId);
-    const userRef = doc(db, "Users", UID);
     try {
-      await runTransaction(db, async (transaction) => {
-        const postDoc = await transaction.get(postRef);
-        const userDoc = await transaction.get(userRef);
-        if (!postDoc.exists()) {
-          throw new Error("Post does not exist.");
-        }
-        if (!userDoc.exists()) {
-          throw new Error("User does not exist.");
-        }
-        const rawSaves = postDoc.data().Saves;
-        const saves =
-          typeof rawSaves === "number" && !isNaN(rawSaves) ? rawSaves : 0;
-        const savedBy = postDoc.data().SavedBy || [];
-        const isCurrentlySaved = savedBy.includes(UID);
-        const newLikes = isCurrentlySaved ? Math.max(saves - 1, 0) : saves + 1;
-        const updatedSavedBy = isCurrentlySaved
-          ? savedBy.filter((id: string) => id !== UID)
-          : [...savedBy, UID];
-
-        transaction.update(postRef, {
-          Saves: newLikes,
-          SavedBy: updatedSavedBy,
-        });
-
-        const userData = userDoc.data();
-        const savedPosts: string[] = userData.SavedPosts || [];
-
-        const updatedSavedPosts = isCurrentlySaved
-          ? savedPosts.filter((id) => id !== postId)
-          : [...savedPosts, postId];
-
-        transaction.update(userRef, {
-          SavedPosts: updatedSavedPosts,
-        });
-
-        setPost({
-          ...(post as ForumPost),
-          Saves: newLikes,
-          SavedBy: updatedSavedBy,
-        });
-        setIsSaved(!isCurrentlySaved);
-
-        if (!isCurrentlySaved && UID !== post.UID) {
-          await triggerNotification(
-            post.UID,
-            `${userDetails?.firstName || "Someone"} saved your post: "${
-              post.Topic
-            }"`,
-            `/viewPost/${postId}`
-          );
-        }
-      });
+      saveUpdate(postId, UID, setPost, post, setIsSaved, userDetails);
     } catch (error: any) {
       toast.error(`Error liking post: ${error.message}`, {
         position: "bottom-center",
       });
-    }
-  };
-
-  const triggerNotification = async (
-    recipientUID: string,
-    message: string,
-    link: string
-  ) => {
-    try {
-      await addDoc(collection(db, "Notifications"), {
-        userId: recipientUID,
-        trigger: UID,
-        message,
-        read: false,
-        Time: serverTimestamp(),
-        link,
-      });
-    } catch (error) {
-      console.error("Failed to create notification:", error);
     }
   };
 

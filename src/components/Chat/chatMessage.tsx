@@ -1,16 +1,5 @@
 import { auth } from "../firebase";
-
-type Message = {
-  id: string;
-  text: string;
-  uid: string;
-  createdAt: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  createdBy: string;
-  user_name: string;
-};
+import { Message } from "../../services/teamService";
 
 function ChatMessage({ message }: { message: Message }) {
   const { text, createdBy, user_name, createdAt } = message;

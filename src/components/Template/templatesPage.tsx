@@ -1,58 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { auth, db, storage } from "../firebase";
-import {
-  doc,
-  getDoc,
-  getDocs,
-  collection,
-  query,
-  where,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  orderBy,
-} from "firebase/firestore";
+import { auth } from "../firebase";
 import Card from "./card";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CreateNewTemplate from "./createNewTemplate";
 import { motion } from "framer-motion";
 
-import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
-
-type Team = {
-  id: string;
-  Name: string;
-  admin: string[];
-  admin_name: string[];
-  user_email: string[];
-  user_uid: string[];
-  user_name: string[];
-};
-
-type Template = {
-  id: string;
-  users: string[];
-  userEmails: string[];
-  userUIDs: string[];
-  topic: string;
-  startDate: string;
-  endDate: string;
-  imageURL: string;
-  teamName?: string;
-  teamID?: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
+import {
+  getCurrentUserDetails,
+  fetchUserTemplates,
+  listenToTeams,
+  createTemplate,
+  UserDetails,
+  Team,
+  Template,
+} from "../../services/templateService";
 
 const templatesPage = () => {
   const navigate = useNavigate();
@@ -70,15 +32,8 @@ const templatesPage = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUID(user.uid);
-        try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
-          }
-        } catch (err: any) {
-          console.error("Error fetching user data:", err.message);
-        }
+        const details = await getCurrentUserDetails();
+        setUserDetails(details);
       } else {
         setUserDetails(null);
       }
@@ -89,59 +44,20 @@ const templatesPage = () => {
 
   // Fetch templates owned or shared with the user
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTemplates = async () => {
       if (!UID) return;
-      try {
-        const querySnapshot = await getDocs(
-          query(
-            collection(db, "Templates"),
-            where("userUIDs", "array-contains", UID),
-            orderBy("time", "desc")
-          )
-        );
-        const templateData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Template[];
-        setTemplates(templateData);
-      } catch (err) {
-        console.error("Error fetching template data:", err);
-      }
+      const templates = await fetchUserTemplates(UID);
+      setTemplates(templates);
     };
-
-    fetchData();
+    fetchTemplates();
   }, [UID]);
 
   // Listen for real-time updates to teams the user is part of
   useEffect(() => {
     if (!UID) return;
-
-    const teamsQuery = query(
-      collection(db, "Team"),
-      where("user_uid", "array-contains", UID),
-      orderBy("created_at", "desc")
-    );
-
-    const unsubscribe = onSnapshot(teamsQuery, (snapshot) => {
-      try {
-        const teamData = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            Name: data.Name,
-            admin: data.admin || [],
-            admin_name: data.admin_name || [],
-            user_email: data.user_email || [],
-            user_uid: data.user_uid || [],
-            user_name: data.user_name || [],
-          } as Team;
-        });
-        setTeams(teamData);
-      } catch (err) {
-        console.error("Error processing team data:", err);
-      }
+    const unsubscribe = listenToTeams(UID, (teamList) => {
+      setTeams(teamList);
     });
-
     return () => unsubscribe();
   }, [UID]);
 
@@ -156,95 +72,45 @@ const templatesPage = () => {
     const toastId = toast.loading("Creating trip...", {
       position: "bottom-center",
     });
-    try {
-      const user = auth.currentUser;
-      let uploadedImageURL = "";
-      let teamName = "";
 
-      // Upload image if provided
-      if (image && user) {
-        const imageRef = ref(
-          storage,
-          `templateImages/${user.uid}/${image.name}`
-        );
-        const uploadTask = await uploadBytesResumable(imageRef, image);
-        uploadedImageURL = await getDownloadURL(uploadTask.ref);
-        setImage(null);
-      }
-
-      if (user && userDetails) {
-        let userEmails = [userDetails.email];
-        let userUIDs = [user.uid];
-        let users = [userDetails.firstName];
-
-        if (teamID) {
-          const teamRef = doc(db, "Team", teamID);
-          const teamDoc = await getDoc(teamRef);
-
-          if (teamDoc.exists()) {
-            const teamData = teamDoc.data();
-            teamName = teamData.Name;
-            userEmails = [...new Set([...userEmails, ...teamData.user_email])];
-            userUIDs = [...new Set([...userUIDs, ...teamData.user_uid])];
-            users = [...new Set([...users, ...teamData.user_name])];
-          }
-        }
-
-        // Create new template document
-        const newDocRef = await addDoc(collection(db, "Templates"), {
-          userEmails: userEmails,
-          userUIDs: userUIDs,
-          users: users,
-          topic: templateName,
-          startDate: start,
-          endDate: end,
-          imageURL: uploadedImageURL,
-          teamID: teamID,
-          teamName: teamName,
-          time: serverTimestamp(),
-        });
-
-        // Optimistically update local state
-        setTemplates((prev) => [
-          {
-            id: newDocRef.id,
-            userEmails: userEmails,
-            userUIDs: userUIDs,
-            users: users,
-            topic: templateName,
-            startDate: start,
-            endDate: end,
-            imageURL: uploadedImageURL,
-            teamID: teamID,
-            teamName: teamName,
-            time: serverTimestamp(),
-          },
-          ...prev,
-        ]);
-        toast.update(toastId, {
-          render: "Trip created successfully!",
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastId, {
-          render: "Failed to create new template. Please try again.",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      }
-    } catch (err: any) {
+    if (!userDetails) {
       toast.update(toastId, {
-        render: `Error creating template: ${err.message}`,
+        render: "User details missing.",
         type: "error",
         isLoading: false,
         autoClose: 3000,
       });
-    } finally {
-      setIsCreating(false);
+      return;
     }
+
+    const result = await createTemplate(
+      templateName,
+      start,
+      end,
+      image,
+      teamID,
+      userDetails
+    );
+
+    if (result.success && result.newTemplate) {
+      setTemplates((prev) => [result.newTemplate!, ...prev]);
+      toast.update(toastId, {
+        render: "Trip created successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } else {
+      toast.update(toastId, {
+        render: `Error creating template: ${result.error}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
+
+    setImage(null);
+    setIsCreating(false);
   };
 
   if (!authChecked) {

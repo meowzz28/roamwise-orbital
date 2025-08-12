@@ -1,31 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  doc,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  deleteDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import { toast } from "react-toastify";
-
-type Props = {
-  postId: string;
-  parentId: string;
-};
-
-type SubComment = {
-  id: string;
-  UID: string;
-  User: string;
-  Message: string;
-  PostId: string;
-  ParentCommentId: string;
-  Time?: { seconds: number; nanoseconds: number };
-};
+import {
+  Props,
+  SubComment,
+  addSubComment,
+  deleteSubComment,
+  fetchSubComments,
+  getCurrentUserDetails,
+} from "../../services/forumService";
 
 function ForumSubComment({ postId, parentId }: Props) {
   const [reply, setReply] = useState("");
@@ -42,36 +25,17 @@ function ForumSubComment({ postId, parentId }: Props) {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUID(user.uid);
-        const userDoc = await getDocs(
-          query(collection(db, "Users"), where("email", "==", user.email))
-        );
-        userDoc.forEach((doc) => {
-          const data = doc.data();
-          setUserName(data.firstName || "Anonymous");
-        });
+        const userData = await getCurrentUserDetails();
+        if (userData) {
+          setUserName(userData.firstName);
+        } else {
+          setUserName("Anonymous");
+        }
       }
     });
-
-    fetchSubComments();
-
+    fetchSubComments(postId, parentId, setSubComments);
     return () => unsubscribe();
   }, []);
-
-  // Fetch all subcomments for this post and parent comment
-  const fetchSubComments = async () => {
-    const q = query(
-      collection(db, "ForumSubComment"),
-      where("PostId", "==", postId),
-      where("ParentCommentId", "==", parentId)
-    );
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as SubComment[];
-
-    setSubComments(data);
-  };
 
   // Handle reply submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,38 +49,8 @@ function ForumSubComment({ postId, parentId }: Props) {
       const toastId = toast.loading("Replying...", {
         position: "bottom-center",
       });
-      await addDoc(collection(db, "ForumSubComment"), {
-        User: userName,
-        UID: UID,
-        Message: reply,
-        PostId: postId,
-        ParentCommentId: parentId,
-        Time: serverTimestamp(),
-      });
+      await addSubComment(userName, UID, reply, postId, parentId);
 
-      //To deal with the Notification
-      const parentCommentQuery = query(
-        collection(db, "ForumComment"),
-        where("PostId", "==", postId),
-        where("__name__", "==", parentId)
-      );
-      const parentSnap = await getDocs(parentCommentQuery);
-
-      if (!parentSnap.empty) {
-        const parent = parentSnap.docs[0].data();
-        const parentUID = parent.UID;
-
-        if (parentUID && parentUID !== UID) {
-          await addDoc(collection(db, "Notifications"), {
-            userId: parentUID,
-            trigger: UID,
-            message: `${userName} replied to your comment.`,
-            Time: serverTimestamp(),
-            read: false,
-            link: `/viewPost/${postId}`,
-          });
-        }
-      }
       toast.update(toastId, {
         render: "Reply posted",
         type: "success",
@@ -125,7 +59,7 @@ function ForumSubComment({ postId, parentId }: Props) {
       });
 
       setReply("");
-      fetchSubComments();
+      fetchSubComments(postId, parentId, setSubComments);
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -137,14 +71,14 @@ function ForumSubComment({ postId, parentId }: Props) {
       const toastId = toast.loading("Deleting...", {
         position: "bottom-center",
       });
-      await deleteDoc(doc(db, "ForumSubComment", id));
+      await deleteSubComment(id);
       toast.update(toastId, {
         render: "Reply deleted",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
-      fetchSubComments();
+      fetchSubComments(postId, parentId, setSubComments);
     } catch (err: any) {
       toast.error(err.message);
     }

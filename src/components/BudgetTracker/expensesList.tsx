@@ -1,16 +1,6 @@
 import React, { useState } from "react";
-import { db } from "../firebase";
-import { doc, deleteDoc } from "firebase/firestore";
+import { deleteExpense, Expense } from "../../services/budgetTrackerService";
 import { toast } from "react-toastify";
-
-type Expense = {
-  id: string;
-  description: string;
-  totalSpending: number;
-  category: string;
-  currency: string;
-  date: string;
-};
 
 type ExpenseListProps = {
   expenses: Expense[];
@@ -35,7 +25,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
       position: "bottom-center",
     });
     try {
-      await deleteDoc(doc(db, "Expenses", expenseToDelete));
+      await deleteExpense(expenseToDelete);
       toast.update(toastId, {
         render: `Expenses deleted successfully!`,
         type: "success",

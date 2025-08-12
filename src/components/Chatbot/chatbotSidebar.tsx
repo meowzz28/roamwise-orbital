@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import { auth, db } from "../firebase";
 import { toast } from "react-toastify";
-import fetchChats from "../../hooks/fetchChats";
 import ChatNameModal from "./chatNameModal";
-
-type ChatMessage = {
-  message: string;
-  sender: "user" | "assistant";
-  direction?: "incoming" | "outgoing";
-};
+import {
+  createNewChat,
+  deleteChatById,
+  getAllChats,
+} from "../../services/chatbotService";
 
 const chatbotSidebar = ({
   selectedChatID,
@@ -37,27 +27,16 @@ const chatbotSidebar = ({
 
   // Create a new chat in Firestore
   const handleCreateChat = async () => {
-    const user = auth.currentUser;
-    if (!user || !name.trim()) return;
+    if (!name.trim()) return;
     setPageLoading(true);
     try {
-      const docRef = await addDoc(collection(db, "Users", user.uid, "chats"), {
-        messages: [
-          {
-            message:
-              "RoamWise your travel planning assistant. Please state where you want to go, the date and how many days you want to travel.",
-            sender: "assistant",
-            direction: "incoming",
-          },
-        ],
-        userID: user.uid,
-        createdAt: serverTimestamp(),
-        chatName: name,
-      });
-
-      await fetchChats(setChats);
-      setSelectedChatID(docRef.id);
-      toast.success("New chat initialized", { position: "bottom-center" });
+      const newChatId = await createNewChat(name);
+      if (newChatId) {
+        const updatedChats = await getAllChats();
+        setChats(updatedChats);
+        setSelectedChatID(newChatId);
+        toast.success("New chat initialized", { position: "bottom-center" });
+      }
     } catch (error) {
       console.error("Error initializing chat: ", error);
     } finally {
@@ -75,12 +54,9 @@ const chatbotSidebar = ({
   // Delete a chat from Firestore
   const deleteChat = async () => {
     if (!chatToDelete) return;
-    const user = auth.currentUser;
-    if (!user) return;
-
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "Users", user.uid, "chats", chatToDelete));
+      await deleteChatById(chatToDelete);
       const updatedChats = chats.filter((chat) => chat.id !== chatToDelete);
       setChats(updatedChats);
       if (selectedChatID === chatToDelete) {
@@ -99,7 +75,11 @@ const chatbotSidebar = ({
 
   // Fetch chat list on mount
   useEffect(() => {
-    fetchChats(setChats);
+    const fetchChats = async () => {
+      const chatList = await getAllChats();
+      setChats(chatList);
+    };
+    fetchChats();
   }, []);
 
   return (
