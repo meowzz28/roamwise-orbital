@@ -55,6 +55,7 @@ function CreatePost() {
         setLoading(false);
       }
     };
+    fetchData();
   }, [navigate]);
 
   // Handle post submission
@@ -94,7 +95,6 @@ function CreatePost() {
 
       if (user && userDetails) {
         // Add new post to Firestore
-
         await addPost(
           userDetails,
           context,
