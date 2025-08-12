@@ -1,32 +1,11 @@
 import React, { useState } from "react";
-import { db } from "../firebase";
-import {
-  doc,
-  collection,
-  getDocs,
-  query,
-  where,
-  arrayUnion,
-  runTransaction,
-} from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-
-type Users = {
-  email: string;
-  firstName: string;
-  lastName: string;
-};
-
-type Team = {
-  id: string;
-  Name: string;
-  admin: string[];
-  admin_name: string[];
-  user_email: string[];
-  user_uid: string[];
-  user_name: string[];
-};
+import {
+  Team,
+  findUserByEmail,
+  promoteUserToAdmin,
+} from "../../services/teamService";
 
 const AddTeamAdmin = ({
   onClose,
@@ -83,11 +62,8 @@ const AddTeamAdmin = ({
       }
 
       // Find the user in the Users collection
-      const querySnapshot = await getDocs(
-        query(collection(db, "Users"), where("email", "==", email))
-      );
-
-      if (querySnapshot.empty) {
+      const userDoc = await findUserByEmail(email);
+      if (!userDoc) {
         toast.update(toastId, {
           render: "User not found",
           type: "error",
@@ -99,35 +75,25 @@ const AddTeamAdmin = ({
         return;
       }
 
-      const userDoc = querySnapshot.docs[0];
       const uid = userDoc.id;
-      const userDocData = userDoc.data() as Users;
-      const teamRef = doc(db, "Team", teamID);
 
       // Promote the user to admin using a transaction
-      await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(teamRef);
-        if (docSnap.exists()) {
-          transaction.update(teamRef, {
-            admin: arrayUnion(uid),
-            admin_name: arrayUnion(`${userDocData.firstName}`.trim()),
-          });
-        } else {
-          toast.update(toastId, {
-            render: "Team not found",
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-          });
-        }
-      });
-
-      toast.update(toastId, {
-        render: "Admin added successfully!",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
+      try {
+        await promoteUserToAdmin(teamID, uid, userDoc.firstName);
+        toast.update(toastId, {
+          render: "Admin added successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } catch {
+        toast.update(toastId, {
+          render: "Failed to add admin",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
       setIsAddingAdmin(false);
       onClose();
     } catch (error: any) {

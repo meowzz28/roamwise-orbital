@@ -1,29 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import { doc, collection, getDoc, getDocs } from "firebase/firestore";
+import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
-
-type ForumPost = {
-  id: string;
-  index: number;
-  User: string;
-  Topic: string;
-  Likes: number;
-  LikedBy: string[];
-  Message: string;
-  Time?: {
-    seconds: number;
-    nanoseconds: number;
-  };
-};
+import {
+  UserDetails,
+  ForumPost,
+  getCurrentUserDetails,
+  fetchData,
+} from "../../services/forumService";
 
 function Forum() {
   const navigate = useNavigate();
@@ -38,20 +22,14 @@ function Forum() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
-          } else {
-            console.log("User document does not exist.");
-          }
+          const userData = await getCurrentUserDetails();
+          setUserDetails(userData);
         } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
       } else {
         setUserDetails(null);
       }
-
       setAuthChecked(true);
     });
 
@@ -60,50 +38,25 @@ function Forum() {
 
   // Sorting functions for recent and likes
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "Forum"));
-        const forumData = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            User: data.User || "",
-            Topic: data.Topic || "",
-            Likes: data.Likes || 0,
-            Message: data.Message || "",
-            Time: data.Time,
-          } as ForumPost;
-        });
-
-        const recent = (a, b) => {
-          if (!a.Time?.seconds && !b.Time?.seconds) return 0;
-          if (!a.Time?.seconds) return 1;
-          if (!b.Time?.seconds) return -1;
-
-          return b.Time.seconds - a.Time.seconds;
-        };
-
-        const like = (a, b) => {
-          if (!a.Likes && !b.Likes) return 0;
-          if (!a.Likes) return 1;
-          if (!b.Likes) return -1;
-
-          return b.Likes - a.Likes;
-        };
-
-        // Sort and filter posts based on user selection
-        const sortedPosts = forumData.sort(filter == "recent" ? recent : like);
-        const filteredList = sortedPosts.filter((post) =>
-          post.Topic.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setPosts(filteredList);
-      } catch (err) {
-        console.error("Error fetching forum data:", err);
-      }
-    };
-
-    fetchData();
+    fetchData(filter, searchTerm).then((post) => setPosts(post));
   }, [filter, searchTerm]);
+
+  const handleCreate = async () => {
+    try {
+      const user = auth.currentUser;
+      console.log(user);
+      navigate("/createPost");
+    } catch (error) {
+      console.log(error.message);
+      toast.error(error.message, {
+        position: "bottom-center",
+      });
+    }
+  };
+
+  const handleViewPost = (postId: string) => {
+    navigate(`/viewPost/${postId}`);
+  };
 
   if (!authChecked) {
     return (
@@ -129,23 +82,6 @@ function Forum() {
       </div>
     );
   }
-
-  const handleCreate = async () => {
-    try {
-      const user = auth.currentUser;
-      console.log(user);
-      navigate("/createPost");
-    } catch (error) {
-      console.log(error.message);
-      toast.error(error.message, {
-        position: "bottom-center",
-      });
-    }
-  };
-
-  const handleViewPost = (postId: string) => {
-    navigate(`/viewPost/${postId}`);
-  };
 
   return (
     <div className="container bg-white 200 p-5 rounded-2xl shadow-lg">

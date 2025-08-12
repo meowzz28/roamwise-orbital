@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { toast } from "react-toastify";
 import { FaPlaneDeparture } from "react-icons/fa";
-import Chat from "./chat";
+import Chat from "../Chat/chat";
 import DateSection from "./dateSection";
 import DailyPlan from "./dailyPlan";
 import BudgetEstimation from "./budgetEstimate";

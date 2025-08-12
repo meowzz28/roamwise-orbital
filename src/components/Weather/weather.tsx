@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { fetchWeather, WeatherData } from "../../services/weatherService";
 
 function Weather() {
   const [location, setLocation] = useState("");
-  const [result, setResult] = useState("");
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [temp, setTemp] = useState(0);
-  const [city, setCity] = useState("");
-  const [icon, setIcon] = useState("");
 
-  // Auto-detect user location using IP address when component mounts
   useEffect(() => {
     const detectLocation = async () => {
       try {
         const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
-        console.log(data);
-        const detectedCity = data.city;
-        setLocation(detectedCity);
-        fetchWeather(detectedCity);
+        setLocation(data.city);
+        await searchWeather(data.city);
       } catch (err) {
         console.error("Auto-detect failed");
       }
@@ -26,46 +21,22 @@ function Weather() {
     detectLocation();
   }, []);
 
-  // Fetch weather information for a given location using WeatherAPI
-  const fetchWeather = async (loc: string) => {
+  const searchWeather = async (loc: string) => {
     setIsSearching(true);
-    setResult("");
-    const API_KEY = import.meta.env.VITE_API_KEY_WEATHER;
+    setWeatherData(null);
     try {
-      const API_URL = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${loc}`;
-      console.log("API URL:", API_URL);
-
-      const response = await fetch(API_URL);
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Show error toast for invalid locations (status 400)
-        if (response.status === 400) {
-          toast.error("Please enter a valid location.", {
-            position: "bottom-center",
-          });
-          throw new Error("Bad Request: Please enter a valid location.");
-        } else {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-      }
-
-      // Extract and set weather data from API response
-      setTemp(data.current.temp_c);
-      setResult(data.current.condition.text);
-      setIcon(data.current.condition.icon);
-      setCity(data.location.name);
-    } catch (error) {
-      setResult("");
+      const weather = await fetchWeather(loc);
+      setWeatherData(weather);
+    } catch (error: any) {
+      toast.error(error.message, { position: "bottom-center" });
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Trigger weather search on form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchWeather(location);
+    searchWeather(location);
   };
 
   if (isSearching) {
@@ -78,11 +49,9 @@ function Weather() {
 
   return (
     <div className="group border p-5 rounded-2xl ">
-      {/* Heading */}
       <h1 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800 text-center">
         Live Weather ☁️
       </h1>
-      {/* Search form */}
       <form onSubmit={handleSearch} className="mb-3">
         <div className="row align-items-end">
           <div className="col-md-9">
@@ -115,16 +84,15 @@ function Weather() {
         </div>
       </form>
 
-      {/* Result display */}
-      {result ? (
+      {weatherData ? (
         <div>
-          <h3>Result: </h3>
+          <h3>Result:</h3>
           <div className="border container">
-            <div className=" p-2 d-flex flex-column align-items-center text-center">
-              <h5>{city}</h5>
-              <img src={icon} alt="Weather Icon" />
+            <div className="p-2 d-flex flex-column align-items-center text-center">
+              <h5>{weatherData.locationName}</h5>
+              <img src={weatherData.condition.icon} alt="Weather Icon" />
               <p className="fs-5">
-                {temp}°C - {result}
+                {weatherData.temp_c}°C - {weatherData.condition.text}
               </p>
             </div>
           </div>

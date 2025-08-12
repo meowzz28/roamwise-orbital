@@ -13,7 +13,6 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
-
 export const allCurrencies = [
   { code: "USD", name: "US Dollar", symbol: "$" },
   { code: "SGD", name: "Singapore Dollar", symbol: "$" },
@@ -204,7 +203,6 @@ export type Expense = {
   date: string;
 };
 
-
 export type Expenses = {
   id: string;
   category: string;
@@ -235,7 +233,10 @@ export const getCurrentUserDetails = async (): Promise<UserDetails | null> => {
   }
 };
 
-export const subscribeToTemplates = (uid: string, callback: (templates: Template[]) => void) =>  {
+export const subscribeToTemplates = (
+  uid: string,
+  callback: (templates: Template[]) => void
+) => {
   const q = query(
     collection(db, "Templates"),
     where("userUIDs", "array-contains", uid)
@@ -248,9 +249,14 @@ export const subscribeToTemplates = (uid: string, callback: (templates: Template
     }));
     callback(data);
   });
-}
+};
 
-export const subscribeToExpenses = (uid: string, tripId: string, callback: (expenses: Expenses[]) => void, onError: (error: any) => void ) => {
+export const subscribeToExpenses = (
+  uid: string,
+  tripId: string,
+  callback: (expenses: Expenses[]) => void,
+  onError: (error: any) => void
+) => {
   const q = query(
     collection(db, "Expenses"),
     where("userId", "==", uid),
@@ -269,26 +275,29 @@ export const subscribeToExpenses = (uid: string, tripId: string, callback: (expe
     },
     onError
   );
-}
+};
 
-export const fetchConversionRates = async (fromCurrencies: string[], toCurrency: string) => {
-    const apiKey = import.meta.env.VITE_API_KEY_CURRENCY;
-    const rateMap: Record<string, number> = {};
+export const fetchConversionRates = async (
+  fromCurrencies: string[],
+  toCurrency: string
+) => {
+  const apiKey = import.meta.env.VITE_API_KEY_CURRENCY;
+  const rateMap: Record<string, number> = {};
 
-    for (const from of fromCurrencies) {
-            try {
-            const response = await fetch(
-                `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${toCurrency}`
-            );
-            if (!response.ok) throw Error("Something went wrong!");
-            const data = await response.json();
-            rateMap[from] = data.conversion_rate;
-            } catch (err) {
-            console.error(`Error fetching rate for ${from} → ${toCurrency}`);
-            rateMap[from] = 1; // fallback
-            }
+  for (const from of fromCurrencies) {
+    try {
+      const response = await fetch(
+        `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${toCurrency}`
+      );
+      if (!response.ok) throw Error("Something went wrong!");
+      const data = await response.json();
+      rateMap[from] = data.conversion_rate;
+    } catch (err) {
+      console.error(`Error fetching rate for ${from} → ${toCurrency}`);
+      rateMap[from] = 1; // fallback
     }
-    return rateMap
+  }
+  return rateMap;
 };
 
 export const addExpense = async ({

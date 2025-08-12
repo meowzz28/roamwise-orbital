@@ -1,43 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import CreateNewTeam from "./createNewTeam";
-import Chat from "./chat";
+import Chat from "../Chat/chat";
 import TeamProfile from "./teamProfile";
-import {
-  doc,
-  collection,
-  getDoc,
-  getDocs,
-  addDoc,
-  query,
-  where,
-  orderBy,
-} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-type UserDetails = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  pic: string;
-};
-
-type Team = {
-  id: string;
-  Name: string;
-  admin: string[];
-  admin_name: string[];
-  user_email: string[];
-  user_uid: string[];
-  user_name: string[];
-};
+import {
+  UserDetails,
+  Team as TeamType,
+  getCurrentUserDetails,
+  fetchTeamList,
+  addTeam,
+} from "../../services/teamService";
 
 function Team() {
   const navigate = useNavigate();
   const [uid, setUID] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [list, setList] = useState<Team[]>([]);
+  const [list, setList] = useState<TeamType[]>([]);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -55,60 +35,19 @@ function Team() {
       if (user) {
         setUID(user.uid);
         try {
-          const docRef = doc(db, "Users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
-          } else {
-            console.log("User document does not exist.");
-          }
+          const userData = await getCurrentUserDetails();
+          setUserDetails(userData);
         } catch (err: any) {
           console.error("Error fetching user data:", err.message);
         }
       } else {
         setUserDetails(null);
       }
-
       setAuthChecked(true);
     });
     return () => unsubscribe();
   }, []);
 
-  // Fetch user's teams after UID is set
-  useEffect(() => {
-    if (uid) fetchTeamList();
-  }, [uid]);
-
-  // Retrieve list of teams user belongs to
-  const fetchTeamList = async () => {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(db, "Team"),
-          where("user_uid", "array-contains", uid),
-          orderBy("created_at", "desc")
-        )
-      );
-      const teamData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          Name: data.Name,
-          admin: data.admin || [],
-          admin_name: data.admin_name || [],
-          user_email: data.user_email || [],
-          user_uid: data.user_uid || [],
-          user_name: data.user_name || [],
-        } as Team;
-      });
-
-      setList(teamData);
-    } catch (err) {
-      console.error("Error fetching team data:", err);
-    }
-  };
-
-  // Create a new team document in Firestore
   const handleCreate = async (teamName: string) => {
     setIsCreating(true);
     const toastId = toast.loading("Creating team...", {
@@ -117,19 +56,18 @@ function Team() {
     try {
       const user = auth.currentUser;
       if (user && userDetails) {
-        const newDocRef = await addDoc(collection(db, "Team"), {
-          Name: teamName,
-          admin: [user.uid],
-          admin_name: [userDetails.firstName],
-          user_email: [userDetails.email],
-          user_uid: [user.uid],
-          user_name: [userDetails.firstName],
-          created_at: new Date(),
-          created_by: user.uid,
-        });
+        const id = await addTeam(
+          teamName,
+          [user.uid],
+          [userDetails.firstName],
+          [userDetails.email],
+          [user.uid],
+          [userDetails.firstName],
+          user.uid
+        );
 
-        const newTeam: Team = {
-          id: newDocRef.id,
+        const newTeam: TeamType = {
+          id: id,
           Name: teamName,
           admin: [user.uid],
           admin_name: [userDetails.firstName],
@@ -167,6 +105,13 @@ function Team() {
       setIsCreating(false);
     }
   };
+
+  // Fetch user's teams after UID is set
+  useEffect(() => {
+    if (uid) {
+      fetchTeamList(uid).then((teamData) => setList(teamData));
+    }
+  }, [uid]);
 
   if (!authChecked) {
     return (
@@ -273,7 +218,7 @@ function Team() {
                     uid={uid}
                     onQuit={() => {
                       setSelectedTeamID(null);
-                      fetchTeamList();
+                      fetchTeamList(uid).then((teamData) => setList(teamData));
                     }}
                   />
                 </div>

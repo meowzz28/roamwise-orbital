@@ -1,32 +1,11 @@
 import React, { useState } from "react";
-import { db } from "../firebase";
-import {
-  doc,
-  collection,
-  getDocs,
-  query,
-  where,
-  arrayUnion,
-  runTransaction,
-} from "firebase/firestore";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-
-type Users = {
-  email: string;
-  firstName: string;
-  lastName: string;
-};
-
-type Team = {
-  id: string;
-  Name: string;
-  admin: string[];
-  admin_name: string[];
-  user_email: string[];
-  user_uid: string[];
-  user_name: string[];
-};
+import {
+  Team,
+  addUserAsMember,
+  findUserByEmail,
+} from "../../services/teamService";
 
 const AddTeamMember = ({
   onClose,
@@ -52,11 +31,8 @@ const AddTeamMember = ({
     });
     try {
       // Look for user in Firestore by email
-      const querySnapshot = await getDocs(
-        query(collection(db, "Users"), where("email", "==", email))
-      );
-
-      if (querySnapshot.empty) {
+      const userDoc = await findUserByEmail(email);
+      if (!userDoc) {
         toast.update(toastId, {
           render: "User not found",
           type: "error",
@@ -68,22 +44,7 @@ const AddTeamMember = ({
         return;
       }
 
-      const [userDoc] = querySnapshot.docs;
-
-      if (!userDoc) {
-        toast.update(toastId, {
-          render: "Unexpected error: user document not found",
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-        setIsAddingMember(false);
-        setIsAdding(false);
-        return;
-      }
-
       const uid = userDoc.id;
-      const userDocData = userDoc.data() as Users;
 
       // Prevent adding if already a member or admin
       if (team.user_uid?.includes(uid)) {
@@ -120,40 +81,17 @@ const AddTeamMember = ({
         return;
       }
 
-      // Get all templates under this team to update member access
-      const templatesQuery = query(
-        collection(db, "Templates"),
-        where("teamID", "==", teamID)
-      );
-      const templatesSnapshot = await getDocs(templatesQuery);
-      const templateRefs = templatesSnapshot.docs.map((doc) => doc.ref);
-      const teamRef = doc(db, "Team", teamID);
-
-      // Perform Firestore transaction to add member to team and templates
-      await runTransaction(db, async (transaction) => {
-        const docSnap = await transaction.get(teamRef);
-        if (!docSnap.exists()) {
-          toast.update(toastId, {
-            render: "Team not found",
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-          });
-          return;
-        }
-        transaction.update(teamRef, {
-          user_email: arrayUnion(userDocData.email),
-          user_uid: arrayUnion(uid),
-          user_name: arrayUnion(`${userDocData.firstName}`.trim()),
+      try {
+        await addUserAsMember(teamID, uid, userDoc);
+      } catch {
+        toast.update(toastId, {
+          render: "Team not found",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
         });
-        for (const templateRef of templateRefs) {
-          transaction.update(templateRef, {
-            userEmails: arrayUnion(userDocData.email),
-            userUIDs: arrayUnion(uid),
-            users: arrayUnion(`${userDocData.firstName}`.trim()),
-          });
-        }
-      });
+        return;
+      }
 
       toast.update(toastId, {
         render: "Member added successfully!",
